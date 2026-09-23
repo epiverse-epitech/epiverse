@@ -1,0 +1,8 @@
+# Relecteurs demandés automatiquement selon les fichiers modifiés (DOC-013 : deux relecteurs
+# pour un changement d'accès, de sécurité, de données ou transversal).
+# Remplacer les pseudos puis décommenter. Un pseudo inconnu de GitHub rend la ligne inactive.
+#
+# /infra/                        @pseudo-baye @pseudo-estelle
+# /.github/                      @pseudo-baye @pseudo-estelle
+# /docker-compose.yml            @pseudo-baye
+# /apps/api/prisma/              @pseudo-eckson @pseudo-thomas

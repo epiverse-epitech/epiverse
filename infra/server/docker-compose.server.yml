@@ -1,0 +1,114 @@
+# EpiVerse — pile applicative d'un environnement serveur (staging ou production)
+#
+# Installée dans /opt/epiverse/<env>/ à côté de son .env et de son api.env (jamais dans Git).
+# Mise à jour à chaque déploiement par la CI, puis lancée par infra/scripts/deploy.sh.
+#
+# Règles DOC-014 appliquées : PostgreSQL et Redis sans aucun port publié, réseau interne sans accès
+# Internet, seul le reverse proxy (pile "edge") est exposé en HTTPS.
+
+x-common: &common
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+services:
+  postgres:
+    <<: *common
+    # PostgreSQL 17 officiel + extension pgvector (colonnes VECTOR du schéma de données V1).
+    image: pgvector/pgvector:pg17-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB manquant dans .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  redis:
+    <<: *common
+    image: redis:7-alpine
+    # Cache et file de tâches, sans persistance (ADR-03). noeviction : Redis refuse d'écrire
+    # quand la mémoire est pleine plutôt que d'effacer des tâches en attente.
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --requirepass
+      - ${REDIS_PASSWORD:?REDIS_PASSWORD manquant dans .env}
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - noeviction
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 320m
+
+  api:
+    <<: *common
+    image: ${IMAGE_REGISTRY:?IMAGE_REGISTRY manquant dans .env}/epiverse-api:${IMAGE_TAG:?IMAGE_TAG manquant dans .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Secrets applicatifs : seule l'API reçoit api.env (principe du moindre accès).
+    env_file: [api.env]
+    environment:
+      NODE_ENV: production
+      APP_ENV: ${ENV_NAME:?ENV_NAME manquant dans .env}
+      PORT: "3000"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      RUN_MIGRATIONS: "false"
+    networks:
+      internal: {}
+      edge:
+        aliases: ["${ENV_NAME}-api"]
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+  web:
+    <<: *common
+    image: ${IMAGE_REGISTRY}/epiverse-web:${IMAGE_TAG}
+    networks:
+      edge:
+        aliases: ["${ENV_NAME}-web"]
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
+networks:
+  internal:
+    internal: true
+  edge:
+    external: true
+    name: epiverse-edge
+
+volumes:
+  postgres-data:

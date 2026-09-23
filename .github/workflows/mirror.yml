@@ -1,0 +1,55 @@
+# EpiVerse — miroir automatique vers le dépôt officiel Epitech (EpitechMscProPromo2027).
+# Chaque push sur main ou develop, et chaque tag, y est recopié tel quel, historique compris :
+# le dépôt Epitech est toujours à jour et il n'y a rien à copier en fin de projet.
+#
+# À configurer une fois (voir infra/README.md, section 4) :
+#   variable EPITECH_REPO            URL SSH du dépôt Epitech, ex. git@github.com:EpitechMscProPromo2027/<dépôt>.git
+#   secret   EPITECH_MIRROR_SSH_KEY  clé privée autorisée à écrire sur ce dépôt
+# Tant que EPITECH_REPO est vide, le miroir est simplement sauté.
+name: Miroir Epitech
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ["*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: miroir-epitech
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Miroir vers le dépôt Epitech
+    if: vars.EPITECH_REPO != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Pousser main, develop et les tags
+        env:
+          SSH_KEY: ${{ secrets.EPITECH_MIRROR_SSH_KEY }}
+          EPITECH_REPO: ${{ vars.EPITECH_REPO }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_mirror
+          chmod 600 ~/.ssh/id_mirror
+          # Clé d'hôte publiée par GitHub (empreinte SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU)
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_mirror -o IdentitiesOnly=yes"
+          for branch in main develop; do
+            if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+              git push --force "$EPITECH_REPO" "refs/remotes/origin/$branch:refs/heads/$branch"
+            fi
+          done
+          git push --force --tags "$EPITECH_REPO"
+          {
+            echo "### Miroir Epitech"
+            echo "- Dépôt : $EPITECH_REPO"
+            echo "- Commit : $GITHUB_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"

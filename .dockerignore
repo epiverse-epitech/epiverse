@@ -1,0 +1,17 @@
+# Le contexte de build est la racine du dépôt : on exclut l'inutile et tout ce qui est sensible.
+.git
+.github
+**/node_modules
+**/dist
+**/build
+**/web-build
+**/.expo
+**/coverage
+**/*.log
+**/.env
+**/.env.*
+infra/env
+infra/server
+infra/scripts
+docs
+**/.DS_Store

@@ -1,0 +1,41 @@
+# EpiVerse — reverse proxy HTTPS (certificats Let's Encrypt automatiques)
+# Même routage que le profil "full" en local : /api vers l'API, le reste vers l'app web.
+{
+	email {$ACME_EMAIL}
+}
+
+(epiverse) {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	@api path /api /api/*
+	handle @api {
+		reverse_proxy {args[0]}-api:3000
+	}
+
+	handle {
+		reverse_proxy {args[0]}-web:8080
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
+
+{$STAGING_DOMAIN} {
+	import epiverse staging
+	# Le staging ne doit pas apparaître dans les moteurs de recherche.
+	header X-Robots-Tag "noindex, nofollow"
+}
+
+# Production : à activer au gate pilote (G6), après validation d'Estelle.
+# Décommenter, renseigner PRODUCTION_DOMAIN dans .env, puis : docker compose restart caddy
+# {$PRODUCTION_DOMAIN} {
+# 	import epiverse production
+# }

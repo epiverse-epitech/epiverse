@@ -1,0 +1,40 @@
+# EpiVerse — reverse proxy HTTPS partagé (Caddy), commun au staging et à la production.
+#
+# Installé une seule fois dans /opt/epiverse/edge/ avec le Caddyfile et un .env :
+#   ACME_EMAIL=...        STAGING_DOMAIN=...        PRODUCTION_DOMAIN=...
+# Caddy obtient et renouvelle seul les certificats Let's Encrypt.
+# Seuls les ports 80 et 443 du serveur sont ouverts.
+
+name: epiverse-edge
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL manquant dans .env}
+      STAGING_DOMAIN: ${STAGING_DOMAIN:?STAGING_DOMAIN manquant dans .env}
+      PRODUCTION_DOMAIN: ${PRODUCTION_DOMAIN:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [edge]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  edge:
+    external: true
+    name: epiverse-edge
+
+volumes:
+  caddy-data:
+  caddy-config:

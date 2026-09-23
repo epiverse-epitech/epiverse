@@ -1,0 +1,9 @@
+# Fins de ligne LF dans le dépôt, même sous Windows : un script .sh en CRLF casse les conteneurs et le serveur.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary

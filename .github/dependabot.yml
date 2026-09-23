@@ -1,0 +1,26 @@
+# Mises à jour automatiques proposées en pull request sur develop.
+# L'app Expo n'est volontairement pas suivie ici : ses versions se mettent à jour ensemble
+# avec « npx expo install --fix » à chaque montée de version du SDK Expo.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: npm
+    directory: /apps/api
+    target-branch: develop
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      mineures-et-correctifs:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /infra/docker
+    target-branch: develop
+    schedule:
+      interval: monthly

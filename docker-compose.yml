@@ -1,0 +1,108 @@
+# EpiVerse — environnement de développement local
+#
+#   cp .env.example .env
+#   docker compose up -d                          # PostgreSQL + Redis (usage quotidien)
+#   docker compose --profile tools up -d          # + Adminer, interface web de la base : http://localhost:8082
+#   docker compose --profile full up -d --build   # produit complet comme en staging : http://localhost:8080
+#
+# Aucun port n'est ouvert au réseau : tout est lié à 127.0.0.1.
+# Mode d'emploi complet : infra/README.md
+
+name: epiverse
+
+x-healthcheck: &healthcheck
+  interval: 5s
+  timeout: 3s
+  retries: 20
+  start_period: 5s
+
+services:
+  postgres:
+    # PostgreSQL 17 officiel + extension pgvector (colonnes VECTOR du schéma de données V1).
+    image: pgvector/pgvector:pg17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-epiverse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-epiverse_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-epiverse}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Redis sert de cache et de file de tâches : rien de permanent n'y est stocké (DOC-014, ADR-03).
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "redis-cli", "ping"]
+
+  adminer:
+    image: adminer:latest
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - "127.0.0.1:${ADMINER_PORT:-8082}:8080"
+
+  # --- Profil "full" : les mêmes images qu'en staging, derrière le même routage ---
+
+  api:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      args:
+        API_DIR: ${API_DIR:-apps/api}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - path: infra/env/api.env
+        required: false
+    environment:
+      NODE_ENV: production
+      APP_ENV: local
+      PORT: "3000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-epiverse}:${POSTGRES_PASSWORD:-epiverse_dev}@postgres:5432/${POSTGRES_DB:-epiverse}?schema=public
+      REDIS_URL: redis://redis:6379
+      RUN_MIGRATIONS: "true"
+
+  web:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        APP_DIR: ${APP_DIR:-apps/app}
+        EXPO_PUBLIC_API_URL: /api
+    restart: unless-stopped
+
+  proxy:
+    profiles: ["full"]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - web
+    volumes:
+      - ./infra/caddy/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+
+volumes:
+  postgres-data:
