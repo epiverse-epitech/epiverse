@@ -14,9 +14,9 @@ export enum NodeEnv {
   Production = 'production',
 }
 
-// Convertit uniquement une chaîne composée de chiffres ("8080").
-// Toute autre valeur ("abc", " 8080 ", "80.5") est laissée telle quelle
-// pour être refusée par la validation, au lieu d'être corrigée en silence.
+// Converts only a string made of digits ("8080").
+// Any other value ("abc", " 8080 ", "80.5") is left as is so that validation
+// rejects it, instead of silently fixing it.
 const toStrictInteger = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
 
@@ -24,8 +24,8 @@ export class EnvironmentVariables {
   @IsEnum(NodeEnv)
   NODE_ENV: NodeEnv = NodeEnv.Development;
 
-  // Les décorateurs s'exécutent de bas en haut : IsInt est vérifié en premier,
-  // et stopAtFirstError n'affiche que la première règle non respectée.
+  // Decorators run bottom-up: IsInt is checked first, and stopAtFirstError
+  // reports only the first failing rule.
   @Transform(toStrictInteger)
   @Max(65535)
   @Min(1)
@@ -43,7 +43,7 @@ export function validateEnv(
   });
 
   if (errors.length > 0) {
-    throw new Error(`Configuration invalide :\n${formatErrors(errors)}`);
+    throw new Error(`Invalid configuration:\n${formatErrors(errors)}`);
   }
 
   return env;

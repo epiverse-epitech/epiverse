@@ -29,7 +29,7 @@ describe('Health (e2e)', () => {
       .expect({ status: 'ok' });
   });
 
-  it('GET /health sans préfixe → 404', () => {
+  it('GET /health without prefix → 404', () => {
     return request(app.getHttpServer()).get('/health').expect(404);
   });
 });
