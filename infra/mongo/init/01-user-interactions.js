@@ -32,7 +32,7 @@ const validator = {
         description: 'id PostgreSQL de l\'élément visé',
       },
       action: {
-        enum: ['view', 'click', 'save', 'share', 'dismiss'],
+        enum: ['view', 'click', 'save', 'share', 'dismiss', 'register', 'apply', 'mentoring_request'],
       },
       context: {
         bsonType: 'object',

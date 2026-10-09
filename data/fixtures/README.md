@@ -26,10 +26,11 @@ Sans `--load`, le script écrit seulement les fichiers dans `data/fixtures/out/`
 | `--scale` | 1.0 | Taille du catalogue (événements, offres, publications, ressources, entreprises, associations) |
 | `--reference-date` | aujourd'hui | Dernier jour des données. Même graine et même date = mêmes fichiers, à l'octet près |
 | `--no-embeddings` | | Ne remplit pas `content_embedding` (`seed.sql` passe de 48 Mo à 8 Mo) |
+| `--defects` | 0 | Part d'anomalies injectées pour tester les contrôles qualité, par exemple `0.05` (voir plus bas) |
 
 ## Volumes par défaut
 
-3 000 utilisateurs (dont ≈ 2 600 étudiants) dans 12 écoles, 180 entreprises, 120 associations, 900 événements, 1 000 publications, 600 ressources, 600 offres, ≈ 400 mentors, ≈ 18 000 recommandations passées et ≈ 165 000 interactions sur 12 mois. Plateforme 2D : 6 cartes et ≈ 2 300 personnages avec leur dernière position (`docs/database/Plateforme_2D_MongoDB.md`).
+3 000 utilisateurs (dont ≈ 2 600 étudiants) dans 12 écoles, 180 entreprises, 120 associations, 900 événements, 1 000 publications, 600 ressources, 600 offres, ≈ 400 mentors, ≈ 13 000 recommandations passées et ≈ 165 000 interactions sur 12 mois. Plateforme 2D : 6 cartes et ≈ 2 300 personnages avec leur dernière position (`docs/database/Plateforme_2D_MongoDB.md`).
 
 ## Ce que les modèles peuvent apprendre
 
@@ -45,7 +46,21 @@ Les goûts cachés ne sont écrits nulle part dans les bases. Ce que voit un mod
 - le texte des éléments, leurs catégories (`post_category`, `resource_category`), le secteur des entreprises ;
 - `content_embedding` : vecteurs fictifs (`model_version = 'fixture-v1'`) où les éléments d'un même thème sont proches ;
 - les interactions MongoDB, les inscriptions (`user_event`), les adhésions, les demandes de mentorat ;
-- `recommendation` : l'historique d'un modèle de référence (`baseline-v0` puis `baseline-v1`, popularité + centres d'intérêt déclarés) avec affichages, clics et avis. Les clics correspondants sont dans MongoDB avec `context.recommendation_id`.
+- `recommendation` : l'historique d'un modèle de référence (`baseline-v0` puis `baseline-v1`, popularité + centres d'intérêt déclarés) avec affichages, clics et avis. Les clics correspondants, et les actions qui les suivent, sont dans MongoDB avec `context.recommendation_id`.
+
+Les passages à l'action sont cohérents entre les deux bases : une interaction `register` a sa ligne `user_event`, une interaction `mentoring_request` sa ligne `mentoring_request`. `apply` (clic sur « postuler ») n'existe que dans MongoDB. Le KPI principal « recos converties » se calcule donc sur ce jeu : il vaut environ 2 %, le modèle de référence fictif étant volontairement médiocre.
+
+## Tester les contrôles qualité (`--defects`)
+
+Par défaut les données sont propres : les contrôles n'ont rien à trouver. Avec `--defects 0.05`, le script abîme volontairement le jeu et écrit la liste exacte de ce qu'il a fait dans `out/defects.json`, pour comparer avec ce que les contrôles détectent :
+
+| Anomalie | Où | Volume avec 0.05 |
+|---|---|---|
+| Champ vide | `event` (`description`, `location`), `resource` (`description`, `url`), `job_offer` (`description` réduite à une espace, `location`) | ≈ 5 % des lignes, une colonne par ligne |
+| Doublon | `event`, `resource`, `job_offer` : copie d'une ligne avec un nouvel `id` | 2,5 % des lignes |
+| Élément expiré recommandé | `recommendation` affichée pour un événement passé ou une offre clôturée | ≈ 400 lignes |
+
+Les doublons n'ont ni catégories, ni médias, ni interactions. Ne pas utiliser un jeu avec anomalies pour entraîner ou évaluer un modèle.
 
 Vérification faite sur le jeu par défaut (20 % des éléments positifs de chaque étudiant mis de côté) : un filtrage collaboratif simple fait environ 2,5 fois mieux que la popularité en NDCG@10. Le signal existe, sans être trivial.
 

@@ -155,7 +155,9 @@ CHAT_LINES = ['Salut, tu viens à la prochaine réunion ?', 'Oui, je serai là v
 NOTIF_TITLES = {'message': 'Nouveau message', 'event': 'Un événement approche', 'association': 'Du nouveau dans ton association',
                 'mentoring': 'Réponse à ta demande de mentorat', 'job_offer': 'Nouvelle offre qui peut t\'intéresser',
                 'moderation': 'Ton signalement a été traité', 'system': 'Bienvenue sur EpiVerse'}
-SOURCES = [('feed', 45), ('search', 20), ('recommendation', 15), ('direct', 10), ('notification', 5), ('profile', 5)]
+# Sources des interactions spontanées. 'recommendation' est réservé aux clics sur une recommandation
+# enregistrée (toujours avec context.recommendation_id).
+SOURCES = [('feed', 50), ('search', 25), ('direct', 12), ('notification', 7), ('profile', 6)]
 TARGET_TYPES = ['event', 'post', 'resource', 'job_offer', 'association', 'company', 'user']
 TYPE_PROPENSITY = {'event': 2.5, 'post': 1.2, 'resource': 0.8, 'job_offer': 0.5, 'association': 0.4, 'company': 0.2, 'user': 0.15}
 BACKGROUND = 0.03  # intérêt résiduel pour les thèmes hors des goûts de l'utilisateur
@@ -190,7 +192,7 @@ def weighted(rng, pairs):
 # ----------------------------------------------------------------------------
 
 class Fixtures:
-    def __init__(self, seed, now, n_users, scale, embeddings):
+    def __init__(self, seed, now, n_users, scale, embeddings, defects=0.0):
         self.rng = random.Random(seed)
         self.now = now
         self.launch = now - timedelta(days=360)
@@ -201,6 +203,11 @@ class Fixtures:
         self.items = []         # éléments recommandables
         self.interactions = []  # documents MongoDB
         self.world = {'maps': [], 'characters': []}
+        self.user_events = {}       # (étudiant, événement) -> ligne user_event
+        self.mentoring_pairs = {}   # (étudiant, mentor) -> date de la demande
+        self.defects = defects      # part d'anomalies injectées (0 = données propres)
+        self.drng = random.Random(seed + 1)
+        self.defect_log = {'missing_fields': [], 'duplicates': [], 'expired_recommendations': []}
         self.users = []
 
     # -- utilitaires --
@@ -598,10 +605,28 @@ class Fixtures:
             context.update(extra)
         self.interactions.append((when, user['pseudonym'], it['type'], it['id'], action, context))
 
+    def convert(self, user, it, m, when, source, extra=None):
+        """Passage à l'action après un clic : inscription, candidature ou demande de mentorat."""
+        rng, action = self.rng, None
+        if user['kind'] != 'student':
+            return False
+        if it['type'] == 'event' and rng.random() < 0.15 + 0.4 * m:
+            action, status = 'register', 'registered'
+            if it['end'] < self.now:
+                status = weighted(rng, [('attended', 70), ('registered', 22), ('cancelled', 8)])
+            self.user_events[(user['id'], it['id'])] = (user['id'], it['id'], status, when, when)
+        elif it['type'] == 'job_offer' and rng.random() < 0.05 + 0.25 * m:
+            action = 'apply'  # clic sur « postuler » : la candidature se fait sur le site de l'entreprise
+        elif it['type'] == 'user' and (user['id'], it['id']) not in self.mentoring_pairs and rng.random() < 0.06 + 0.25 * m:
+            action = 'mentoring_request'
+            self.mentoring_pairs[(user['id'], it['id'])] = when
+        if action and user['tracked']:
+            self.interact(user, it, action, when, source, extra)
+        return action is not None
+
     def behaviours(self):
         rng, now = self.rng, self.now
         self.build_sampler()
-        user_events = {}
         for user in self.users:
             if user['kind'] not in ('student', 'alumni') or user['deleted'] or not user['active']:
                 continue
@@ -634,20 +659,13 @@ class Fixtures:
                         if rng.random() < 0.25:
                             again = self.between(when, end)
                             self.interact(user, it, 'view', again, 'direct', {'dwell_ms': int(rng.lognormvariate(math.log(8000), 0.6))})
-                    elif source in ('feed', 'recommendation') and rng.random() < 0.15 * (1 - m):
+                    elif source == 'feed' and rng.random() < 0.15 * (1 - m):
                         self.interact(user, it, 'dismiss', when + timedelta(seconds=rng.randint(1, 15)), source)
-                # inscriptions aux événements : donnée métier, indépendante du consentement de suivi
-                if it['type'] == 'event' and clicked and user['kind'] == 'student':
-                    status = None
-                    if rng.random() < 0.15 + 0.4 * m:
-                        status = 'registered'
-                        if it['end'] < now:
-                            status = weighted(rng, [('attended', 70), ('registered', 22), ('cancelled', 8)])
-                    elif saved:
-                        status = 'interested'
-                    if status:
-                        user_events[(user['id'], it['id'])] = (user['id'], it['id'], status, when, when)
-        self.t['user_event'] = list(user_events.values())
+                # inscriptions et demandes : données métier, enregistrées même sans consentement de suivi
+                if clicked:
+                    converted = self.convert(user, it, m, when + timedelta(seconds=rng.randint(60, 900)), source)
+                    if saved and not converted and it['type'] == 'event' and user['kind'] == 'student':
+                        self.user_events[(user['id'], it['id'])] = (user['id'], it['id'], 'interested', when, when)
 
     def recommendations(self):
         """Recommandations passées d'un modèle de référence (popularité + centres d'intérêt déclarés)."""
@@ -661,8 +679,12 @@ class Fixtures:
                 declared[t] = 1 / len(user['declared'])
             for it in self.sample_items(user, declared, rng.randint(12, 30), TYPE_PROPENSITY):
                 generated = self.between(max(user['created'], now - timedelta(days=120)), now - timedelta(days=1))
+                expired = False
                 if not it['start'] <= generated <= it['end']:
-                    continue
+                    # anomalie injectée : un élément expiré est quand même recommandé
+                    if not (it['type'] in ('event', 'job_offer') and generated > it['end'] and self.drng.random() < self.defects):
+                        continue
+                    expired = True
                 rid += 1
                 m = self.affinity(user, it)
                 model = 'baseline-v0' if generated < now - timedelta(days=60) else 'baseline-v1'
@@ -672,6 +694,8 @@ class Fixtures:
                 shown = min(now, generated + timedelta(hours=rng.randint(1, 72))) if rng.random() < 0.85 else None
                 clicked = feedback = None
                 if shown:
+                    if expired:
+                        self.defect_log['expired_recommendations'].append(rid)
                     extra = {'recommendation_id': rid, 'model_version': model}
                     if rng.random() < 0.03 + 0.3 * m:
                         clicked = shown + timedelta(seconds=rng.randint(2, 90))
@@ -679,6 +703,7 @@ class Fixtures:
                             self.interact(user, it, 'click', clicked, 'recommendation', extra)
                             if rng.random() < 0.05 + 0.3 * m:
                                 self.interact(user, it, 'save', clicked + timedelta(seconds=rng.randint(30, 300)), 'recommendation', extra)
+                        self.convert(user, it, m, clicked + timedelta(seconds=rng.randint(60, 900)), 'recommendation', extra)
                     elif user['tracked'] and rng.random() < 0.12 * (1 - m):
                         self.interact(user, it, 'dismiss', shown + timedelta(seconds=rng.randint(1, 20)), 'recommendation', extra)
                     if rng.random() < 0.12:
@@ -687,20 +712,13 @@ class Fixtures:
 
     def mentoring(self):
         rng, now = self.rng, self.now
-        seen = set()
-        mentors = self.mentor_users
-        for _ in range(round(len(self.students) * 0.2)):
-            mentee = rng.choice(self.students)
-            weights = [BACKGROUND + mentee['pref'][m['topics'][0]] for m in mentors]
-            mentor = rng.choices(mentors, weights=weights)[0]
-            if mentor['id'] == mentee['id'] or (mentee['id'], mentor['id']) in seen:
-                continue
-            seen.add((mentee['id'], mentor['id']))
-            created = self.between(max(mentee['created'], mentor['created']) + timedelta(days=20), now)
+        mentors = {u['id']: u for u in self.mentor_users}
+        for (mentee_id, mentor_id), created in sorted(self.mentoring_pairs.items(), key=lambda pair: pair[1]):
+            mentor = mentors[mentor_id]
             status = weighted(rng, [('pending', 25), ('accepted', 40), ('declined', 15), ('cancelled', 5), ('completed', 15)])
             responded = None if status in ('pending', 'cancelled') else min(now, created + timedelta(days=rng.randint(1, 10)))
             topic = TOPICS[mentor['topics'][0]]
-            self.rows('mentoring_request').append([None, mentee['id'], mentor['id'],
+            self.rows('mentoring_request').append([None, mentee_id, mentor_id,
                                                    f"Bonjour, j'aimerais échanger avec vous sur {topic[2][0]} et sur votre parcours.",
                                                    status, created, responded, responded or created])
 
@@ -808,6 +826,24 @@ class Fixtures:
                              'direction': rng.choice(['up', 'down', 'left', 'right'])},
                 'last_seen_at': date(seen), 'created_at': date(created), 'updated_at': date(seen)})
 
+    def inject_defects(self):
+        """Anomalies volontaires pour tester les contrôles qualité : champs vides et doublons."""
+        rng, log = self.drng, self.defect_log
+        # table -> colonnes vidées (index -> valeur « vide »)
+        targets = {'event': {3: None, 9: None}, 'resource': {3: None, 4: None}, 'job_offer': {5: ' ', 7: None}}
+        for table, blanks in targets.items():
+            rows, columns = self.t[table], dict(TABLES)[table].split(', ')
+            originals = list(rows)
+            for i, row in enumerate(originals):
+                if rng.random() < self.defects:
+                    col = rng.choice(list(blanks))
+                    rows[i] = row[:col] + (blanks[col],) + row[col + 1:]
+                    log['missing_fields'].append({'table': table, 'id': row[0], 'column': columns[col]})
+            for row in rng.sample(originals, round(len(originals) * self.defects / 2)):
+                copy_id = len(rows) + 1
+                rows.append((copy_id, str(uuid.UUID(int=rng.getrandbits(128), version=4))) + row[2:])
+                log['duplicates'].append({'table': table, 'id': copy_id, 'duplicate_of': row[0]})
+
     def embedding_rows(self):
         """Vecteurs fictifs mais structurés : les éléments d'un même thème sont proches."""
         rng = random.Random(self.rng.random())
@@ -828,9 +864,12 @@ class Fixtures:
         self.contents()
         self.behaviours()
         self.recommendations()
+        self.t['user_event'] = list(self.user_events.values())
         self.mentoring()
         self.platform()
         self.world_2d()
+        if self.defects:
+            self.inject_defects()
         return self
 
 
@@ -997,19 +1036,25 @@ def main():
     parser.add_argument('--scale', type=float, default=1.0, help='multiplicateur du catalogue : événements, offres, publications... (1.0)')
     parser.add_argument('--reference-date', help="date de fin des données, AAAA-MM-JJ (aujourd'hui). À fixer pour un jeu de données figé")
     parser.add_argument('--no-embeddings', action='store_true', help='ne pas générer content_embedding (fichier SQL bien plus léger)')
+    parser.add_argument('--defects', type=float, default=0.0, metavar='PART',
+                        help="part d'anomalies injectées pour tester les contrôles qualité, ex. 0.05 (0 = données propres)")
     parser.add_argument('--load', action='store_true', help='charger dans les conteneurs Docker locaux après la génération')
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding='utf-8')
 
     day = datetime.strptime(args.reference_date, '%Y-%m-%d') if args.reference_date else datetime.now(timezone.utc)
     now = datetime(day.year, day.month, day.day, tzinfo=timezone.utc)
-    fx = Fixtures(args.seed, now, args.users, args.scale, not args.no_embeddings).build()
+    fx = Fixtures(args.seed, now, args.users, args.scale, not args.no_embeddings, args.defects).build()
 
     OUT.mkdir(exist_ok=True)
     sql_path, jsonl_path = OUT / 'seed.sql', OUT / 'user_interactions.jsonl'
     counts = write_sql(fx, sql_path)
     interactions = write_interactions(fx, jsonl_path)
     write_world(fx)
+    defects_path = OUT / 'defects.json'
+    defects_path.unlink(missing_ok=True)
+    if args.defects:
+        defects_path.write_text(json.dumps(fx.defect_log, ensure_ascii=False, indent=1), encoding='utf-8')
     for table, n in counts.items():
         print(f'  {table:<26}{n:>8}')
     print(f'  {"user_interactions (Mongo)":<26}{interactions:>8}')
@@ -1017,6 +1062,8 @@ def main():
         print(f'  {name + " (Mongo)":<26}{len(docs):>8}')
     print(f'{sql_path.relative_to(ROOT)} : {sql_path.stat().st_size / 1e6:.1f} Mo')
     print(f'{jsonl_path.relative_to(ROOT)} : {jsonl_path.stat().st_size / 1e6:.1f} Mo')
+    if args.defects:
+        print('Anomalies injectées (liste dans out/defects.json) : ' + ', '.join(f'{k} = {len(v)}' for k, v in fx.defect_log.items()))
     if args.load:
         if load(sql_path, jsonl_path, fx.world) != (interactions, len(fx.world['characters'])):
             sys.exit('MongoDB a refusé une partie des documents : vérifier la validation des collections.')

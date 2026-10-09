@@ -32,11 +32,26 @@ Si le port 27017 est déjà pris sur ta machine, changer `MONGO_PORT` dans ton `
 | `user_pseudonym_id` | chaîne UUID en minuscules, obligatoire | `users.pseudonym_id` de PostgreSQL. Jamais `users.id`, ni e-mail, ni nom |
 | `target_type` | énuméré, obligatoire | `post`, `resource`, `event`, `company`, `association`, `job_offer`, `user`, `message` |
 | `target_id` | entier, obligatoire | id PostgreSQL de l'élément |
-| `action` | énuméré, obligatoire | `view`, `click`, `save`, `share`, `dismiss` |
+| `action` | énuméré, obligatoire | `view`, `click`, `save`, `share`, `dismiss`, et les passages à l'action : `register` (inscription à un événement), `apply` (clic sur « postuler » d'une offre), `mentoring_request` (demande à un mentor, `target_type` = `user`) |
 | `context` | objet, facultatif | Clés autorisées uniquement : `source` (`feed`, `search`, `recommendation`, `notification`, `profile`, `direct`), `position`, `recommendation_id`, `model_version`, `platform` (`web`, `ios`, `android`), `dwell_ms` |
 | `created_at` | date, obligatoire | Date de l'interaction |
 
 La collection refuse tout document qui ne respecte pas ce format (champ inconnu, valeur hors liste, type incorrect). Les valeurs de `target_type` et `action` sont celles des types énumérés de `docs/database/schema.sql` : toute évolution se fait aux deux endroits.
+
+## Lien avec les recommandations
+
+Une interaction qui vient d'une recommandation affichée porte `context.source = "recommendation"` **et** `context.recommendation_id` (l'`id` de la table `recommendation`), y compris pour l'action qui suit le clic (enregistrer, s'inscrire, postuler, demander un mentor). C'est ce qui permet de calculer le KPI principal, « recos converties » (`docs/ia/KPI_IA_Data_V1.md`) :
+
+```js
+db.user_interactions.aggregate([
+  { $match: { action: { $in: ["save", "register", "apply", "mentoring_request"] }, created_at: { $gte: debut, $lt: fin } } },
+  { $group: { _id: null, total: { $sum: 1 },
+              issues_reco: { $sum: { $cond: [{ $ifNull: ["$context.recommendation_id", false] }, 1, 0] } } } },
+  { $project: { _id: 0, part: { $divide: ["$issues_reco", "$total"] } } }
+])
+```
+
+Limites : seuls les étudiants ayant consenti au suivi sont comptés, et `apply` mesure un clic vers le site de l'entreprise, pas une candidature réellement envoyée.
 
 ## Index
 
