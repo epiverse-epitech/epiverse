@@ -26,3 +26,5 @@ Thumbs.db
 
 # Données fictives générées (data/fixtures/generate.py)
 data/fixtures/out/
+__pycache__/
+*.pyc
