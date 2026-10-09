@@ -50,7 +50,6 @@ Sources : `recommendation` (`shown_at`, `clicked_at`, `feedback`) et `user_inter
 
 | KPI | Cible |
 |---|---|
-| Recommandations et suivi d'activité uniquement pour les étudiants ayant donné leur consentement | 100 % (vérifié par requête d'audit) |
 | Données d'activité supprimées après la durée de conservation (NFR-PRIV-001) | 100 % |
 | Recommandations affichant une raison à l'étudiant (`reason`) | ≥ 90 % |
 | Évaluation reproductible (jeu de données versionné, graine fixe, `model_version`) | oui |
