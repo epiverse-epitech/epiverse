@@ -23,3 +23,6 @@ backups/
 .DS_Store
 Thumbs.db
 .idea/
+
+# Données fictives générées (data/fixtures/generate.py)
+data/fixtures/out/
