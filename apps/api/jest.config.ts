@@ -25,6 +25,7 @@ const config: Config = {
   ],
   coverageDirectory: './coverage',
   testEnvironment: 'node',
+  setupFiles: ['reflect-metadata'],
 };
 
 export default config;

@@ -1,4 +1,4 @@
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Type } from 'class-transformer';
 
 export enum NodeEnv {
   Development = 'development',
@@ -9,6 +9,7 @@ export enum NodeEnv {
 export class EnvironmentVariables {
   NODE_ENV: NodeEnv = NodeEnv.Development;
 
+  @Type(() => Number)
   PORT: number = 3000;
 }
 
