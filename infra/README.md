@@ -12,11 +12,12 @@ Références : DOC-013 (plan qualité), DOC-014 (architecture technique), WBS WP
 Contenu du kit :
 
 ```
-docker-compose.yml            environnement local (PostgreSQL, Redis, Adminer, produit complet)
+docker-compose.yml            environnement local (PostgreSQL, Redis, MongoDB, Adminer, produit complet)
 .env.example                  variables locales à copier en .env
 .dockerignore / .gitignore    rien de sensible dans les images ni dans Git
 infra/docker/                 images de l'API (NestJS) et du web (Expo), config nginx
 infra/caddy/Caddyfile.dev     routage local identique au staging
+infra/mongo/init/             création des bases MongoDB : IA et plateforme 2D (collections, validation, index)
 infra/server/                 piles serveur (app + reverse proxy HTTPS), modèles de .env
 infra/scripts/                déploiement, sauvegarde, restauration, préparation du serveur
 .github/workflows/            CI (ci.yml), déploiement (deploy.yml), miroir vers le dépôt Epitech (mirror.yml)
@@ -31,7 +32,7 @@ Prérequis : Docker Desktop et Node.js 24 LTS (la version des images).
 
 ```bash
 cp .env.example .env          # Windows (cmd) : copy .env.example .env
-docker compose up -d          # PostgreSQL sur localhost:5432, Redis sur localhost:6379
+docker compose up -d          # PostgreSQL sur localhost:5432, Redis sur localhost:6379, MongoDB sur localhost:27017
 ```
 
 | Besoin | Commande | Adresse |
@@ -39,13 +40,14 @@ docker compose up -d          # PostgreSQL sur localhost:5432, Redis sur localho
 | Voir la base dans le navigateur | `docker compose --profile tools up -d` | http://localhost:8082 (système PostgreSQL, serveur `postgres`, utilisateur `epiverse`, mot de passe `epiverse_dev`, base `epiverse`) |
 | Tout le produit, comme en staging | `docker compose --profile full up -d --build` | http://localhost:8080 (l'API répond sous `/api`) |
 | Arrêter (données conservées) | `docker compose down` | |
+| Voir la base de l'IA | MongoDB Compass ou `mongosh` | `mongodb://epiverse:epiverse_dev@localhost:27017/epiverse_ai?authSource=admin` |
 | Repartir d'une base vide | `docker compose down -v` | |
 
 Par rôle :
 
 - **Back (Eckson)** : dans `apps/api/.env`, mettre `DATABASE_URL=postgresql://epiverse:epiverse_dev@localhost:5432/epiverse?schema=public` et `REDIS_URL=redis://localhost:6379`, puis `npm run start:dev`.
 - **App (Philimon, Julien)** : `npx expo start`, puis `w` pour le web (http://localhost:8081). Sur téléphone avec Expo Go, `localhost` désigne le téléphone : mettre `EXPO_PUBLIC_API_URL=http://<IP-du-PC>:3000/api` dans `apps/app/.env`.
-- **Data / IA (Thomas, Lina, Belaid)** : Adminer ou DBeaver sur `localhost:5432`. Le schéma validé devient le schéma Prisma du back avec ses migrations : c'est ce qui garantit une base identique en dev, en staging et en production.
+- **Data / IA (Thomas, Lina, Belaid)** : Adminer ou DBeaver sur `localhost:5432`. Le schéma validé devient le schéma Prisma du back avec ses migrations : c'est ce qui garantit une base identique en dev, en staging et en production. Les interactions des étudiants vont dans MongoDB (base `epiverse_ai`, en local uniquement pour l'instant) : voir `docs/ia/Stockage_interactions_MongoDB.md`. L'état de la plateforme 2D (personnages, dernière position) est dans la base `epiverse_world` : voir `docs/database/Plateforme_2D_MongoDB.md`.
 
 ---
 
@@ -57,7 +59,7 @@ Le kit fonctionne si les applications respectent ces points (vérifiés sur une 
 |---|---|
 | API | Écoute sur `process.env.PORT` (3000 par défaut) avec `app.setGlobalPrefix('api')` |
 | API | `GET /api/health` répond 200 : c'est le contrôle de santé des conteneurs et du déploiement |
-| API | Lit `DATABASE_URL` et `REDIS_URL` ; `npm run build` produit `dist/main.js` ; schéma Prisma dans `apps/api/prisma/` |
+| API | Lit `DATABASE_URL`, `REDIS_URL` et `MONGO_URL` ; `npm run build` produit `dist/main.js` ; schéma Prisma dans `apps/api/prisma/` |
 | Base | PostgreSQL 17 avec pgvector disponible (colonnes `VECTOR` du schéma V1) : l'activer dans la première migration avec `CREATE EXTENSION IF NOT EXISTS vector;` |
 | App | Appelle l'API via `process.env.EXPO_PUBLIC_API_URL` (vaut `/api` sur le web : même domaine, pas de CORS) |
 | App | `npx expo export --platform web` passe ; lancer `npx expo lint` une fois en local et commiter `eslint.config.js` |
