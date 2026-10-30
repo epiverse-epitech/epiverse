@@ -54,8 +54,9 @@ Variables are read from the process environment and, in local development, from 
 |---|---|---|---|
 | `NODE_ENV` | No | `development` | `development`, `test` or `production` |
 | `PORT` | No | `3000` | Integer from 1 to 65535, digits only (`" 8080 "` and `"3000abc"` are rejected) |
+| `DATABASE_URL` | Yes | — | PostgreSQL connection URL (`postgresql://` or `postgres://`) |
 
-The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`DATABASE_URL` and `REDIS_URL` will come with Prisma and Redis).
+The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`REDIS_URL` will come with Prisma and Redis).
 
 Read configuration through `ConfigService`, never through `process.env`:
 
