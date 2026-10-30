@@ -25,7 +25,7 @@ Référence de comparaison : popularité et correspondance sur les centres d'int
 | Part de « j'aime » sur l'ensemble des avis (j'aime + je n'aime pas) | ≥ 70 % |
 | Taux de rejet (`dismiss`) | ≤ 15 % |
 
-Sources : `recommendation` (`shown_at`, `clicked_at`, `feedback`) et `user_interaction`.
+Sources : `recommendation` (`shown_at`, `clicked_at`, `feedback`) et les interactions MongoDB (`user_interactions`). Une action issue d'une recommandation porte `context.recommendation_id` : requête du KPI principal dans `Stockage_interactions_MongoDB.md`.
 
 ## 3. Qualité des données
 

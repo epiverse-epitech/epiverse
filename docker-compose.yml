@@ -1,7 +1,7 @@
 # EpiVerse — environnement de développement local
 #
 #   cp .env.example .env
-#   docker compose up -d                          # PostgreSQL + Redis (usage quotidien)
+#   docker compose up -d                          # PostgreSQL + Redis + MongoDB (usage quotidien)
 #   docker compose --profile tools up -d          # + Adminer, interface web de la base : http://localhost:8082
 #   docker compose --profile full up -d --build   # produit complet comme en staging : http://localhost:8080
 #
@@ -44,6 +44,26 @@ services:
       <<: *healthcheck
       test: ["CMD", "redis-cli", "ping"]
 
+  mongo:
+    # Hors de la base métier : interactions des étudiants pour l'IA (docs/ia/Stockage_interactions_MongoDB.md)
+    # et état de la plateforme 2D (docs/database/Plateforme_2D_MongoDB.md).
+    image: mongo:8.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-epiverse}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-epiverse_dev}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-epiverse_ai}
+      INTERACTION_RETENTION_DAYS: ${INTERACTION_RETENTION_DAYS:-395}
+    ports:
+      - "127.0.0.1:${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+      # Crée les bases epiverse_ai et epiverse_world (collections, validation, index) au premier démarrage.
+      - ./infra/mongo/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+
   adminer:
     image: adminer:latest
     profiles: ["tools"]
@@ -71,6 +91,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
     env_file:
       - path: infra/env/api.env
         required: false
@@ -80,6 +102,7 @@ services:
       PORT: "3000"
       DATABASE_URL: postgresql://${POSTGRES_USER:-epiverse}:${POSTGRES_PASSWORD:-epiverse_dev}@postgres:5432/${POSTGRES_DB:-epiverse}?schema=public
       REDIS_URL: redis://redis:6379
+      MONGO_URL: mongodb://${MONGO_USER:-epiverse}:${MONGO_PASSWORD:-epiverse_dev}@mongo:27017/${MONGO_DB:-epiverse_ai}?authSource=admin
       RUN_MIGRATIONS: "true"
 
   web:
@@ -106,3 +129,4 @@ services:
 
 volumes:
   postgres-data:
+  mongo-data:
