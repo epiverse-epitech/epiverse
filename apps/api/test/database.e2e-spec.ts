@@ -28,4 +28,17 @@ describe('Database connection (e2e)', () => {
 
     expect(result).toEqual([{ ok: 1 }]);
   });
+
+  it('disconnects from the database when the application stops', async () => {
+    const moduleRef = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    const stoppingApp = moduleRef.createNestApplication();
+    await stoppingApp.init();
+    const disconnect = jest.spyOn(stoppingApp.get(PrismaService), '$disconnect');
+
+    await stoppingApp.close();
+
+    expect(disconnect).toHaveBeenCalledTimes(1);
+  });
 });
