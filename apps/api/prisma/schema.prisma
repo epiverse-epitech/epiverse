@@ -740,6 +740,9 @@ enum interaction_action {
   save
   share
   dismiss
+  register
+  apply
+  mentoring_request
 }
 
 enum log_level {

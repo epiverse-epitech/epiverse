@@ -25,7 +25,7 @@ CREATE TYPE event_status AS ENUM ('draft', 'published', 'cancelled');
 CREATE TYPE user_event_status AS ENUM ('interested', 'registered', 'attended', 'cancelled');
 CREATE TYPE association_role AS ENUM ('member', 'board', 'manager');
 CREATE TYPE target_type AS ENUM ('post', 'resource', 'event', 'company', 'association', 'job_offer', 'user', 'message');
-CREATE TYPE interaction_action AS ENUM ('view', 'click', 'save', 'share', 'dismiss');
+CREATE TYPE interaction_action AS ENUM ('view', 'click', 'save', 'share', 'dismiss', 'register', 'apply', 'mentoring_request');
 CREATE TYPE reco_feedback AS ENUM ('like', 'dislike');
 CREATE TYPE log_level AS ENUM ('info', 'warning', 'error');
 CREATE TYPE profile_visibility AS ENUM ('public', 'school', 'private');
