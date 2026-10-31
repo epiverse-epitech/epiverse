@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './common/http-exception.filter';
 
 export function configureApp(app: INestApplication): void {
   app.setGlobalPrefix('api');
+  app.useGlobalFilters(new HttpExceptionFilter());
   setupApiDocs(app);
 }
 
