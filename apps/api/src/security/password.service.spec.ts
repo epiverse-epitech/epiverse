@@ -32,5 +32,9 @@ describe('PasswordService', () => {
 
       await expect(service.verify('Wrong-Horse-1', hash)).resolves.toBe(false);
     });
+
+    it('rejects a malformed hash instead of throwing', async () => {
+      await expect(service.verify(password, 'not-a-hash')).resolves.toBe(false);
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { hash, verify } from '@node-rs/argon2';
 
 // OWASP minimum for Argon2id: 19 MiB of memory, 2 iterations, 1 thread.
@@ -11,11 +11,18 @@ const HASH_OPTIONS = {
 
 @Injectable()
 export class PasswordService {
+  private readonly logger = new Logger(PasswordService.name);
   hash(password: string): Promise<string> {
     return hash(password, HASH_OPTIONS);
   }
 
-  verify(password: string, hash: string): Promise<boolean> {
-    return verify(hash, password);
+  async verify(password: string, hash: string): Promise<boolean> {
+    try {
+      return await verify(hash, password);
+    } catch {
+      // An unreadable hash matches no password. The hash itself is never logged.
+      this.logger.warn('A stored password hash could not be decoded');
+      return false;
+    }
   }
 }
