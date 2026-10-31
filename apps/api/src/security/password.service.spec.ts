@@ -19,4 +19,12 @@ describe('PasswordService', () => {
       expect(first).not.toEqual(second);
     });
   });
+
+  describe('verify', () => {
+    it('accepts the password the hash was made from', async () => {
+      const hash = await service.hash(password);
+
+      await expect(service.verify(password, hash)).resolves.toBe(true);
+    });
+  });
 });
