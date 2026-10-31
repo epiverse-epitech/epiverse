@@ -30,4 +30,16 @@ describe('API documentation (e2e)', () => {
     expect(response.body.openapi).toMatch(/^3\./);
     expect(response.body.paths).toHaveProperty(['/api/health']);
   });
+
+  it('documents the health route response', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/docs-json')
+      .expect(200);
+
+    const health = response.body.paths['/api/health'].get;
+    expect(health.tags).toEqual(['health']);
+    expect(health.responses['200'].content['application/json'].schema).toEqual({
+      $ref: '#/components/schemas/HealthStatusDto',
+    });
+  });
 });
