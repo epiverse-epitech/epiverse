@@ -26,5 +26,11 @@ describe('PasswordService', () => {
 
       await expect(service.verify(password, hash)).resolves.toBe(true);
     });
+
+    it('rejects a different password', async () => {
+      const hash = await service.hash(password);
+
+      await expect(service.verify('Wrong-Horse-1', hash)).resolves.toBe(false);
+    });
   });
 });
