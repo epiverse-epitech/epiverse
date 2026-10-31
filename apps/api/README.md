@@ -12,6 +12,7 @@ Owner: Eckson Glitho (backend). Architecture reference: DOC-014 (modular monolit
 | Language | TypeScript 6, `strict` mode |
 | Configuration | `@nestjs/config`, validated with `class-validator` |
 | Tests | Jest 30 + Supertest |
+| Password hashing | Argon2id (`@node-rs/argon2`) |
 | Lint / format | oxlint, Prettier |
 | Database (upcoming) | PostgreSQL 17 + pgvector, Prisma |
 | Cache (upcoming) | Redis |
@@ -87,12 +88,20 @@ src/
   app.setup.ts          configureApp(): app-wide settings shared by main.ts and e2e tests
   app.module.ts         Root module: assembles the feature modules
   config/               Environment validation (EnvironmentVariables, validateEnv)
+  security/             PasswordService (Argon2id) and the @IsPassword() rule
   health/               GET /api/health (liveness check)
 test/
   *.e2e-spec.ts         HTTP tests against the full application
 ```
 
 Each business domain gets its own Nest module (`auth`, `users`, `events`, …), following the modular monolith of DOC-014.
+
+## Passwords
+
+- Passwords are never stored, logged or returned: only their Argon2id hash is kept, through `PasswordService` (`src/security/`).
+- Settings: 19 MiB of memory, 2 iterations, 1 thread (OWASP minimum for Argon2id). They are written in the code so that a library update cannot lower them; each hash stores its own settings and salt.
+- `verify(password, hash)` returns `false` for a wrong password and for an unreadable hash; it never throws.
+- Every DTO field that receives a new password uses `@IsPassword()`: 8 to 128 characters, at least one uppercase letter and one digit. The upper limit keeps hashing cost bounded.
 
 ## Testing approach
 
