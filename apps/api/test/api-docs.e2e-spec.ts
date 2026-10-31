@@ -42,4 +42,19 @@ describe('API documentation (e2e)', () => {
       $ref: '#/components/schemas/HealthStatusDto',
     });
   });
+
+  it('documents the standard error format', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/docs-json')
+      .expect(200);
+
+    const schema = response.body.components.schemas.ErrorResponseDto;
+    expect(Object.keys(schema.properties).sort()).toEqual([
+      'error',
+      'message',
+      'path',
+      'statusCode',
+      'timestamp',
+    ]);
+  });
 });

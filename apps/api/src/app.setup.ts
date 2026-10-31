@@ -1,6 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
+import { ErrorResponseDto } from './common/error-response.dto';
 
 export function configureApp(app: INestApplication): void {
   app.setGlobalPrefix('api');
@@ -23,7 +24,8 @@ function setupApiDocs(app: INestApplication): void {
     .setDescription('REST API of EpiVerse, used by the web and mobile clients.')
     .setVersion('0.0.1')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-
+  const document = SwaggerModule.createDocument(app, config, {
+    extraModels: [ErrorResponseDto],
+  });
   SwaggerModule.setup('api/docs', app, document);
 }

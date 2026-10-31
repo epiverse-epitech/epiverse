@@ -8,15 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { STATUS_CODES } from 'node:http';
-
-// Shape of every error returned by the API.
-export interface ErrorResponse {
-  statusCode: number;
-  error: string;
-  message: string | string[];
-  path: string;
-  timestamp: string;
-}
+import { ErrorResponseDto } from './error-response.dto';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -38,7 +30,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
-    const body: ErrorResponse = {
+    const body: ErrorResponseDto = {
       statusCode,
       error,
       message,
@@ -52,7 +44,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 function describeException(
   exception: unknown,
-): Pick<ErrorResponse, 'statusCode' | 'error' | 'message'> {
+): Pick<ErrorResponseDto, 'statusCode' | 'error' | 'message'> {
   if (!(exception instanceof HttpException)) {
     // An unexpected error may carry internal details: only a generic message leaves the server.
     return {
