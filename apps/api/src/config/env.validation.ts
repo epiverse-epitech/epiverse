@@ -31,6 +31,21 @@ export class EnvironmentVariables {
   @Min(1)
   @IsInt()
   PORT: number = 3000;
+
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  RATE_LIMIT_TTL_SECONDS: number = 60;
+
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  RATE_LIMIT_MAX: number = 100;
+
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  AUTH_RATE_LIMIT_MAX: number = 5;
 }
 
 export function validateEnv(

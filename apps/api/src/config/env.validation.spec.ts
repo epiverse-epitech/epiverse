@@ -51,4 +51,28 @@ describe('validateEnv', () => {
 
     expect(env).not.toHaveProperty('PATH');
   });
+
+  it('applies rate limit defaults', () => {
+    const env = validateEnv({});
+
+    expect(env.RATE_LIMIT_TTL_SECONDS).toBe(60);
+    expect(env.RATE_LIMIT_MAX).toBe(100);
+    expect(env.AUTH_RATE_LIMIT_MAX).toBe(5);
+  });
+
+  describe.each([
+    'RATE_LIMIT_TTL_SECONDS',
+    'RATE_LIMIT_MAX',
+    'AUTH_RATE_LIMIT_MAX',
+  ])('%s', (name) => {
+    it('converts the value to a number', () => {
+      const env = validateEnv({ [name]: '10' });
+
+      expect(env[name as keyof typeof env]).toBe(10);
+    });
+
+    it.each(['0', 'abc', '1.5', ''])('rejects %j', (value) => {
+      expect(() => validateEnv({ [name]: value })).toThrow(name);
+    });
+  });
 });
