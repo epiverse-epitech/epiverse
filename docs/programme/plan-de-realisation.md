@@ -120,7 +120,7 @@ Propositions techniques à évaluer, non décisions produit : catalogue d'objets
 - Accès : étudiants vérifiés de plusieurs campus. La cible de 50 connexions simultanées reste globale au pilote, et non 50 par campus.
 - Contenus obligatoires au 5 février 2027 : catalogue fourni et images personnelles. Imports de modèles 3D personnels reportés en bonus au semestre suivant.
 - Horaires : campus ouvert toute la journée, fréquentation variable. Ce choix n'est ni une promesse de disponibilité absolue ni une permanence humaine de support.
-- L'import de modèles 3D ne décide pas à lui seul du rendu global 2D/2.5D/3D : vérifier le rendu et le coût mobile avec un prototype représentatif.
+- Rendu confirmé : vue isométrique 2,5D, caméra cadrée, personnages et espaces aménageables. Vérifier le coût mobile avec un prototype représentatif.
 
 Exigences proposées pour réalisation :
 1. Définir le niveau de vérification étudiante. Une adresse académique vérifiée prouve le contrôle de cette adresse, pas nécessairement une inscription actuelle. Prévoir statut en attente, source et date de vérification, expiration, révocation et recours ; SSO institutionnel uniquement si un accès officiel est disponible.
@@ -149,6 +149,35 @@ Avec cette grille, composante abonnement + minutes uniquement : 50 / 83 / 299 / 
 Formule indicative Ship : 50 + max(0, minutes - 150000) × 0,0005 + max(0, Go_sortants - 250) × 0,12 USD/mois, hors autres options et fiscalité. Le débit, les flux reçus, TURN, le fournisseur et la région restent à qualifier. Le choix de localisation des données doit être vérifié avant toute sélection commerciale.
 
 Le budget complet reste à établir : API et monde temps réel, bases, stockage d'assets et dérivés, trafic CDN, traitement isolé des imports, sauvegardes, logs, supervision, emails, GitHub et exploitation humaine. Aucun total global ni achat n'est validé par ce pré-chiffrage.
+
+## Décisions complémentaires confirmées — 4 novembre 2026
+
+Ces décisions complètent le périmètre obligatoire de février et priment sur les propositions antérieures incompatibles. Elles ne constituent pas une preuve d'implémentation.
+
+- Campus : vue isométrique 2,5D, caméra cadrée, avatars et espaces aménageables.
+- Mentorat : étudiants vérifiés, anciens élèves et professionnels invités ; accès limités.
+- Recrutement : comptes recruteurs, annonces, candidatures avec CV et message, suivi des statuts, messagerie candidat–recruteur, planification d'entretiens et visioconférence dédiée.
+- Admission recruteur : demande d'inscription, validation manuelle avant activation.
+- Intervenants externes : espaces dédiés et rendez-vous sur invitation ; profils visibles sur accord étudiant.
+- Les imports de modèles 3D personnels restent un bonus ultérieur. Synchronisation Google/Outlook, enregistrement et analyse automatique des CV ne sont pas implicitement inclus.
+- Le périmètre de préproduction est confirmé ; sa faisabilité reste à estimer à partir des disponibilités nominatives.
+
+Critères d'acceptation à décliner en tests :
+1. Un recruteur non validé ne publie pas d'annonce et ne consulte pas de candidature.
+2. L'accès aux candidatures est limité à l'organisation destinataire et aux membres autorisés ; tester les refus entre organisations.
+3. Une candidature transmet les informations choisies à son destinataire sans rendre le profil globalement visible.
+4. Un entretien possède un horaire, des participants autorisés et une salle privée ; tester les invitations invalides et les accès non autorisés.
+5. Un intervenant externe ne peut accéder librement aux chambres ou espaces privés étudiants.
+6. Documenter séparément visibilité du profil, données déjà transmises par candidature et politique de suppression ; ne pas promettre une révocation des copies déjà reçues.
+
+## Vérification documentaire complémentaire — 4 novembre 2026
+
+- Sources scolaires fournies : kickoff T-ESP-700, phase one, kickoff et deliveries T-ESP-800. Elles ne permettent pas de certifier le rubric T-ESP-901 actuel.
+- T-ESP-800 demande notamment plan qualité, description fonctionnelle avec OBS/PBS/WBS et exigences, Definition of Done, besoins matériels et coûts. Relier chaque exigence à une preuve ; ne pas multiplier les documents sans nécessité.
+- Les DOC-002/004/010/018 v1.0 fournis attribuent encore coordination et planning à Soumia : incohérence à corriger selon la décision déjà confirmée.
+- Le DOC-018 historique nomme dix membres ; le README du dépôt cite aussi Julien. Composition actuelle, disponibilité, compétences et affectations à confirmer ; aucun rôle nouveau n'est attribué par cet audit.
+- Le 5 février 2027 est la soutenance du semestre selon le calendrier communiqué ; ne pas la confondre avec la soutenance finale de cursus mentionnée en S10 dans la documentation générale.
+- Les objectifs de charge, de performance et de livraison restent des cibles tant que leurs tests et versions de référence ne sont pas disponibles.
 
 ## 1. Produit et marché
 
