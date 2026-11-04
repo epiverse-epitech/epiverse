@@ -21,7 +21,7 @@
 | GH-09 | Projets, jalons et traçabilité exigences | À TESTER | GitHub Projects non inspectable via le connecteur utilisé |
 | CI-01 | Tests unitaires, e2e, lint, build | VÉRIFIÉ | .github/workflows/ci.yml, runs réussis |
 | CI-02 | Gitleaks sur l'historique | VÉRIFIÉ | .github/workflows/ci.yml |
-| CI-03 | Publicaction après succès de la CI | PR | #8 |
+| CI-03 | Publication après succès de la CI | PR | #8 |
 | CI-04 | Audit npm élevé et critique | PR | #8 |
 | CI-05 | Validation Bash, Python, Docker Compose | PR | #8 |
 | CI-06 | Scans images, IaC, SBOM, provenance | À CONFIGURER | #17 |
