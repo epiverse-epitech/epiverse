@@ -1,7 +1,7 @@
 # EpiVerse — construction des images et déploiement.
 #   push sur develop   → images publiées sur GHCR, puis déploiement automatique en staging
-#   tag vX.Y.Z         → images publiées, puis déploiement en production
-#   lancement manuel   → choix de l'environnement
+#   tag vX.Y.Z         → désactivé jusqu'au gate G6 (aucune release automatique)
+#   lancement manuel   → staging uniquement depuis develop
 # Tant qu'un serveur n'est pas configuré (variables STAGING_HOST / PRODUCTION_HOST vides),
 # les images sont publiées et le déploiement est simplement sauté.
 # Verrou du gate pilote G6 : PRODUCTION_HOST reste vide tant qu'Estelle n'a pas validé le pilote
@@ -11,13 +11,13 @@ name: Déploiement
 on:
   push:
     branches: [develop]
-    tags: ["v*.*.*"]
+    # Pas de publication automatique sur tag tant que le gate G6 est fermé.
   workflow_dispatch:
     inputs:
       environment:
         description: Environnement cible
         type: choice
-        options: [staging, production]
+        options: [staging]
         default: staging
 
 permissions:
@@ -30,6 +30,8 @@ env:
 
 jobs:
   prepare:
+    # Main ne peut pas publier, même via lancement manuel.
+    if: github.ref == 'refs/heads/develop'
     name: Préparation
     runs-on: ubuntu-latest
     outputs:
