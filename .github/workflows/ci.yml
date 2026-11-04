@@ -211,6 +211,11 @@ jobs:
         run: sh -n infra/docker/*.sh
       - name: Compiler le générateur de fixtures
         run: python3 -m py_compile data/fixtures/generate.py
+      - name: Exécuter les tests de sécurité des fixtures si présents
+        run: |
+          if [ -f data/fixtures/test_safety.py ]; then
+            python3 -m unittest discover -s data/fixtures -p 'test_*.py'
+          fi
       - name: Valider Docker Compose local (tous profils)
         run: docker compose --profile tools --profile full -f docker-compose.yml config --quiet
 
