@@ -30,6 +30,8 @@ jobs:
           docker run --rm --entrypoint sh epiverse-migrate:smoke -ec '
             test -x /app/node_modules/.bin/prisma || { echo "Prisma CLI absente de l image migration"; exit 1; }
             test -f /app/prisma/schema.prisma || { echo "Schema Prisma absent"; exit 1; }
+            test ! -e /usr/local/bin/npm || { echo "npm global persiste dans l image migration"; exit 1; }
+            test ! -d /usr/local/lib/node_modules/npm || { echo "les dependances de npm global persistent"; exit 1; }
           '
       - name: Vérifier la migration sur une vraie base PostgreSQL 17
         run: |
