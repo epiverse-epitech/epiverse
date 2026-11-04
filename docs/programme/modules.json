@@ -83,8 +83,8 @@
       "status": "planned",
       "dependency": "Identité, autorisations serveur, présence temps réel, transport audio et stockage des aménagements",
       "risk": "Écoute non autorisée, harcèlement, surcharge mobile et modification d'espaces tiers",
-      "acceptance": "Cible 50 personnes simultanées à éprouver ; avatars, chambres et espaces associatifs aménageables persistants, accès et édition autorisés, audio de proximité révocable, chat texte et alternative accessible",
-      "scope": "Première version navigateur ordinateur/mobile ; pas de vidéo requise ni de XR ou interopérabilité externe"
+      "acceptance": "Cible 50 personnes simultanées à éprouver ; avatars, chambres et espaces associatifs aménageables persistants, accès et édition autorisés, audio et vidéo de proximité révocables, chat texte et alternative accessible",
+      "scope": "Première version navigateur ordinateur/mobile : chat texte, audio et vidéo de proximité, avatars et espaces aménageables ; imports personnels contrôlés ; pas de XR ou interopérabilité externe"
     },
     {
       "id": "FIN",
