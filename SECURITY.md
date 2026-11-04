@@ -2,7 +2,7 @@
 
 ## Signaler une vulnérabilité
 - Ne jamais publier de secrets, données personnelles ou détails d'exploitation dans une issue.
-- Contacter les responsables du dépôt par un canal privé de l'équipe, ou utiliser **Security → Advisories → Report a vulnerability** si cette fonction est activée.
+- Utiliser **Security → Advisories → Report a vulnerability** pour créer un signalement privé. Si cette fonction n'est pas disponible, envoyer un message privé GitHub à **@estellegiroud** ou **@bayeousmane1** ; ne pas ouvrir d'issue publique.
 - Fournir par canal privé : commit, préconditions, reproduction avec données fictives, impact, correctif proposé.
 - Les responsables évaluent la sévérité et l'exposition avant toute divulgation.
 
@@ -16,4 +16,4 @@
 ## Conditions d'ouverture du pilote
 CI verte, revue indépendante, séparation des secrets et environnements, sauvegardes hors serveur testées, supervision et rollback compatible avec les migrations.
 
-Les paramètres d'organisation (MFA, protection des branches, dépendances, scan de secrets) doivent être audités séparément par les propriétaires GitHub.
+Les paramètres d'organisation (MFA, protection des branches, dépendances, scan de secrets) doivent être audités séparément par les propriétaires GitHub. Les branches `main` et `develop` doivent être protégées avant toute fusion : PR obligatoire, contrôles CI requis, revue CODEOWNER requise, force-push et suppression interdits.

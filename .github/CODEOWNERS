@@ -1,5 +1,6 @@
 # EpiVerse — propriétaires vérifiés avec droits write.
-# Les demandes de revue ne deviennent obligatoires que si une protection GitHub l'impose.
+# Ce fichier ne suffit pas à imposer une revue : les règles GitHub de main et
+# develop doivent exiger une PR, les contrôles CI et l'approbation CODEOWNER.
 *                           @estellegiroud @bayeousmane1
 /.github/                   @estellegiroud @bayeousmane1
 /infra/                     @bayeousmane1 @estellegiroud

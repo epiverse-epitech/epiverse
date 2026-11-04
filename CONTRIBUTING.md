@@ -21,4 +21,6 @@ npm run build
 npm audit --omit=dev --audit-level=high
 ```
 
-Ce processus reste une règle d'équipe tant que le forfait GitHub ne permet pas de rendre obligatoires les revues.
+Les règles GitHub de `main` et `develop` doivent rendre ces contrôles obligatoires
+(PR, CI verte, revue CODEOWNER, sans force-push ni suppression). Si elles ne sont
+pas actives, aucune fusion ni déploiement ne doit être considéré comme approuvé.

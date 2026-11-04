@@ -10,8 +10,8 @@
 
 | ID | Contrôle | État | Preuve, action ou ticket |
 |---|---|---|---|
-| GH-01 | Main/develop : PR obligatoire et checks requis | À CONFIGURER | Branches actuellement non protégées ; #11 |
-| GH-02 | Protection force-push et suppression de branches | À CONFIGURER | #11 |
+| GH-01 | Main/develop : PR obligatoire et checks requis | À CONFIGURER | À activer dans les règles GitHub avant toute fusion ou déploiement |
+| GH-02 | Protection force-push et suppression de branches | À CONFIGURER | À activer dans les règles GitHub avant toute fusion ou déploiement |
 | GH-03 | CODEOWNERS avec comptes valides | PR | #9 |
 | GH-04 | Revue indépendante sécurité et données | À CONFIGURER | #11 ; règles dans CONTRIBUTING.md |
 | GH-05 | MFA, permissions des membres et GitHub Apps | À CONFIGURER | #11 |
