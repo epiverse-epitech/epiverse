@@ -33,6 +33,9 @@ RUN if [ -d prisma ] || [ -f prisma.config.ts ]; then node_modules/.bin/prisma g
 # Keep the Prisma CLI and build tools in an isolated one-shot migration image.
 FROM base AS migrate
 ENV NODE_ENV=production
+# Prisma's local CLI works without global npm. Remove the bundled npm CLI,
+# which adds unrelated vulnerable undici/brace-expansion dependencies.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 COPY --from=build --chown=node:node /app ./
 COPY --chmod=755 infra/docker/api-entrypoint.sh /usr/local/bin/api-entrypoint
 USER 1000:1000
