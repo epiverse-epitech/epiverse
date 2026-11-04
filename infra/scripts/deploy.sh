@@ -68,8 +68,11 @@ if [ "${SKIP_BACKUP:-false}" != "true" ]; then
   "$SCRIPTS_DIR/backup-db.sh" "$ENV_NAME" || rollback "sauvegarde impossible, migration annulée"
 fi
 
-log "Migrations de la base…"
-compose run --rm --no-deps api migrate || rollback "migration refusée"
+log "Migrations de la base (identité administrateur éphémère)…"
+compose run --rm --no-deps migrate migrate || rollback "migration refusée"
+
+log "Provision du rôle SQL applicatif sans droits DDL…"
+"$SCRIPTS_DIR/provision-app-db.sh" "$ENV_NAME" || rollback "provisionnement du rôle applicatif impossible"
 
 log "Mise à jour des conteneurs…"
 if ! compose up -d --remove-orphans --wait --wait-timeout "$HEALTH_TIMEOUT"; then
