@@ -5,12 +5,18 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
+import { AuthRateLimit } from '../src/security/auth-rate-limit.decorator';
 
 // Test-only route, standing in for any ordinary endpoint.
 @Controller('test-rate-limit')
 class TestRateLimitController {
   @Get('open')
   open(): string {
+    return 'ok';
+  }
+  @AuthRateLimit()
+  @Get('login')
+  login(): string {
     return 'ok';
   }
 }
@@ -62,5 +68,19 @@ describe('Rate limiting (e2e)', () => {
     for (let i = 0; i < 5; i++) {
       await request(server).get('/api/health').expect(200);
     }
+  });
+
+  it('@AuthRateLimit() applies the stricter limit → 429 with Retry-After', async () => {
+    const server = app.getHttpServer();
+
+    for (let i = 0; i < 2; i++) {
+      await request(server).get('/api/test-rate-limit/login').expect(200);
+    }
+
+    const response = await request(server)
+      .get('/api/test-rate-limit/login')
+      .expect(429);
+
+    expect(response.headers['retry-after']).toBeDefined();
   });
 });
