@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "baseline": "2026-11-04",
+  "controls": [
+    {
+      "id": "GOV-01",
+      "priority": "P0",
+      "owner": "Direction",
+      "title": "Arbitrer les rôles contradictoires",
+      "acceptance": "RACI datée approuvée, un décideur par activité",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "GOV-02",
+      "priority": "P0",
+      "owner": "Administration GitHub",
+      "title": "Protéger branches et environnements",
+      "acceptance": "Preuve de règles actives, refus push direct/force-push et contrôle obligatoire",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "GOV-03",
+      "priority": "P0",
+      "owner": "Administration GitHub",
+      "title": "Inventorier accès et MFA",
+      "acceptance": "Membres, Apps, tokens de service, récupération et révocation vérifiés sans secrets dans la preuve",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "CI-01",
+      "priority": "P0",
+      "owner": "Plateforme",
+      "title": "Intégrer les PR de sécurité",
+      "acceptance": "CI du commit combiné verte, tests SQL/Docker/backup/TTL et scans conservés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "CI-02",
+      "priority": "P0",
+      "owner": "Plateforme",
+      "title": "Contrôler chaîne de publication",
+      "acceptance": "Actions épinglées, artefact identifié, publication après contrôles, production protégée",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "CI-03",
+      "priority": "P1",
+      "owner": "Sécurité",
+      "title": "Qualifier vulnérabilités résiduelles",
+      "acceptance": "Chaque CVE non corrigée : exposition, mesure compensatoire, propriétaire et date de réexamen",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "CI-04",
+      "priority": "P1",
+      "owner": "Plateforme",
+      "title": "Gérer mises à jour",
+      "acceptance": "Stratégie main/develop documentée et PR de dépendance réellement reçue/testée",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "APP-01",
+      "priority": "P0",
+      "owner": "Backend",
+      "title": "Réaliser identité et autorisations",
+      "acceptance": "Tests inter-utilisateurs/inter-campus, révocation et refus par défaut",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "APP-02",
+      "priority": "P1",
+      "owner": "Produit et Frontend",
+      "title": "Livrer la verticale événements",
+      "acceptance": "Création, découverte, inscription et annulation testées avec API réelle",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "APP-03",
+      "priority": "P1",
+      "owner": "Backend",
+      "title": "Sécuriser transactions",
+      "acceptance": "Capacité, concurrence, idempotence et compatibilité migrations testées",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "UX-01",
+      "priority": "P1",
+      "owner": "Design",
+      "title": "Valider parcours et états",
+      "acceptance": "États vide/erreur/chargement/hors-ligne et test de tâches documentés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "UX-02",
+      "priority": "P1",
+      "owner": "Design et QA",
+      "title": "Évaluer accessibilité",
+      "acceptance": "Audit WCAG ciblé, clavier et lecteur d’écran avec défauts corrigés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "UX-03",
+      "priority": "P2",
+      "owner": "Design",
+      "title": "Versionner système de design",
+      "acceptance": "Tokens, composants, variantes et droits des assets documentés",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "OPS-01",
+      "priority": "P0",
+      "owner": "Plateforme",
+      "title": "Démontrer restauration réelle",
+      "acceptance": "Copie distante restaurée isolément, contrôles métier et RPO/RTO mesurés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "OPS-02",
+      "priority": "P0",
+      "owner": "Plateforme",
+      "title": "Authentifier et protéger sauvegardes",
+      "acceptance": "Intégrité cryptographique, clés séparées, rétention et alerte d’échec démontrées",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "OPS-03",
+      "priority": "P1",
+      "owner": "Backend et Plateforme",
+      "title": "Décider durabilité des jobs",
+      "acceptance": "Redis cache seul ou stratégie durable ; perte/reprise après crash testée",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "OPS-04",
+      "priority": "P1",
+      "owner": "Plateforme",
+      "title": "Installer observabilité",
+      "acceptance": "Sonde externe, logs masqués, métriques, alerte et procédure incident testées",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "OPS-05",
+      "priority": "P1",
+      "owner": "Plateforme",
+      "title": "Préparer retour arrière",
+      "acceptance": "Migration compatible et reprise d’une release en échec démontrées",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "OPS-06",
+      "priority": "P1",
+      "owner": "QA",
+      "title": "Mesurer charge",
+      "acceptance": "Jeu de données, concurrence, durée, matériel et p95/erreurs publiés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "DATA-01",
+      "priority": "P0",
+      "owner": "Conformité",
+      "title": "Cartographier traitements",
+      "acceptance": "Finalités, bases, données, durées, destinataires et sous-traitants documentés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "DATA-02",
+      "priority": "P1",
+      "owner": "Backend et Conformité",
+      "title": "Démontrer droits et effacement",
+      "acceptance": "Export/effacement testés sur bases, objets, index et restauration",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "DATA-03",
+      "priority": "P1",
+      "owner": "Conformité",
+      "title": "Qualifier traitements à risque",
+      "acceptance": "Analyse nécessité AIPD et conditions modules sensibles documentées",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "DATA-04",
+      "priority": "P1",
+      "owner": "Data",
+      "title": "Fiabiliser métriques",
+      "acceptance": "Dictionnaire, formule, dénominateur, événements et tests de données",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "AI-01",
+      "priority": "P2",
+      "owner": "IA et Produit",
+      "title": "Évaluer cas IA",
+      "acceptance": "Baseline déterministe, jeu français, coût/latence/qualité et repli testés",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "AI-02",
+      "priority": "P1",
+      "owner": "Sécurité IA",
+      "title": "Limiter outils et données IA",
+      "acceptance": "Tests injection/fuite/scopes et budgets avant activation IA",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "BIZ-01",
+      "priority": "P1",
+      "owner": "Produit",
+      "title": "Valider besoin et campus",
+      "acceptance": "Entretiens tracés, interlocuteur et protocole de pilote confirmés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "BIZ-02",
+      "priority": "P1",
+      "owner": "Direction",
+      "title": "Réviser budget",
+      "acceptance": "Devis actuels, cash disponible, scénarios et plafonds approuvés",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "BIZ-03",
+      "priority": "P1",
+      "owner": "Direction et Conformité",
+      "title": "Clarifier propriété et contrats",
+      "acceptance": "Droits contributions/assets, conditions et contrats adaptés au périmètre",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "BIZ-04",
+      "priority": "P2",
+      "owner": "Communication",
+      "title": "Vérifier promesses publiques",
+      "acceptance": "Chiffres sourcés, fonctionnalités qualifiées et droits des supports",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "SUP-01",
+      "priority": "P1",
+      "owner": "Support et Modération",
+      "title": "Préparer support et abus",
+      "acceptance": "Canal, triage, recours, délais cibles et simulation de signalement",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "EDU-01",
+      "priority": "P1",
+      "owner": "Pilotage",
+      "title": "Synchroniser livrables scolaires",
+      "acceptance": "DOC/exigences/tickets/tests cohérents et follow-up avec preuves",
+      "release_blocking": true,
+      "status": "open",
+      "evidence": []
+    },
+    {
+      "id": "EXIT-01",
+      "priority": "P2",
+      "owner": "Direction et Plateforme",
+      "title": "Assurer réversibilité",
+      "acceptance": "Export données/config, départ membre et arrêt fournisseur documentés",
+      "release_blocking": false,
+      "status": "open",
+      "evidence": []
+    }
+  ]
+}

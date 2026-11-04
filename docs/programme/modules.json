@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "baseline": "2026-11-04",
+  "modules": [
+    {
+      "id": "ACA",
+      "name": "Académique",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Accord établissement et droits par étudiant",
+      "acceptance": "Lire ses données sans accès à celles d’un tiers"
+    },
+    {
+      "id": "CAR",
+      "name": "Carrière",
+      "stage": "pilot",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Fraude aux offres et données de candidature",
+      "acceptance": "Signaler une offre et contrôler la visibilité du CV"
+    },
+    {
+      "id": "MEN",
+      "name": "Mentorat",
+      "stage": "pilot",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Disponibilités et consentement",
+      "acceptance": "Accepter/refuser une demande sans divulgation avant accord"
+    },
+    {
+      "id": "RES",
+      "name": "Ressources",
+      "stage": "mvp",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Droits d’auteur et fichiers malveillants",
+      "acceptance": "Télécharger uniquement une ressource autorisée"
+    },
+    {
+      "id": "AIA",
+      "name": "IA Agent",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Actions externes et injection",
+      "acceptance": "Aucune candidature envoyée sans validation explicite"
+    },
+    {
+      "id": "SOC",
+      "name": "Social",
+      "stage": "pilot",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Modération et anonymat trompeur",
+      "acceptance": "Signaler, bloquer et traiter un abus avec traçabilité"
+    },
+    {
+      "id": "REN",
+      "name": "Rencontres",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Consentement, mineurs et harcèlement",
+      "acceptance": "Opt-in, blocage et absence de localisation précise publique"
+    },
+    {
+      "id": "EVT",
+      "name": "Événements",
+      "stage": "mvp",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Capacité et inscriptions concurrentes",
+      "acceptance": "Inscription/annulation atomique et respect des places"
+    },
+    {
+      "id": "MET",
+      "name": "Metaverse",
+      "stage": "pilot",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Performance, accès et modération",
+      "acceptance": "Entrer dans un espace autorisé avec alternative accessible"
+    },
+    {
+      "id": "FIN",
+      "name": "Finances",
+      "stage": "restricted",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Paiement, crédit et crypto : cadrage spécialisé",
+      "acceptance": "Prestataire et responsabilités définis avant tout fonds réel"
+    },
+    {
+      "id": "BON",
+      "name": "Bons Plans",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Offres trompeuses et affiliation",
+      "acceptance": "Afficher validité, conditions et nature commerciale"
+    },
+    {
+      "id": "LOG",
+      "name": "Logement",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Arnaques, discrimination et documents privés",
+      "acceptance": "Signaler une annonce et restreindre les justificatifs"
+    },
+    {
+      "id": "SAN",
+      "name": "Santé",
+      "stage": "restricted",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Données sensibles et responsabilité médicale",
+      "acceptance": "Périmètre non médical ou partenaire qualifié avant activation"
+    },
+    {
+      "id": "SEC",
+      "name": "Sécurité",
+      "stage": "restricted",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Faux sentiment de secours et localisation",
+      "acceptance": "Limites explicites, durée courte et consentement révocable"
+    },
+    {
+      "id": "ADM",
+      "name": "Administratif",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Documents sensibles et identité",
+      "acceptance": "Accès privé, export, effacement et audit des consultations"
+    },
+    {
+      "id": "GOV",
+      "name": "Gouvernance",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Intégrité vote et coûts blockchain",
+      "acceptance": "Éligibilité et unicité du vote testées sans blockchain imposée"
+    },
+    {
+      "id": "TRA",
+      "name": "Transports",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Dépendance aux données opérateurs",
+      "acceptance": "Date de fraîcheur et repli en cas d’indisponibilité"
+    },
+    {
+      "id": "OCC",
+      "name": "Occasion",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Fraude et objets interdits",
+      "acceptance": "Signalement, suppression et règles de transaction"
+    },
+    {
+      "id": "ANA",
+      "name": "IA Analytics",
+      "stage": "pilot",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Profilage et métriques trompeuses",
+      "acceptance": "Métriques reproductibles et contrôle des données utilisées"
+    },
+    {
+      "id": "NEW",
+      "name": "News",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Droits de diffusion et désinformation",
+      "acceptance": "Source, date et lien ; aucune republication non autorisée"
+    },
+    {
+      "id": "GAM",
+      "name": "Gamification",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Triche et incitations indésirables",
+      "acceptance": "Attribution idempotente et recours pour scores erronés"
+    },
+    {
+      "id": "PRO",
+      "name": "Productivité",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Droits des espaces partagés",
+      "acceptance": "Isolation équipes et gestion des modifications concurrentes"
+    },
+    {
+      "id": "CLO",
+      "name": "Cloud",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Coût, quotas et confidentialité",
+      "acceptance": "Quotas explicites, accès privé et suppression vérifiable"
+    },
+    {
+      "id": "IDN",
+      "name": "Identity",
+      "stage": "restricted",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "DID, récupération et divulgation",
+      "acceptance": "Menaces et récupération testées avant identité décentralisée"
+    },
+    {
+      "id": "ASS",
+      "name": "Associations",
+      "stage": "mvp",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Rôles et séparation des groupes",
+      "acceptance": "Gestion des membres limitée à son association"
+    },
+    {
+      "id": "LAN",
+      "name": "Langues",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Qualité traduction et données audio",
+      "acceptance": "Consentement audio et indication des erreurs possibles"
+    },
+    {
+      "id": "POR",
+      "name": "Portfolio",
+      "stage": "pilot",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Propriété des œuvres et médias",
+      "acceptance": "Visibilité contrôlée et formats limités"
+    },
+    {
+      "id": "FOO",
+      "name": "Food",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Allergènes et fraîcheur des offres",
+      "acceptance": "Source, date et absence de garantie médicale inventée"
+    },
+    {
+      "id": "SPO",
+      "name": "Sport",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Localisation et conseils de santé",
+      "acceptance": "Opt-in et recommandations non diagnostiques"
+    },
+    {
+      "id": "CUL",
+      "name": "Culture",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Billetterie et droits médias",
+      "acceptance": "Conditions des partenaires vérifiées"
+    },
+    {
+      "id": "VER",
+      "name": "Vérification",
+      "stage": "restricted",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Antécédents, discrimination et données sensibles",
+      "acceptance": "Finalité, base et recours validés avant contrôle de profil"
+    },
+    {
+      "id": "FAM",
+      "name": "Family/Kids",
+      "stage": "restricted",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Mineurs et sécurité physique",
+      "acceptance": "Partenaire et cadre de protection avant garde d’enfants"
+    },
+    {
+      "id": "ECO",
+      "name": "Eco-Impact",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Estimation trompeuse",
+      "acceptance": "Méthode, facteurs et incertitude visibles"
+    },
+    {
+      "id": "API",
+      "name": "API Market",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Code tiers et permissions",
+      "acceptance": "Isolation, scopes, quotas et révocation des extensions"
+    },
+    {
+      "id": "CROSS",
+      "name": "Cross-Metaverse",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Interopérabilité et accords plateformes",
+      "acceptance": "POC contractuel avant promesse de transfert entre mondes"
+    },
+    {
+      "id": "LEG",
+      "name": "Legacy",
+      "stage": "later",
+      "status": "planned",
+      "dependency": "Identité, autorisations et données minimisées",
+      "risk": "Conservation excessive et réversibilité",
+      "acceptance": "Export durable et suppression possible selon politique"
+    }
+  ]
+}
