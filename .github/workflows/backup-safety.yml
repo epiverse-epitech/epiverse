@@ -17,6 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Vérifier les scripts Bash
-        run: bash -n infra/scripts/backup-db.sh infra/scripts/restore-db.sh
+        run: for script in infra/scripts/backup-db.sh infra/scripts/restore-db.sh; do bash -n "$script" || exit; done
       - name: Simuler les échecs de copie et les archives corrompues
         run: python3 -m unittest discover -s infra/scripts/tests -p 'test_*.py' -v
