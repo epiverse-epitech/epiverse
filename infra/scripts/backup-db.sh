@@ -62,11 +62,24 @@ docker compose -f docker-compose.server.yml exec -T postgres \
 
 [ -s "$FILE.part" ] || { echo "Sauvegarde vide : abandon." >&2; exit 1; }
 mv "$FILE.part" "$FILE"
-echo "[backup $ENV_NAME] $(date -u +%Y-%m-%dT%H:%M:%SZ) $FILE ($(du -h "$FILE" | cut -f1))"
 
-find "$BACKUP_DIR" -name "epiverse-$ENV_NAME-*.dump.enc" -type f -mtime +"$RETENTION" -delete
+# A nonempty encrypted file is not evidence of a valid PostgreSQL archive.
+# Decrypt and inspect it inside the existing postgres container before retention.
+if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+    -pass env:BACKUP_PASSPHRASE -in "$FILE" \
+    | docker compose -f docker-compose.server.yml exec -T postgres pg_restore --list >/dev/null; then
+  echo "[backup $ENV_NAME] Archive illisible ou incomplète : sauvegarde refusée." >&2
+  rm -f "$FILE"
+  exit 1
+fi
 
 if [ -n "$RCLONE_REMOTE" ]; then
+  # If upload fails, retain old local backups for recovery and return nonzero.
   rclone copy "$FILE" "$RCLONE_REMOTE/$ENV_NAME/"
   echo "[backup $ENV_NAME] Copie hors serveur : $RCLONE_REMOTE/$ENV_NAME/"
 fi
+
+# Never prune previous working backups before the new one has been validated
+# and, when configured, successfully copied off the server.
+find "$BACKUP_DIR" -name "epiverse-$ENV_NAME-*.dump.enc" -type f -mtime +"$RETENTION" -delete
+echo "[backup $ENV_NAME] $(date -u +%Y-%m-%dT%H:%M:%SZ) Sauvegarde validée : $FILE ($(du -h "$FILE" | cut -f1))"

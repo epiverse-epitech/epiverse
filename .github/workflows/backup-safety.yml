@@ -1,0 +1,22 @@
+name: Sauvegardes — tests de sûreté
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  backup-safety:
+    name: Python — sauvegardes et restauration sans destruction
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Vérifier les scripts Bash
+        run: for script in infra/scripts/backup-db.sh infra/scripts/restore-db.sh; do bash -n "$script" || exit; done
+      - name: Simuler les échecs de copie et les archives corrompues
+        run: python3 -m unittest discover -s infra/scripts/tests -p 'test_*.py' -v
