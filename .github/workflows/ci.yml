@@ -13,9 +13,10 @@ on:
 permissions:
   contents: read
 
+# Annuler une PR obsolète, mais jamais une CI de develop qui publie ou déploie.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   # À ajuster si le squelette utilise d'autres dossiers (mêmes valeurs que .env et deploy.yml)
