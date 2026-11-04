@@ -47,11 +47,14 @@ jobs:
           images='[]'
           web_ready=false
           if [ -f "$API_DIR/package.json" ]; then
-            images=$(jq -c --arg a "API_DIR=$API_DIR" '. + [{name: "epiverse-api", dockerfile: "infra/docker/api.Dockerfile", buildargs: $a}]' <<< "$images")
+            images=$(jq -c --arg a "API_DIR=$API_DIR" '. + [
+              {name: "epiverse-api", dockerfile: "infra/docker/api.Dockerfile", target: "runtime", buildargs: $a},
+              {name: "epiverse-migrate", dockerfile: "infra/docker/api.Dockerfile", target: "migrate", buildargs: $a}
+            ]' <<< "$images")
           fi
           if [ -f "$APP_DIR/package.json" ]; then
             web_ready=true
-            images=$(jq -c --arg a "APP_DIR=$APP_DIR" '. + [{name: "epiverse-web", dockerfile: "infra/docker/web.Dockerfile", buildargs: $a}]' <<< "$images")
+            images=$(jq -c --arg a "APP_DIR=$APP_DIR" '. + [{name: "epiverse-web", dockerfile: "infra/docker/web.Dockerfile", target: "runtime", buildargs: $a}]' <<< "$images")
           fi
           {
             echo "environment=$environment"
@@ -86,6 +89,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
           build-args: ${{ matrix.buildargs }}
           push: true
           tags: |
@@ -131,7 +135,7 @@ jobs:
       - name: Envoyer la configuration serveur versionnée
         run: |
           scp infra/server/docker-compose.server.yml "epiverse:/opt/epiverse/$ENV_NAME/"
-          scp infra/scripts/deploy.sh infra/scripts/backup-db.sh infra/scripts/restore-db.sh "epiverse:/opt/epiverse/scripts/"
+          scp infra/scripts/deploy.sh infra/scripts/backup-db.sh infra/scripts/restore-db.sh infra/scripts/provision-app-db.sh "epiverse:/opt/epiverse/scripts/"
           ssh epiverse "chmod 750 /opt/epiverse/scripts/*.sh"
       - name: Autoriser le serveur à lire les images (jeton valable le temps du job)
         env:
