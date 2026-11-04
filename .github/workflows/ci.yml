@@ -219,15 +219,69 @@ jobs:
       - name: Valider Docker Compose local (tous profils)
         run: docker compose --profile tools --profile full -f docker-compose.yml config --quiet
 
+  quality-gate:
+    name: Qualité — contrôle final obligatoire
+    # GitHub considère les jobs skipped comme réussis : les cas attendus
+    # doivent donc être explicitement vérifiés.
+    if: always()
+    needs: [detect, secrets, api, app, images, infrastructure]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refuser tout contrôle manquant ou ignoré sans justification
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GIT_REF: ${{ github.ref }}
+          BASE_REF: ${{ github.base_ref }}
+          DETECT_RESULT: ${{ needs.detect.result }}
+          SECRETS_RESULT: ${{ needs.secrets.result }}
+          INFRA_RESULT: ${{ needs.infrastructure.result }}
+          API_PRESENT: ${{ needs.detect.outputs.api }}
+          APP_PRESENT: ${{ needs.detect.outputs.app }}
+          API_RESULT: ${{ needs.api.result }}
+          APP_RESULT: ${{ needs.app.result }}
+          IMAGES_RESULT: ${{ needs.images.result }}
+        run: |
+          set -euo pipefail
+          expect() {
+            if [ "$1" != "$2" ]; then
+              echo "::error::$3: attendu '$2', obtenu '$1'"
+              return 1
+            fi
+          }
+          expect "$DETECT_RESULT" success "Détection des applications"
+          expect "$SECRETS_RESULT" success "Gitleaks"
+          expect "$INFRA_RESULT" success "Infrastructure"
+          if [ "$GIT_REF" = 'refs/heads/develop' ] || [ "$BASE_REF" = 'develop' ]; then
+            expect "$API_PRESENT" true "API requise sur develop"
+          fi
+          if [ "$API_PRESENT" = true ]; then
+            expect "$API_RESULT" success "Tests API"
+          else
+            expect "$API_RESULT" skipped "API absente"
+          fi
+          if [ "$APP_PRESENT" = true ]; then
+            expect "$APP_RESULT" success "Tests Expo"
+          else
+            expect "$APP_RESULT" skipped "Expo absent"
+          fi
+          if [ "$EVENT_NAME" = pull_request ] && { [ "$API_PRESENT" = true ] || [ "$APP_PRESENT" = true ]; }; then
+            expect "$IMAGES_RESULT" success "Build Docker de la PR"
+          else
+            expect "$IMAGES_RESULT" skipped "Images Docker non applicables"
+          fi
+          echo "Contrôles requis validés ; seuls les skips prévus sont acceptés." >> "$GITHUB_STEP_SUMMARY"
+
   release:
     name: Publication après validation CI
-    needs: [detect, secrets, api, app, infrastructure]
+    needs: [detect, secrets, api, app, infrastructure, quality-gate]
     if: >-
       always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       && github.ref == 'refs/heads/develop'
       && needs.detect.result == 'success'
       && needs.secrets.result == 'success'
       && needs.infrastructure.result == 'success'
+      && needs.quality-gate.result == 'success'
       && needs.api.result == 'success'
       && (needs.app.result == 'success'
           || (needs.app.result == 'skipped' && needs.detect.outputs.app == 'false'))
