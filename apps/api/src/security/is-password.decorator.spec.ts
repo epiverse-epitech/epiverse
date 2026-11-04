@@ -44,6 +44,10 @@ describe('IsPassword', () => {
     expect(errorsFor('Abcdefgh')).toContain('password must contain a digit');
   });
 
+  it('rejects whitespace anywhere in the password', () => {
+    expect(errorsFor('A1 bcdefg')).toContain('password must not contain whitespace');
+  });
+
   it('rejects a value that is not a string', () => {
     expect(errorsFor(12345678)).toContain('password must be a string');
   });
