@@ -203,29 +203,20 @@ jobs:
           tags: epiverse-web:ci
           cache-from: type=gha,scope=epiverse-web
           cache-to: type=gha,mode=max,scope=epiverse-web
+      # Run the official Trivy container directly: no GitHub-release binary install.
+      # TODO: replace the tested version tag with a verified image digest for releases.
       - name: "Trivy — image API : bloquer les vulnérabilités graves"
         if: needs.detect.outputs.api == 'true'
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: image
-          image-ref: epiverse-api:ci
-          scanners: vuln
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
-          exit-code: '1'
-          format: table
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
+            --severity HIGH,CRITICAL --exit-code 1 --no-progress epiverse-api:ci
       - name: "Trivy — image web : bloquer les vulnérabilités graves"
         if: needs.detect.outputs.app == 'true'
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: image
-          image-ref: epiverse-web:ci
-          scanners: vuln
-          vuln-type: os,library
-          severity: HIGH,CRITICAL
-          exit-code: '1'
-          format: table
-
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
+            --severity HIGH,CRITICAL --exit-code 1 --no-progress epiverse-web:ci
   infrastructure:
     name: Infrastructure — syntaxe et configuration
     runs-on: ubuntu-latest
@@ -253,14 +244,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Trivy — configurations infrastructure
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          scan-type: fs
-          scan-ref: .
-          scanners: misconfig
-          severity: HIGH,CRITICAL
-          exit-code: '1'
-          format: table
+        run: |
+          docker run --rm -v "$PWD:/workspace:ro" \
+            aquasec/trivy:0.70.0 fs --scanners misconfig \
+            --severity HIGH,CRITICAL --exit-code 1 --no-progress /workspace
 
   quality-gate:
     name: Qualité — contrôle final obligatoire
