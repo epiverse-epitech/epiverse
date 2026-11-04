@@ -1,6 +1,6 @@
 # EpiVerse — miroir automatique vers le dépôt officiel Epitech (EpitechMscProPromo2027).
-# Chaque push sur main ou develop, et chaque tag, y est recopié tel quel, historique compris :
-# le dépôt Epitech est toujours à jour et il n'y a rien à copier en fin de projet.
+# Chaque push sur main ou develop, et chaque tag, y est recopié en avance rapide, historique compris :
+# une divergence du dépôt officiel bloque la synchronisation (aucun force-push) ; le dépôt est à jour quand le job réussit et il n'y a rien à copier en fin de projet.
 #
 # À configurer une fois (voir infra/README.md, section 4) :
 #   variable EPITECH_REPO            URL SSH du dépôt Epitech, ex. git@github.com:EpitechMscProPromo2027/<dépôt>.git
@@ -44,10 +44,10 @@ jobs:
           export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/id_mirror -o IdentitiesOnly=yes"
           for branch in main develop; do
             if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
-              git push --force "$EPITECH_REPO" "refs/remotes/origin/$branch:refs/heads/$branch"
+              git push "$EPITECH_REPO" "refs/remotes/origin/$branch:refs/heads/$branch"
             fi
           done
-          git push --force --tags "$EPITECH_REPO"
+          git push --tags "$EPITECH_REPO"
           {
             echo "### Miroir Epitech"
             echo "- Dépôt : $EPITECH_REPO"
