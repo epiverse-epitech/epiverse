@@ -46,7 +46,6 @@ function describeException(
   exception: unknown,
 ): Pick<ErrorResponseDto, 'statusCode' | 'error' | 'message'> {
   if (!(exception instanceof HttpException)) {
-    // An unexpected error may carry internal details: only a generic message leaves the server.
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       error: 'Internal Server Error',
@@ -55,16 +54,37 @@ function describeException(
   }
 
   const statusCode = exception.getStatus();
-  // Built-in exceptions carry { message, error }; custom ones may carry a plain string.
+
+  // HTTP exceptions may also contain sensitive details (e.g. explicit 500/503).
+  if (statusCode >= 500) {
+    return {
+      statusCode,
+      error: STATUS_CODES[statusCode] ?? 'Server Error',
+      message: 'Internal server error',
+    };
+  }
+
+  const fallback = STATUS_CODES[statusCode] ?? 'HTTP Error';
   const payload = exception.getResponse();
-  const { message, error } =
-    typeof payload === 'string'
-      ? { message: payload, error: undefined }
-      : (payload as { message: string | string[]; error?: string });
+  if (typeof payload === 'string') {
+    return { statusCode, error: fallback, message: payload };
+  }
+
+  const data =
+    payload !== null && typeof payload === 'object' && !Array.isArray(payload)
+      ? (payload as Record<string, unknown>)
+      : {};
+  const rawMessage = data.message;
+  const message: string | string[] =
+    typeof rawMessage === 'string' ||
+    (Array.isArray(rawMessage) &&
+      rawMessage.every((item) => typeof item === 'string'))
+      ? rawMessage
+      : fallback;
 
   return {
     statusCode,
-    error: error ?? STATUS_CODES[statusCode] ?? 'Error',
+    error: typeof data.error === 'string' ? data.error : fallback,
     message,
   };
 }
