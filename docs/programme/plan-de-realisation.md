@@ -34,6 +34,36 @@ La préproduction utilise des données synthétiques et des comptes de test ; to
 
 Les jalons internes sont proposés et ne constituent pas une garantie de faisabilité. Prévoir l'alternance, T-LAW, congés et disponibilité réelle. Tout glissement doit déclencher un arbitrage explicite du périmètre, sans sacrifier les contrôles d'accès, l'intégrité des données ou les tests critiques. Le semestre suivant vise les bonus ; maintenance, vulnérabilités nouvelles et régressions resteront à traiter.
 
+### Organisation hebdomadaire — capacité collective confirmée
+
+Estelle confirme que toute l'équipe participe avec une répartition hebdomadaire suivie. Cela confirme le mode d'organisation, pas un volume d'heures : les disponibilités individuelles, congés et affectations restent à renseigner. Estelle dirige et arbitre ; Soumia intervient au frontend sans rôle de direction.
+
+Organisation proposée :
+- Début de semaine : chaque membre déclare sa capacité disponible, choisit un engagement principal avec résultat testable, estimation et dépendances ; Estelle arbitre les priorités.
+- Milieu de semaine : vérifier les blocages et l'intégration. Tout blocage de plus d'un jour ouvré est signalé avec cause, tentative et besoin concret.
+- Fin de semaine : démonstration, PR et tests associés, mise à jour des documents concernés. Un travail non intégré reste distinct d'un livrable terminé.
+- Une tâche principale en cours par personne ; sous-tâches possibles, pas d'accumulation de chantiers. Les agents IA assistent sur des branches et tâches délimitées, sans être comptés comme des personnes à temps plein.
+- Réserver initialement 25 % de la capacité déclarée à intégration, tests, revue, documentation et imprévus ; ajuster selon les observations des deux premières semaines. Il s'agit d'une hypothèse de planification.
+- Comparer chaque semaine engagements et résultats validés, puis réestimer le reste ; aucune réduction silencieuse du périmètre ou des critères de sécurité.
+
+| Lot de travail | Sortie vérifiable | Dépendances |
+|---|---|---|
+| Produit, UX et livrables | Parcours, critères et documents scolaires cohérents ; arbitrage Estelle | Exigences scolaires et périmètre décidé |
+| Frontend et parcours web/mobile | Écrans connectés à l'API, états d'erreur et tests de parcours | Contrats API et composants partagés |
+| API, identité et droits | Comptes, appartenance multicampus, autorisations et transactions testés | Modèle de données et politique de vérification |
+| Campus et médias | Monde, aménagements persistants, texte/audio/vidéo et reconnexion | Identité, accès et transport média |
+| Données et ressources | Migrations, fixtures, stockage d'images, mentorat et suppression | Droits et stockage privé |
+| Infrastructure, sécurité et qualité | CI, préproduction, scans, charge et restauration prouvés | Versions intégrées et accès effectifs |
+
+Ces lots ne créent pas six équipes obligatoires : les responsabilités sont réparties selon les personnes réellement disponibles. Chaque lot doit avoir un responsable nommé avant engagement ; ne pas inventer une affectation depuis un ancien document.
+
+Modèle de suivi à remplir dans le backlog existant :
+| Semaine | Personne | Heures disponibles | Livrable principal / ticket | Critère d'acceptation | Dépendance | PR / preuve | Résultat et reste |
+|---|---|---:|---|---|---|---|---|
+| À renseigner | À confirmer | À déclarer | Un résultat démontrable | Test ou scénario précis | Blocage identifié | Lien après exécution | Terminé / partiel / bloqué |
+
+Priorité de la première semaine : consolider l'état réel des PR, rapprocher les exigences scolaires des quatre parcours, nommer les responsables et fournir une petite verticale exécutable. Le prototype monde + audio/vidéo démarre tôt pour vérifier les risques mobiles avant de multiplier les écrans.
+
 ### Définition de terminé pour la soutenance
 
 - Quatre parcours exécutés de bout en bout sur la révision livrée, données persistantes et scénarios d'erreur testés.
