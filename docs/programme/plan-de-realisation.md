@@ -175,7 +175,7 @@ Critères d'acceptation à décliner en tests :
 - Sources scolaires : documents 700/800 et, reçu le 4 novembre 2026, sujet END-OF-STUDY PROJECT BUILD v4.1.1 (Project_ESP-build.zip). Ce dernier définit les attendus de l'itération BUILD ; le retour pédagogique transmis est distingué d'une grille de notation exhaustive.
 - T-ESP-800 demande notamment plan qualité, description fonctionnelle avec OBS/PBS/WBS et exigences, Definition of Done, besoins matériels et coûts. Relier chaque exigence à une preuve ; ne pas multiplier les documents sans nécessité.
 - Les DOC-002/004/010/018 v1.0 fournis attribuent encore coordination et planning à Soumia : incohérence à corriger selon la décision déjà confirmée.
-- Composition actuelle confirmée par Estelle le 4 novembre 2026 : Baye Ousmane Beye, Belaid Ioudjaoudene, Eckson Glitho, Estelle Giroud, Julien Lefebvre, Lina Laddada, Patrick Brugiere, Philimon Rusom, Soumia Michel, Thomas Pradeau. Hugo ne figure pas dans la liste actuelle. Disponibilités très variables, à chiffrer individuellement ; les responsabilités techniques restent à confirmer, sans transfert automatique du rôle historique de Hugo à Julien.
+- Composition actuelle corrigée par Estelle le 4 novembre 2026 — neuf membres : Baye Ousmane Beye, Belaid Ioudjaoudene, Eckson Glitho, Estelle Giroud, Julien Lefebvre, Lina Laddada, Philimon Rusom, Soumia Michel, Thomas Pradeau. Hugo ne figure pas dans la liste actuelle. Disponibilités très variables, à chiffrer individuellement ; les responsabilités techniques restent à confirmer, sans transfert automatique du rôle historique de Hugo à Julien.
 - Le 5 février 2027 est la soutenance du semestre selon le calendrier communiqué ; ne pas la confondre avec la soutenance finale de cursus mentionnée en S10 dans la documentation générale.
 - Les objectifs de charge, de performance et de livraison restent des cibles tant que leurs tests et versions de référence ne sont pas disponibles.
 
@@ -326,8 +326,8 @@ Pour chaque tâche active : responsable, estimation initiale en heures, heures r
 
 ### Retour pédagogique communiqué par Estelle
 
-- Patrick figure dans l'équipe actuelle ; la remarque « il manque Patrick » peut concerner l'inscription ou un accès scolaire. Cause et correction non vérifiées.
-- Le retour cite T-ESP-901-LYN-9-1-T-ESP-901-15, tandis que le lien initial termine par -2. Les deux références renvoient 404 avec le connecteur le 4 novembre. Cela ne prouve ni l'absence du dépôt ni l'absence de push. Destination du miroir à confirmer avant configuration.
+- Correction explicite d'Estelle : Patrick Brugiere n'est plus membre et a rejoint une autre école. La liste initialement transmise était donc obsolète sur ce point. La raison de la remarque pédagogique « il manque Patrick » est inconnue ; ne pas demander sa réintégration. Ses anciennes affectations doivent être retirées des responsabilités actuelles et réattribuées explicitement ; les contributions historiques restent conservées. Les accès résiduels éventuels sont à inventorier, sans présumer leur présence ni leur révocation.
+- Dépôt scolaire confirmé explicitement par Estelle : EpitechMscProPromo2027/T-ESP-901-LYN-9-1-T-ESP-901-2. La référence -15 du retour pédagogique n'est pas la destination du groupe. Le dernier contrôle du connecteur renvoie 404 : accès et synchronisation restent à vérifier ; cela ne prouve ni l'absence du dépôt ni l'absence de push.
 - Le constat de non-push est un retour pédagogique historique transmis, pas une mesure actuelle indépendante.
 - README : résumé compréhensible, architecture réelle, état du produit, procédure exécutable et vérifiée par un tiers.
 - KPI : compléter API/gestion avec réactivité, accessibilité et expérience globale. Le sujet BUILD impose aussi les indicateurs procéduraux ci-dessus.
