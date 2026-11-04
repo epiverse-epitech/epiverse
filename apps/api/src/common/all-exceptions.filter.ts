@@ -23,11 +23,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const { statusCode, error, message } = describeException(exception);
 
     if (statusCode >= 500) {
-      // The details stay in the server logs only.
-      this.logger.error(
-        `${request.method} ${path} failed`,
-        exception instanceof Error ? exception.stack : String(exception),
-      );
+      // Exception messages and stacks may include credentials, tokens or PII.
+      // Log only non-sensitive metadata; structured, redacted diagnostics belong
+      // in a dedicated observability pipeline.
+      this.logger.error(`HTTP ${statusCode} response (${request.method})`);
     }
 
     const body: ErrorResponseDto = {
