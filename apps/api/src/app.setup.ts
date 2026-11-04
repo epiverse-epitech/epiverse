@@ -16,7 +16,11 @@ export function configureApp(app: INestApplication): void {
       transform: true,
     }),
   );
-  setupApiDocs(app);
+  // The public OpenAPI spec may expose endpoints, schemas and implementation details.
+  // Opt in explicitly to serve Swagger in production.
+  if (process.env.NODE_ENV !== 'production' || process.env.API_DOCS_ENABLED === 'true') {
+    setupApiDocs(app);
+  }
 }
 
 // Serves the interactive docs on /api/docs and the OpenAPI spec on /api/docs-json.

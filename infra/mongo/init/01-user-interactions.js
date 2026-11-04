@@ -8,7 +8,17 @@
 // les modifier aux deux endroits. Description complète : docs/ia/Stockage_interactions_MongoDB.md
 
 const COLLECTION = 'user_interactions';
-const retentionDays = Number(process.env.INTERACTION_RETENTION_DAYS || 395);
+// Default from the documented privacy policy. Reject zero (immediate purge),
+// malformed and excessive durations before changing collections or TTL indexes.
+const MAX_RETENTION_DAYS = 395;
+const retentionInput = process.env.INTERACTION_RETENTION_DAYS ?? '395';
+if (!/^[1-9][0-9]*$/.test(retentionInput)) {
+  throw new Error('INTERACTION_RETENTION_DAYS must be a positive integer');
+}
+const retentionDays = Number(retentionInput);
+if (!Number.isSafeInteger(retentionDays) || retentionDays > MAX_RETENTION_DAYS) {
+  throw new Error(`INTERACTION_RETENTION_DAYS must be between 1 and ${MAX_RETENTION_DAYS}`);
+}
 const retentionSeconds = retentionDays * 24 * 60 * 60;
 
 const validator = {

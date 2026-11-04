@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { HealthController } from '../src/health/health.controller';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
@@ -57,4 +58,30 @@ describe('API documentation (e2e)', () => {
       'timestamp',
     ]);
   });
+  it('does not expose Swagger routes in production by default', async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    const previousDocsFlag = process.env.API_DOCS_ENABLED;
+    let productionApp: INestApplication<App> | undefined;
+    try {
+      process.env.NODE_ENV = 'production';
+      delete process.env.API_DOCS_ENABLED;
+      // A minimal module avoids opening another Prisma connection in this test.
+      const moduleRef = await Test.createTestingModule({
+        controllers: [HealthController],
+      }).compile();
+      productionApp = moduleRef.createNestApplication();
+      configureApp(productionApp);
+      await productionApp.init();
+      await request(productionApp.getHttpServer()).get('/api/docs').expect(404);
+      await request(productionApp.getHttpServer()).get('/api/docs-json').expect(404);
+      await request(productionApp.getHttpServer()).get('/api/health').expect(200);
+    } finally {
+      if (productionApp) await productionApp.close();
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previousNodeEnv;
+      if (previousDocsFlag === undefined) delete process.env.API_DOCS_ENABLED;
+      else process.env.API_DOCS_ENABLED = previousDocsFlag;
+    }
+  });
+
 });
