@@ -112,6 +112,12 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    pids_limit: 128
     env_file:
       - path: infra/env/api.env
         required: false
