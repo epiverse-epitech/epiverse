@@ -9,6 +9,11 @@ on:
         description: Environnement de publication (staging uniquement)
         required: true
         type: string
+    secrets:
+      DEPLOY_SSH_KEY:
+        required: false
+      DEPLOY_KNOWN_HOSTS:
+        required: false
 
 permissions:
   contents: read
