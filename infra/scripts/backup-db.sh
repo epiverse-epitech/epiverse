@@ -21,6 +21,10 @@ BACKUP_DIR="${BACKUP_DIR:-$BASE_DIR/backups/$ENV_NAME}"
 RETENTION="$(env_value BACKUP_RETENTION_DAYS)"
 RETENTION="${RETENTION:-14}"
 RCLONE_REMOTE="$(env_value BACKUP_RCLONE_REMOTE)"
+if [ "$ENV_NAME" = "production" ] && [ -z "$RCLONE_REMOTE" ]; then
+  echo "[backup production] BACKUP_RCLONE_REMOTE obligatoire pour éviter une sauvegarde uniquement locale." >&2
+  exit 1
+fi
 BACKUP_PASSPHRASE="$(env_value BACKUP_PASSPHRASE)"
 export BACKUP_PASSPHRASE
 [ -n "$BACKUP_PASSPHRASE" ] || { echo "BACKUP_PASSPHRASE vide dans .env : sauvegarde non chiffrée refusée." >&2; exit 1; }
