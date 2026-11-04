@@ -1,8 +1,14 @@
-# Relecteurs demandés automatiquement selon les fichiers modifiés (DOC-013 : deux relecteurs
-# pour un changement d'accès, de sécurité, de données ou transversal).
-# Remplacer les pseudos puis décommenter. Un pseudo inconnu de GitHub rend la ligne inactive.
-#
-# /infra/                        @pseudo-baye @pseudo-estelle
-# /.github/                      @pseudo-baye @pseudo-estelle
-# /docker-compose.yml            @pseudo-baye
-# /apps/api/prisma/              @pseudo-eckson @pseudo-thomas
+# EpiVerse — propriétaires vérifiés avec droits write.
+# Ce fichier ne suffit pas à imposer une revue : les règles GitHub de main et
+# develop doivent exiger une PR, les contrôles CI et l'approbation CODEOWNER.
+*                           @estellegiroud @bayeousmane1
+/.github/                   @estellegiroud @bayeousmane1
+/infra/                     @bayeousmane1 @estellegiroud
+/docker-compose.yml         @bayeousmane1 @estellegiroud
+/apps/api/                  @Eckson-Glitho @estellegiroud
+/apps/api/prisma/           @Eckson-Glitho @thomas-pradeau
+/apps/api/src/security/     @Eckson-Glitho @estellegiroud
+/apps/app/                  @prusom @miso882
+/data/                      @thomas-pradeau
+/docs/database/             @thomas-pradeau @Eckson-Glitho
+/docs/ia/                   @thomas-pradeau
