@@ -238,6 +238,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Vérifier les scripts Bash
         run: bash -n infra/scripts/*.sh .github/scripts/*.sh
+      - name: Tester le gate de sécurité des images (tests négatifs)
+        run: python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
       - name: Vérifier les scripts POSIX shell
         run: sh -n infra/docker/*.sh
       - name: Compiler le générateur de fixtures
