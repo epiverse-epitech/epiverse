@@ -1,24 +1,14 @@
-# EpiVerse — construction des images et déploiement.
-#   push sur develop   → images publiées sur GHCR, puis déploiement automatique en staging
-#   tag vX.Y.Z         → images publiées, puis déploiement en production
-#   lancement manuel   → choix de l'environnement
-# Tant qu'un serveur n'est pas configuré (variables STAGING_HOST / PRODUCTION_HOST vides),
-# les images sont publiées et le déploiement est simplement sauté.
-# Verrou du gate pilote G6 : PRODUCTION_HOST reste vide tant qu'Estelle n'a pas validé le pilote
-# (les environnements GitHub protégés ne sont pas disponibles sur un dépôt privé en offre gratuite).
+# EpiVerse: workflow réutilisable appelé UNIQUEMENT après validation complète de CI.
+# Publication de staging via develop. Production volontairement désactivée jusqu'au gate G6.
 name: Déploiement
 
 on:
-  push:
-    branches: [develop]
-    tags: ["v*.*.*"]
-  workflow_dispatch:
+  workflow_call:
     inputs:
       environment:
-        description: Environnement cible
-        type: choice
-        options: [staging, production]
-        default: staging
+        description: Environnement de publication (staging uniquement)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -37,32 +27,33 @@ jobs:
       tag: ${{ steps.vars.outputs.tag }}
       registry: ${{ steps.vars.outputs.registry }}
       images: ${{ steps.vars.outputs.images }}
+      web_ready: ${{ steps.vars.outputs.web_ready }}
     steps:
       - uses: actions/checkout@v7
       - id: vars
         env:
-          EVENT_NAME: ${{ github.event_name }}
           INPUT_ENVIRONMENT: ${{ inputs.environment }}
         run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            environment="$INPUT_ENVIRONMENT"
-          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            environment=production
-          else
-            environment=staging
+          if [ "$INPUT_ENVIRONMENT" != "staging" ]; then
+            echo "::error::Production désactivée: validation explicite du gate G6 requise."
+            exit 1
           fi
+          environment=staging
           images='[]'
+          web_ready=false
           if [ -f "$API_DIR/package.json" ]; then
             images=$(jq -c --arg a "API_DIR=$API_DIR" '. + [{name: "epiverse-api", dockerfile: "infra/docker/api.Dockerfile", buildargs: $a}]' <<< "$images")
           fi
           if [ -f "$APP_DIR/package.json" ]; then
+            web_ready=true
             images=$(jq -c --arg a "APP_DIR=$APP_DIR" '. + [{name: "epiverse-web", dockerfile: "infra/docker/web.Dockerfile", buildargs: $a}]' <<< "$images")
           fi
           {
             echo "environment=$environment"
-            echo "tag=sha-${GITHUB_SHA::7}"
+            echo "tag=sha-${GITHUB_SHA}"
             echo "registry=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}"
             echo "images=$images"
+            echo "web_ready=$web_ready"
           } >> "$GITHUB_OUTPUT"
 
   build:
@@ -104,9 +95,8 @@ jobs:
   deploy:
     name: Déploiement ${{ needs.prepare.outputs.environment }}
     needs: [prepare, build]
-    if: >-
-      (needs.prepare.outputs.environment == 'staging' && vars.STAGING_HOST != '')
-      || (needs.prepare.outputs.environment == 'production' && vars.PRODUCTION_HOST != '')
+    # Ne jamais lancer la pile serveur avec une image web inexistante.
+    if: needs.prepare.outputs.web_ready == 'true' && vars.STAGING_HOST != ''
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -118,7 +108,7 @@ jobs:
     env:
       ENV_NAME: ${{ needs.prepare.outputs.environment }}
       TAG: ${{ needs.prepare.outputs.tag }}
-      DEPLOY_HOST: ${{ needs.prepare.outputs.environment == 'production' && vars.PRODUCTION_HOST || vars.STAGING_HOST }}
+      DEPLOY_HOST: ${{ vars.STAGING_HOST }}
       DEPLOY_USER: ${{ vars.DEPLOY_USER || 'deploy' }}
     steps:
       - uses: actions/checkout@v7
