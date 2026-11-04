@@ -41,7 +41,10 @@ CMD ["migrate"]
 
 # Strip devDependencies, including Prisma CLI, from the long-running API.
 FROM build AS production-deps
-RUN npm prune --omit=dev --ignore-scripts
+# npm can retain Prisma CLI as an optional peer of @prisma/client even with
+# --omit=dev. The CLI belongs exclusively to the one-shot migration image.
+RUN npm prune --omit=dev --ignore-scripts \
+ && rm -rf node_modules/prisma node_modules/.bin/prisma
 
 FROM base AS runtime
 ENV NODE_ENV=production \
