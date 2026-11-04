@@ -189,6 +189,16 @@ jobs:
           push: false
           cache-from: type=gha,scope=epiverse-api
           cache-to: type=gha,mode=max,scope=epiverse-api
+      - name: Image migrations Prisma — sans publication
+        if: needs.detect.outputs.api == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: infra/docker/api.Dockerfile
+          target: migrate
+          build-args: API_DIR=${{ env.API_DIR }}
+          push: false
+          cache-from: type=gha,scope=epiverse-api
       - name: Image web
         if: needs.detect.outputs.app == 'true'
         uses: docker/build-push-action@v7
