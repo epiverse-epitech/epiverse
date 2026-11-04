@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { Controller, Get, HttpException, HttpStatus, INestApplication, InternalServerErrorException } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, INestApplication, InternalServerErrorException, Logger } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
@@ -101,6 +101,20 @@ describe('Error format (e2e)', () => {
       path: '/api/test-errors/custom-400',
       timestamp: expect.any(String),
     });
+  });
+
+  it('never writes raw exception secrets or stack traces to logs', async () => {
+    const logger = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    try {
+      await request(app.getHttpServer()).get('/api/test-errors/crash').expect(500);
+      await request(app.getHttpServer()).get('/api/test-errors/explicit-500').expect(500);
+      expect(logger).toHaveBeenCalled();
+      expect(logger.mock.calls.flat().join(' ')).not.toMatch(
+        /secret|DATABASE_URL|postgresql:|ECONNREFUSED|admin/i,
+      );
+    } finally {
+      logger.mockRestore();
+    }
   });
 
 });

@@ -141,7 +141,7 @@ Rules shared by every route, set up in `configureApp()` (`src/app.setup.ts`) and
 
 ### Documentation
 
-- Interactive docs: `http://localhost:3000/api/docs`. OpenAPI spec (JSON): `/api/docs-json`; clients can generate their types from it.
+- Interactive docs: `http://localhost:3000/api/docs`. OpenAPI spec (JSON): `/api/docs-json`; clients can generate their types from it. **These endpoints are disabled when `NODE_ENV=production`**, unless `API_DOCS_ENABLED=true` is set deliberately after access review. Server errors log only HTTP status/method, not exception stacks or credentials.
 - Every route is documented: `@ApiTags('<domain>')` on the controller, a response DTO (`@ApiOkResponse({ type: … })`, `@ApiCreatedResponse`, …) and `@ApiProperty` on each DTO field. `src/health/` is the reference example.
 
 ### Errors
