@@ -16,6 +16,10 @@ usage() { echo "Usage : $0 <staging|production> <tag-image>" >&2; exit 2; }
 ENV_NAME="$1"
 TAG="$2"
 case "$ENV_NAME" in staging|production) ;; *) usage ;; esac
+if [ "$ENV_NAME" = "production" ] && [ "${SKIP_BACKUP:-false}" = "true" ]; then
+  echo "SKIP_BACKUP interdit en production : sauvegarde obligatoire avant migration." >&2
+  exit 2
+fi
 [[ "$TAG" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Tag invalide : $TAG" >&2; exit 2; }
 
 BASE_DIR="${EPIVERSE_BASE_DIR:-/opt/epiverse}"
