@@ -4,12 +4,12 @@ Un seul script, sans dépendance (Python 3.10+), remplit PostgreSQL et MongoDB a
 
 ```bash
 docker compose up -d                          # PostgreSQL et MongoDB démarrés
-python data/fixtures/generate.py --load       # génère puis charge, 1 à 2 min au total
+python data/fixtures/generate.py --load --confirm-local-reset       # génère puis charge, 1 à 2 min au total
 ```
 
-`--load` **vide puis remplit** toutes les tables PostgreSQL et les collections MongoDB (`user_interactions`, `maps`, `characters`) de l'environnement local. Si la base n'a pas encore de schéma, `docs/database/schema.sql` est appliqué d'abord.
+`--load --confirm-local-reset` **vide puis remplit** toutes les tables PostgreSQL et les collections MongoDB (`user_interactions`, `maps`, `characters`) de l'environnement local. Si la base n'a pas encore de schéma, `docs/database/schema.sql` est appliqué d'abord.
 
-Sans `--load`, le script écrit seulement les fichiers dans `data/fixtures/out/` (ignoré par Git, ≈ 90 Mo) :
+**Attention :** le chargement refuse désormais les contextes Docker distants et exige la confirmation explicite `--confirm-local-reset`. Il ne faut jamais l'exécuter sur des données réelles. Sans `--load`, le script écrit seulement les fichiers dans `data/fixtures/out/` (ignoré par Git, ≈ 90 Mo) :
 
 | Fichier | Contenu | Chargement manuel |
 |---|---|---|

@@ -1,0 +1,26 @@
+name: Sécurité des données fictives
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  fixture-safety:
+    name: Python — protection des chargements destructifs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Exiger les tests de sécurité des données
+        run: |
+          test -f data/fixtures/generate.py
+          test -f data/fixtures/test_safety.py
+      - name: Valider la syntaxe Python
+        run: python3 -m py_compile data/fixtures/generate.py data/fixtures/test_safety.py
+      - name: Tests de non-régression (aucune base ni Docker nécessaires)
+        run: python3 -m unittest discover -s data/fixtures -p 'test_*.py' -v
