@@ -21,8 +21,18 @@ env_value() { sed -n "s/^$1=//p" .env | tail -n 1; }
 POSTGRES_USER="$(env_value POSTGRES_USER)"
 POSTGRES_DB="$(env_value POSTGRES_DB)"
 BACKUP_PASSPHRASE="$(env_value BACKUP_PASSPHRASE)"
+[ -n "$BACKUP_PASSPHRASE" ] || { echo "BACKUP_PASSPHRASE vide : restauration refusée." >&2; exit 1; }
 export BACKUP_PASSPHRASE
 compose() { docker compose -f docker-compose.server.yml "$@"; }
+
+# Validate the decryption key and archive format before stopping the API or
+# modifying the database. This is a read-only check against the archive.
+if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+    -pass env:BACKUP_PASSPHRASE -in "$FILE" \
+    | compose exec -T postgres pg_restore --list >/dev/null; then
+  echo "[restore $ENV_NAME] Archive corrompue ou phrase de chiffrement incorrecte ; aucun service arrêté." >&2
+  exit 1
+fi
 
 if [ "$CONFIRM" != "--yes" ]; then
   echo "ATTENTION : la base « $POSTGRES_DB » de $ENV_NAME va être remplacée par :"
