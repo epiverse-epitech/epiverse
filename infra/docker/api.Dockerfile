@@ -11,7 +11,8 @@
 
 ARG NODE_VERSION=24
 
-FROM node:${NODE_VERSION}-bookworm-slim AS base
+# Debian Trixie: use a currently supported base and receive security fixes.
+FROM node:${NODE_VERSION}-trixie-slim AS base
 # openssl : requis par Prisma. ca-certificates : appels HTTPS sortants (e-mail, stockage…).
 # hadolint ignore=DL3008
 RUN apt-get update \
@@ -32,6 +33,9 @@ RUN if [ -d prisma ] || [ -f prisma.config.ts ]; then node_modules/.bin/prisma g
 FROM base AS runtime
 ENV NODE_ENV=production \
     PORT=3000
+# npm and npx are build-time utilities; Prisma migration uses its local binary.
+# Removing globally installed npm reduces the runtime attack surface.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 # node_modules est conservé en entier : la CLI Prisma sert à appliquer les migrations au déploiement.
 COPY --from=build --chown=node:node /app ./
 COPY --chmod=755 infra/docker/api-entrypoint.sh /usr/local/bin/api-entrypoint
