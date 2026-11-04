@@ -23,11 +23,12 @@
     {
       "id": "MEN",
       "name": "Mentorat",
-      "stage": "pilot",
+      "stage": "mvp",
       "status": "planned",
       "dependency": "Identité, autorisations et données minimisées",
       "risk": "Disponibilités et consentement",
-      "acceptance": "Accepter/refuser une demande sans divulgation avant accord"
+      "acceptance": "Accepter/refuser une demande sans divulgation avant accord",
+      "scope": "Trouver un mentor, demander et accepter/refuser une mise en relation ; matching IA avancé non requis"
     },
     {
       "id": "RES",
@@ -50,11 +51,12 @@
     {
       "id": "SOC",
       "name": "Social",
-      "stage": "pilot",
+      "stage": "mvp",
       "status": "planned",
       "dependency": "Identité, autorisations et données minimisées",
       "risk": "Modération et anonymat trompeur",
-      "acceptance": "Signaler, bloquer et traiter un abus avec traçabilité"
+      "acceptance": "Signaler, bloquer et traiter un abus avec traçabilité",
+      "scope": "Profils, entraide, chat texte et modération ; flux anonyme et réseau social complet hors engagement de première version"
     },
     {
       "id": "REN",
@@ -77,11 +79,12 @@
     {
       "id": "MET",
       "name": "Metaverse",
-      "stage": "pilot",
+      "stage": "mvp",
       "status": "planned",
-      "dependency": "Identité, autorisations et données minimisées",
-      "risk": "Performance, accès et modération",
-      "acceptance": "Entrer dans un espace autorisé avec alternative accessible"
+      "dependency": "Identité, autorisations serveur, présence temps réel, transport audio et stockage des aménagements",
+      "risk": "Écoute non autorisée, harcèlement, surcharge mobile et modification d'espaces tiers",
+      "acceptance": "Cible 50 personnes simultanées à éprouver ; avatars, chambres et espaces associatifs aménageables persistants, accès et édition autorisés, audio de proximité révocable, chat texte et alternative accessible",
+      "scope": "Première version navigateur ordinateur/mobile ; pas de vidéo requise ni de XR ou interopérabilité externe"
     },
     {
       "id": "FIN",
@@ -239,11 +242,12 @@
     {
       "id": "POR",
       "name": "Portfolio",
-      "stage": "pilot",
+      "stage": "mvp",
       "status": "planned",
       "dependency": "Identité, autorisations et données minimisées",
       "risk": "Propriété des œuvres et médias",
-      "acceptance": "Visibilité contrôlée et formats limités"
+      "acceptance": "Visibilité contrôlée et formats limités",
+      "scope": "Publier et consulter des projets avec visibilité contrôlée ; galerie 3D avancée hors engagement de première version"
     },
     {
       "id": "FOO",
