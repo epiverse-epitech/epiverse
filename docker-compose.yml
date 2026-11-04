@@ -100,6 +100,7 @@ services:
       NODE_ENV: production
       APP_ENV: local
       PORT: "3000"
+      TRUST_PROXY_HOPS: "1"
       DATABASE_URL: postgresql://${POSTGRES_USER:-epiverse}:${POSTGRES_PASSWORD:-epiverse_dev}@postgres:5432/${POSTGRES_DB:-epiverse}?schema=public
       REDIS_URL: redis://redis:6379
       MONGO_URL: mongodb://${MONGO_USER:-epiverse}:${MONGO_PASSWORD:-epiverse_dev}@mongo:27017/${MONGO_DB:-epiverse_ai}?authSource=admin
