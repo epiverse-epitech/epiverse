@@ -2,7 +2,8 @@
 
 ## Signaler une vulnérabilité
 - Ne jamais publier de secrets, données personnelles ou détails d'exploitation dans une issue.
-- Utiliser **Security → Advisories → Report a vulnerability** pour créer un signalement privé. Si cette fonction n'est pas disponible, envoyer un message privé GitHub à **@estellegiroud** ou **@bayeousmane1** ; ne pas ouvrir d'issue publique.
+- Le dépôt EpiVerse est **privé** : les GitHub Security Advisories et le formulaire de signalement privé sont réservés aux dépôts publics. GitHub ne propose pas de messages privés entre comptes. Transmettre le signalement à **@estellegiroud** ou **@bayeousmane1** via un canal privé de l'équipe préalablement convenu (messagerie professionnelle chiffrée ou autre canal interne sécurisé).
+- Si le canal sécurisé n'est pas connu, demander uniquement les coordonnées du contact sécurité dans une issue **sans aucun détail sensible**, puis transmettre les preuves en privé. Ne pas publier de secret, preuve d'exploitation ou donnée personnelle.
 - Fournir par canal privé : commit, préconditions, reproduction avec données fictives, impact, correctif proposé.
 - Les responsables évaluent la sévérité et l'exposition avant toute divulgation.
 
