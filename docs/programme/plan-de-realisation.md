@@ -21,7 +21,7 @@ Critères proposés pour découper les parcours :
 ### Campus : décisions confirmées
 
 - Cible du premier pilote : jusqu'à 50 personnes simultanées. Hypothèse de dimensionnement : 50 au total sur le pilote ; inclure un scénario de concentration dans un même espace. Ce chiffre est un objectif à mesurer, pas une capacité démontrée.
-- Communications : chat texte et audio de proximité dès la première version ; vidéo non requise.
+- Communications : chat texte, audio et vidéo de proximité dès la première version (vidéo ajoutée par décision explicite du 4 novembre 2026).
 - Personnalisation : avatars, chambres personnelles et espaces associatifs aménageables.
 - Budget : chiffrer séparément hébergement, stockage, sauvegardes, audio (minutes participants et trafic), supervision et outils partagés. La simultanéité seule ne permet pas de calculer un coût mensuel.
 - Aucun fournisseur, moteur, abonnement ou hébergement payant n'est sélectionné par ces décisions.
@@ -160,3 +160,41 @@ Séparer coûts ponctuels, fixes, variables par utilisateur/campus, abonnements 
 | P5 : extensions | Valeur et capacité démontrées | IA avancée, extensions du mentorat et du campus évaluées séparément, budgets et risques acceptés |
 
 Aucune date de livraison ferme n'est inventée. Les estimations sont produites après découpage et confirmation de capacité. La progression du programme est un travail continu ; le présent document rend les décisions et validations contrôlables.
+
+## Objectifs de qualité et vidéo — décision du 4 novembre 2026
+
+La vidéo fait partie du périmètre initial. L'ambition est de maximiser la qualité utile sous contraintes mesurées de confidentialité, compatibilité, fluidité et coût ; aucun résultat maximal n'est déclaré acquis.
+
+### Exigences vidéo
+
+- Caméra éteinte à l'entrée ; activation explicite distincte du microphone, prévisualisation, état de diffusion et destinataires compréhensibles. Refus de permission et absence de caméra ne bloquent pas les parcours.
+- Accès aux pistes vidéo contrôlé côté serveur selon espace, proximité et blocage ; test avec client modifié essayant de s'abonner à un tiers interdit. Désabonnement côté client seul insuffisant.
+- Arrêter la capture à la sortie ou à la désactivation ; aucune réactivation automatique après reconnexion sans respect du choix utilisateur. Aucun enregistrement audio/vidéo par défaut.
+- Proposition d'architecture : SFU, abonnements sélectifs, couches de qualité adaptatives, priorité aux participants visibles et arrêt de réception des pistes inutiles. Ne pas utiliser une maille complète entre 50 navigateurs.
+- Propositions de départ à mesurer : vidéo conversationnelle 720p/30 fps lorsque le réseau et l'appareil le permettent ; miniatures en résolution réduite, repli 360p puis audio puis texte. 1080p uniquement si les mesures et le contexte d'affichage le justifient.
+- Budget initial de réception à tester : jusqu'à 4 vidéos distantes sur mobile et 9 sur ordinateur, ajustables selon capacité. Tous les participants peuvent activer leur caméra, sans imposer la réception de tous les flux par chaque appareil.
+- Le partage d'écran, l'enregistrement, la transcription et les effets vidéo ne sont pas implicitement inclus dans cette décision.
+
+### Objectifs mesurables proposés, non performances certifiées
+
+| Axe | Objectif initial et protocole attendu |
+|---|---|
+| Monde virtuel | Au moins 30 FPS sur les appareils mobiles de référence et cible 60 FPS desktop ; mesurer les temps de trame p95/p99, pas seulement la moyenne, avec scène et médias représentatifs |
+| Première utilisation | p75 LCP ≤ 2,5 s, INP ≤ 200 ms, CLS ≤ 0,1 sur l'interface web ; mesurer séparément temps jusqu'à entrée interactive dans le monde |
+| Média | Connexion média p95 ≤ 5 s et latence conversationnelle de bout en bout p95 ≤ 300 ms sur réseau de référence documenté ; tests réels requis |
+| Charge | 50 sessions simultanées globales, scénario réparti puis concentré ; tests avec 50 publications vidéo et abonnements limités, puis mesure sur appareils réels |
+| Endurance | Session d'au moins 60 minutes avec déplacements et médias ; mesurer mémoire, déconnexions, consommation et dégradation thermique mobile |
+| Résilience | Tester perte réseau, changement Wi-Fi/mobile, permission refusée, serveur média indisponible ; préserver session métier et retour au texte |
+| Sécurité | Aucun accès inter-espace non autorisé dans les scénarios de test ; révocation des pistes existantes et des nouvelles souscriptions |
+| Coûts | Mesurer minutes connectées, Go sortants, stockage, traitement des imports et coût par utilisateur actif ; alertes et plafonds explicites |
+| Accessibilité | Parcours utilisables sans caméra, micro ou navigation spatiale ; tester clavier, lecteur d'écran, zoom et réduction des animations |
+
+Ces seuils sont des objectifs de conception à confirmer sur un prototype, avec appareils, navigateurs, réseau et jeu d'assets versionnés. Un test synthétique n'atteste ni la qualité perçue ni la compatibilité générale.
+
+### Incidence sur le budget
+
+Le pré-chiffrage audio précédent est conservé comme scénario historique audio seul. Il ne constitue plus une estimation du périmètre complet. La vidéo ajoute notamment du trafic sortant et de la charge de décodage ; ne pas doubler arbitrairement les minutes de connexion d'un participant qui publie audio et vidéo.
+
+Ordre de grandeur calculé, non débit garanti : 1 Mbit/s reçu en continu pendant 1 heure représente 0,45 Go décimal hors surcoûts protocolaires. Avec 5 participants moyens, 4 flux reçus à 0,5 Mbit/s chacun pendant 720 heures, le trafic serait de 3 240 Go/mois. À 25 % de temps avec vidéo, ce serait 810 Go avant audio, surcoûts et autres trafics. Mesurer le facteur d'activité et les couches réellement reçues avant tout achat.
+
+Source technique consultée le 4 novembre 2026 : https://docs.livekit.io/transport/media/subscribe/ (abonnements sélectifs et qualité adaptative). LiveKit reste une option étudiée, pas un fournisseur retenu. Le budget complet et les garanties de localisation restent à comparer.
