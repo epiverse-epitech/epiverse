@@ -166,10 +166,10 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
   images:
-    name: Images Docker (build de contrôle)
+    name: Images Docker (build et scan de sécurité)
     needs: [detect, api, app]
     if: >-
-      always() && github.event_name == 'pull_request'
+      always()
       && needs.detect.result == 'success'
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled')
@@ -187,6 +187,8 @@ jobs:
           file: infra/docker/api.Dockerfile
           build-args: API_DIR=${{ env.API_DIR }}
           push: false
+          load: true
+          tags: epiverse-api:ci
           cache-from: type=gha,scope=epiverse-api
           cache-to: type=gha,mode=max,scope=epiverse-api
       - name: Image web
@@ -197,8 +199,32 @@ jobs:
           file: infra/docker/web.Dockerfile
           build-args: APP_DIR=${{ env.APP_DIR }}
           push: false
+          load: true
+          tags: epiverse-web:ci
           cache-from: type=gha,scope=epiverse-web
           cache-to: type=gha,mode=max,scope=epiverse-web
+      - name: Trivy — image API : bloquer les vulnérabilités graves
+        if: needs.detect.outputs.api == 'true'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: epiverse-api:ci
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: table
+      - name: Trivy — image web : bloquer les vulnérabilités graves
+        if: needs.detect.outputs.app == 'true'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: image
+          image-ref: epiverse-web:ci
+          scanners: vuln
+          vuln-type: os,library
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: table
 
   infrastructure:
     name: Infrastructure — syntaxe et configuration
@@ -220,12 +246,28 @@ jobs:
       - name: Valider Docker Compose local (tous profils)
         run: docker compose --profile tools --profile full -f docker-compose.yml config --quiet
 
+  security-static:
+    name: Sécurité — analyse IaC et workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Trivy — configurations infrastructure
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: misconfig
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: table
+
   quality-gate:
     name: Qualité — contrôle final obligatoire
     # GitHub considère les jobs skipped comme réussis : les cas attendus
     # doivent donc être explicitement vérifiés.
     if: always()
-    needs: [detect, secrets, api, app, images, infrastructure]
+    needs: [detect, secrets, api, app, images, infrastructure, security-static]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -237,6 +279,7 @@ jobs:
           DETECT_RESULT: ${{ needs.detect.result }}
           SECRETS_RESULT: ${{ needs.secrets.result }}
           INFRA_RESULT: ${{ needs.infrastructure.result }}
+          SECURITY_RESULT: ${{ needs.security-static.result }}
           API_PRESENT: ${{ needs.detect.outputs.api }}
           APP_PRESENT: ${{ needs.detect.outputs.app }}
           API_RESULT: ${{ needs.api.result }}
@@ -253,6 +296,7 @@ jobs:
           expect "$DETECT_RESULT" success "Détection des applications"
           expect "$SECRETS_RESULT" success "Gitleaks"
           expect "$INFRA_RESULT" success "Infrastructure"
+          expect "$SECURITY_RESULT" success "Analyse IaC"
           if [ "$GIT_REF" = 'refs/heads/develop' ] || [ "$BASE_REF" = 'develop' ]; then
             expect "$API_PRESENT" true "API requise sur develop"
           fi
@@ -266,8 +310,8 @@ jobs:
           else
             expect "$APP_RESULT" skipped "Expo absent"
           fi
-          if [ "$EVENT_NAME" = pull_request ] && { [ "$API_PRESENT" = true ] || [ "$APP_PRESENT" = true ]; }; then
-            expect "$IMAGES_RESULT" success "Build Docker de la PR"
+          if [ "$API_PRESENT" = true ] || [ "$APP_PRESENT" = true ]; then
+            expect "$IMAGES_RESULT" success "Build et scan Docker"
           else
             expect "$IMAGES_RESULT" skipped "Images Docker non applicables"
           fi
