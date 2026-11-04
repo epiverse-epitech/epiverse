@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { Controller, Get, INestApplication } from '@nestjs/common';
+import { Controller, Get, INestApplication, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -18,6 +18,12 @@ class TestRateLimitController {
   @AuthRateLimit()
   @Get('login')
   login(): string {
+    return 'ok';
+  }
+
+  @AuthRateLimit()
+  @Post('login')
+  submitLogin(): string {
     return 'ok';
   }
 }
@@ -43,10 +49,10 @@ describe('Rate limiting (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
-  app = await createApp({
-    RATE_LIMIT_TTL_SECONDS: 60,
-    RATE_LIMIT_MAX: 3,
-    AUTH_RATE_LIMIT_MAX: 2,
+    app = await createApp({
+      RATE_LIMIT_TTL_SECONDS: 60,
+      RATE_LIMIT_MAX: 3,
+      AUTH_RATE_LIMIT_MAX: 2,
     });
   });
 
@@ -88,6 +94,31 @@ describe('Rate limiting (e2e)', () => {
       .expect(429);
 
     expect(response.headers['retry-after']).toBeDefined();
+  });
+
+  it('a rejected request does not expose the credentials', async () => {
+    const server = app.getHttpServer();
+    const credentials = { email: 'a@epitech.eu', password: 'S3cret-value' };
+
+    for (let i = 0; i < 2; i++) {
+      await request(server)
+        .post('/api/test-rate-limit/login')
+        .send(credentials)
+        .expect(201);
+    }
+
+    const response = await request(server)
+      .post('/api/test-rate-limit/login')
+      .send(credentials)
+      .expect(429);
+
+    expect(response.body).toMatchObject({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      path: '/api/test-rate-limit/login',
+    });
+    expect(response.text).not.toContain(credentials.password);
+    expect(response.text).not.toContain(credentials.email);
   });
 });
 
