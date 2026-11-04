@@ -216,4 +216,6 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: staging
-    secrets: inherit
+    secrets:
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
