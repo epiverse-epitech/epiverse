@@ -1,0 +1,64 @@
+name: Containers — runtime et migrations isolés
+
+on:
+  pull_request:
+    branches: [develop, main, fix/postgres-app-least-privilege]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-separation:
+    name: Docker — API sans outils de migration, migration Prisma isolée
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - name: Construire les deux images indépendantes
+        run: |
+          docker build -f infra/docker/api.Dockerfile --target runtime --build-arg API_DIR=apps/api -t epiverse-api:smoke .
+          docker build -f infra/docker/api.Dockerfile --target migrate --build-arg API_DIR=apps/api -t epiverse-migrate:smoke .
+      - name: Vérifier les fichiers du runtime et la CLI de migration
+        run: |
+          docker run --rm --entrypoint sh epiverse-api:smoke -ec 'test -d /app/dist; test ! -x /app/node_modules/.bin/prisma; node -e "require(\"@node-rs/argon2\")"'
+          docker run --rm --entrypoint sh epiverse-migrate:smoke -ec 'test -x /app/node_modules/.bin/prisma; test -f /app/prisma/schema.prisma'
+      - name: Vérifier la migration sur une vraie base PostgreSQL 17
+        run: |
+          set -euo pipefail
+          docker network create epiverse-smoke
+          docker run -d --name pg-smoke --network epiverse-smoke \
+            -e POSTGRES_USER=epiverse -e POSTGRES_PASSWORD=epiverse-ci \
+            -e POSTGRES_DB=epiverse_smoke \
+            pgvector/pgvector:pg17-bookworm
+          for attempt in $(seq 1 45); do
+            if docker exec pg-smoke pg_isready -U epiverse -d epiverse_smoke >/dev/null 2>&1; then break; fi
+            sleep 2
+          done
+          docker exec pg-smoke pg_isready -U epiverse -d epiverse_smoke
+          docker run --rm --network epiverse-smoke \
+            -e DATABASE_URL=postgresql://epiverse:epiverse-ci@pg-smoke:5432/epiverse_smoke \
+            epiverse-migrate:smoke
+          docker run -d --name api-smoke --network epiverse-smoke \
+            -e NODE_ENV=production \
+            -e DATABASE_URL=postgresql://epiverse:epiverse-ci@pg-smoke:5432/epiverse_smoke \
+            epiverse-api:smoke
+          healthy=false
+          for attempt in $(seq 1 30); do
+            if docker run --rm --network epiverse-smoke --entrypoint node epiverse-api:smoke \
+              -e 'fetch("http://api-smoke:3000/api/health").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))'; then
+              healthy=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$healthy" != true ]; then
+            docker logs api-smoke
+            exit 1
+          fi
+      - name: Nettoyage des services de test
+        if: always()
+        run: |
+          docker rm -f api-smoke pg-smoke 2>/dev/null || true
+          docker network rm epiverse-smoke 2>/dev/null || true

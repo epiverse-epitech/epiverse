@@ -23,6 +23,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER manquant dans .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant dans .env}
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB manquant dans .env}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD manquant dans .env}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks: [internal]
@@ -80,7 +81,7 @@ services:
       NODE_ENV: production
       APP_ENV: ${ENV_NAME:?ENV_NAME manquant dans .env}
       PORT: "3000"
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      DATABASE_URL: postgresql://epiverse_app:${APP_DB_PASSWORD:?APP_DB_PASSWORD manquant dans .env}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RUN_MIGRATIONS: "false"
     networks:
@@ -91,6 +92,18 @@ services:
       resources:
         limits:
           memory: 512m
+
+  # Admin rights exist only in this one-shot migration service, never in the API.
+  migrate:
+    profiles: ["maintenance"]
+    image: ${IMAGE_REGISTRY:?IMAGE_REGISTRY manquant dans .env}/epiverse-migrate:${IMAGE_TAG:?IMAGE_TAG manquant dans .env}
+    restart: "no"
+    environment:
+      NODE_ENV: production
+      APP_ENV: ${ENV_NAME:?ENV_NAME manquant dans .env}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      RUN_MIGRATIONS: "false"
+    networks: [internal]
 
   web:
     <<: *common
