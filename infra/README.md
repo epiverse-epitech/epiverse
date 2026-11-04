@@ -239,3 +239,7 @@ Avant le pilote (gate G6), preuves à produire : une restauration testée en sta
 | Miroir (même logique que `mirror.yml`, dépôts locaux) | `main`, `develop` et tags recopiés ; branches de travail non recopiées ; auteurs conservés ; réécriture de `develop` propagée |
 
 Non vérifié : la construction des images Docker et le démarrage de l'image pgvector (Docker Hub inaccessible depuis l'environnement de test). Le premier passage de la CI sur GitHub les construira : surveiller le job « Images Docker » de la première pull request.
+
+### Séparation des rôles PostgreSQL serveur
+
+La pile serveur utilise désormais `POSTGRES_USER` uniquement pour le provisioning et les migrations via le service Compose one-shot `migrate`. L'API reçoit un identifiant SQL distinct `epiverse_app` avec droits DML minimum. Renseigner `APP_DB_PASSWORD` dans `/opt/epiverse/<env>/.env` avant de mettre à jour le serveur (générer un secret différent du mot de passe administrateur). Après une migration réussie, `provision-app-db.sh` crée/actualise le rôle et ses droits sur les tables/séquences existantes et futures. Sur une base existante, effectuer impérativement un déploiement staging et des tests CRUD avant production ; une ancienne version de l'API peut utiliser l'ancien compte jusqu'à sa mise à jour.

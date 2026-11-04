@@ -1,0 +1,62 @@
+name: PostgreSQL — privilèges applicatifs
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  restricted-role:
+    name: Vérifier les droits SQL DML et le refus des droits DDL
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Créer un PostgreSQL 17 de test et vérifier les privilèges
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          mkdir -p "$tmp/staging"
+          cp infra/server/docker-compose.server.yml "$tmp/staging/docker-compose.server.yml"
+          touch "$tmp/staging/api.env"
+          cat > "$tmp/staging/.env" <<'ENVFILE'
+          COMPOSE_PROJECT_NAME=epiverse-role-ci
+          ENV_NAME=staging
+          IMAGE_REGISTRY=ghcr.io/example
+          IMAGE_TAG=sha-fake
+          POSTGRES_USER=epiverse_admin
+          POSTGRES_PASSWORD=ci-admin-secret
+          POSTGRES_DB=epiverse_test
+          APP_DB_PASSWORD=ci-app-secret
+          REDIS_PASSWORD=ci-redis-secret
+          ENVFILE
+          cleanup() {
+            (cd "$tmp/staging" && docker compose -f docker-compose.server.yml down -v --remove-orphans) || true
+            rm -rf "$tmp"
+          }
+          trap cleanup EXIT
+          export EPIVERSE_BASE_DIR="$tmp"
+          cd "$tmp/staging"
+          docker compose -f docker-compose.server.yml config --quiet
+          docker compose -f docker-compose.server.yml up -d --wait postgres
+          docker compose -f docker-compose.server.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U epiverse_admin -d epiverse_test -c "CREATE TABLE role_probe_existing (id integer PRIMARY KEY);"
+          cd "$GITHUB_WORKSPACE"
+          bash infra/scripts/provision-app-db.sh staging
+          cd "$tmp/staging"
+          docker compose -f docker-compose.server.yml exec -T postgres sh -c 'PGPASSWORD="$APP_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U epiverse_app -d "$POSTGRES_DB" -c "INSERT INTO role_probe_existing (id) VALUES (1); SELECT * FROM role_probe_existing;"'
+          docker compose -f docker-compose.server.yml exec -T postgres psql -v ON_ERROR_STOP=1 -U epiverse_admin -d epiverse_test -c "CREATE TABLE role_probe_future (id integer PRIMARY KEY);"
+          docker compose -f docker-compose.server.yml exec -T postgres sh -c 'PGPASSWORD="$APP_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U epiverse_app -d "$POSTGRES_DB" -c "INSERT INTO role_probe_future (id) VALUES (2);"'
+          if docker compose -f docker-compose.server.yml exec -T postgres sh -c 'PGPASSWORD="$APP_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U epiverse_app -d "$POSTGRES_DB" -c "CREATE TABLE forbidden_schema_change (id integer);"' ; then
+            echo "::error::Un rôle applicatif a réussi une opération DDL interdite"
+            exit 1
+          fi
+          if docker compose -f docker-compose.server.yml exec -T postgres sh -c 'PGPASSWORD="$APP_DB_PASSWORD" psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U epiverse_app -d "$POSTGRES_DB" -c "DROP TABLE role_probe_existing;"'; then
+            echo "::error::Un rôle applicatif a réussi à supprimer une table"
+            exit 1
+          fi
+          echo "Accès DML autorisé, DDL interdit : rôle SQL vérifié."
