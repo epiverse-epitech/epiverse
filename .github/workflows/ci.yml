@@ -5,8 +5,8 @@ name: CI
 
 on:
   pull_request:
-    # Temporary stacked PR: test runtime changes against the SQL-roles feature branch.
-    branches: [main, develop, fix/postgres-app-least-privilege]
+    # Stacked verification: this PR is tested against the runtime-hardening branch.
+    branches: [main, develop, fix/container-runtime-hardening]
   push:
     branches: [main, develop]
   workflow_dispatch:
@@ -146,7 +146,7 @@ jobs:
       - name: Lint
         # Le template Expo n'a pas de config ESLint : « expo lint » la créerait en pleine CI.
         run: |
-          if ! ls eslint.config.* .eslintrc* >/dev/null 2>&1; then
+          if ! compgen -G 'eslint.config.*' >/dev/null && ! compgen -G '.eslintrc*' >/dev/null; then
             echo "::error::Configuration ESLint manquante dans $APP_DIR"
             exit 1
           fi
@@ -167,10 +167,10 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
   images:
-    name: Images Docker (build de contrôle)
+    name: Images Docker (build et scan de sécurité)
     needs: [detect, api, app]
     if: >-
-      always() && github.event_name == 'pull_request'
+      always()
       && needs.detect.result == 'success'
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled')
@@ -188,9 +188,11 @@ jobs:
           file: infra/docker/api.Dockerfile
           build-args: API_DIR=${{ env.API_DIR }}
           push: false
+          load: true
+          tags: epiverse-api:ci
           cache-from: type=gha,scope=epiverse-api
           cache-to: type=gha,mode=max,scope=epiverse-api
-      - name: Image migrations Prisma — sans publication
+      - name: Image migrations Prisma (contrôle)
         if: needs.detect.outputs.api == 'true'
         uses: docker/build-push-action@v7
         with:
@@ -199,6 +201,8 @@ jobs:
           target: migrate
           build-args: API_DIR=${{ env.API_DIR }}
           push: false
+          load: true
+          tags: epiverse-migrate:ci
           cache-from: type=gha,scope=epiverse-api
       - name: Image web
         if: needs.detect.outputs.app == 'true'
@@ -208,9 +212,24 @@ jobs:
           file: infra/docker/web.Dockerfile
           build-args: APP_DIR=${{ env.APP_DIR }}
           push: false
+          load: true
+          tags: epiverse-web:ci
           cache-from: type=gha,scope=epiverse-web
           cache-to: type=gha,mode=max,scope=epiverse-web
-
+      # Run the official Trivy container directly: no GitHub-release binary install.
+      # TODO: replace the tested version tag with a verified image digest for releases.
+      # All HIGH/CRITICAL findings are reported. Fail on critical findings and
+      # on HIGH/CRITICAL findings that have an upstream fixed package version.
+      # Unfixed HIGHs remain explicit, unresolved risks before production.
+      - name: "Trivy — image API : rapport complet et blocage corrigibles"
+        if: needs.detect.outputs.api == 'true'
+        run: bash .github/scripts/trivy-image-gate.sh epiverse-api:ci
+      - name: "Trivy — image de migration Prisma : rapport et blocage"
+        if: needs.detect.outputs.api == 'true'
+        run: bash .github/scripts/trivy-image-gate.sh epiverse-migrate:ci
+      - name: "Trivy — image web : rapport et blocage"
+        if: needs.detect.outputs.app == 'true'
+        run: bash .github/scripts/trivy-image-gate.sh epiverse-web:ci
   infrastructure:
     name: Infrastructure — syntaxe et configuration
     runs-on: ubuntu-latest
@@ -218,9 +237,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Vérifier les scripts Bash
-        run: bash -n infra/scripts/*.sh
+        run: for script in infra/scripts/*.sh .github/scripts/*.sh; do bash -n "$script" || exit; done
+      - name: Tester le gate de sécurité des images (tests négatifs)
+        run: python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
       - name: Vérifier les scripts POSIX shell
-        run: sh -n infra/docker/*.sh
+        run: for script in infra/docker/*.sh; do sh -n "$script" || exit; done
+      - name: Tester les gardes CI
+        run: python3 -m unittest discover -s .github/tests -p 'test_*.py' -v
       - name: Compiler le générateur de fixtures
         run: python3 -m py_compile data/fixtures/generate.py
       - name: Exécuter les tests de sécurité des fixtures si présents
@@ -231,12 +254,24 @@ jobs:
       - name: Valider Docker Compose local (tous profils)
         run: docker compose --profile tools --profile full -f docker-compose.yml config --quiet
 
+  security-static:
+    name: Sécurité — analyse IaC et workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Trivy — configurations infrastructure
+        run: |
+          docker run --rm -v "$PWD:/workspace:ro" \
+            aquasec/trivy@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e fs --scanners misconfig \
+            --severity HIGH,CRITICAL --exit-code 1 --no-progress /workspace
+
   quality-gate:
     name: Qualité — contrôle final obligatoire
     # GitHub considère les jobs skipped comme réussis : les cas attendus
     # doivent donc être explicitement vérifiés.
     if: always()
-    needs: [detect, secrets, api, app, images, infrastructure]
+    needs: [detect, secrets, api, app, images, infrastructure, security-static]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -248,6 +283,7 @@ jobs:
           DETECT_RESULT: ${{ needs.detect.result }}
           SECRETS_RESULT: ${{ needs.secrets.result }}
           INFRA_RESULT: ${{ needs.infrastructure.result }}
+          SECURITY_RESULT: ${{ needs.security-static.result }}
           API_PRESENT: ${{ needs.detect.outputs.api }}
           APP_PRESENT: ${{ needs.detect.outputs.app }}
           API_RESULT: ${{ needs.api.result }}
@@ -264,6 +300,7 @@ jobs:
           expect "$DETECT_RESULT" success "Détection des applications"
           expect "$SECRETS_RESULT" success "Gitleaks"
           expect "$INFRA_RESULT" success "Infrastructure"
+          expect "$SECURITY_RESULT" success "Analyse IaC"
           if [ "$GIT_REF" = 'refs/heads/develop' ] || [ "$BASE_REF" = 'develop' ]; then
             expect "$API_PRESENT" true "API requise sur develop"
           fi
@@ -277,8 +314,8 @@ jobs:
           else
             expect "$APP_RESULT" skipped "Expo absent"
           fi
-          if [ "$EVENT_NAME" = pull_request ] && { [ "$API_PRESENT" = true ] || [ "$APP_PRESENT" = true ]; }; then
-            expect "$IMAGES_RESULT" success "Build Docker de la PR"
+          if [ "$API_PRESENT" = true ] || [ "$APP_PRESENT" = true ]; then
+            expect "$IMAGES_RESULT" success "Build et scan Docker"
           else
             expect "$IMAGES_RESULT" skipped "Images Docker non applicables"
           fi
