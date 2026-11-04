@@ -1,5 +1,49 @@
 # Plan de réalisation et critères de passage
 
+## Échéance et périmètre de semestre — arbitrage utilisateur
+
+Échéance : **Defense ESP du 5 février 2027**, selon le calendrier fourni par Estelle. Livraison visée : **version complète en préproduction, démontrable et testée**, sans ouverture publique ni mise en production impliquée.
+
+Obligatoire : les quatre parcours, navigateurs ordinateur/mobile, gestion multicampus et vérification étudiante, cible de 50 sessions simultanées, texte/audio/vidéo de proximité, avatars, chambres et espaces associatifs aménageables, catalogue et images personnelles contrôlées. Les imports de modèles 3D personnels passent explicitement en bonus au semestre suivant. Les obligations scolaires restent à rapprocher du rubric ; ce périmètre produit ne les remplace pas.
+
+La préproduction utilise des données synthétiques et des comptes de test ; toute invitation de personnes réelles exige les contrôles de données et d'accès adaptés. La vérification étudiante peut être démontrée par un scénario contrôlé, sans prétendre qu'un SSO institutionnel indisponible est intégré.
+
+### Calendrier scolaire communiqué
+
+| Activité | Date ou fenêtre |
+|---|---|
+| Kick-off ESP | 11 septembre 2026 |
+| T-LAW séminaire | 11 septembre au 27 novembre 2026 |
+| T-LAW rapport et keynote | 5 octobre au 18 décembre 2026 |
+| Follow-up 1 ESP | 9 octobre 2026 |
+| Follow-up 2 ESP | 13 novembre 2026 |
+| Follow-up 3 ESP | 18 décembre 2026 au 8 janvier 2027 ; créneau exact non communiqué |
+| Defense ESP | 5 février 2027 |
+
+### Rétroplanning proposé, capacité à confirmer
+
+| Jalon | Sortie attendue |
+|---|---|
+| 13 novembre 2026 — follow-up 2 | Périmètre et backlog vérifiables, état honnête des PR et protections, architecture des quatre parcours, première démonstration disponible sans fonctionnalité inventée |
+| 27 novembre 2026 — jalon interne | Identité et droits multicampus, base frontend et événements/inscriptions utilisables ; prototype média et monde pour lever les risques techniques tôt |
+| 18 décembre 2026 — début de fenêtre follow-up 3 | Profils/projets/entraide, ressources/mentorat et campus intégrés dans une première version ; état des lacunes et preuves ; échéance T-LAW traitée séparément |
+| 8 janvier 2027 — gel fonctionnel proposé | Les quatre parcours et options obligatoires sont implémentés ; pas de nouvel ajout fonctionnel non indispensable |
+| 22 janvier 2027 — version candidate | Régression E2E, droits négatifs, tests de charge et appareils, restauration réelle isolée, documentation et preuves ; aucun défaut critique ouvert |
+| 29 janvier 2027 — répétition générale | Version identifiée et déployée en préproduction, scénario de démonstration complet, comptes prêts, solution de secours et livrables alignés |
+| 5 février 2027 — soutenance | Démonstration de la version validée et présentation honnête des preuves et limites |
+
+Les jalons internes sont proposés et ne constituent pas une garantie de faisabilité. Prévoir l'alternance, T-LAW, congés et disponibilité réelle. Tout glissement doit déclencher un arbitrage explicite du périmètre, sans sacrifier les contrôles d'accès, l'intégrité des données ou les tests critiques. Le semestre suivant vise les bonus ; maintenance, vulnérabilités nouvelles et régressions resteront à traiter.
+
+### Définition de terminé pour la soutenance
+
+- Quatre parcours exécutés de bout en bout sur la révision livrée, données persistantes et scénarios d'erreur testés.
+- CI applicable réussie, aucun contrôle requis évité ; traces des tests de sécurité et limites connues.
+- Autorisations testées entre utilisateurs, campus, associations et espaces ; médias révocables et imports d'images contrôlés.
+- Déploiement préproduction reproductible, secrets séparés, supervision, sauvegarde et restauration réellement éprouvées.
+- Matrice navigateur/appareil, charge 50 sessions et qualité des médias documentées ; objectifs non atteints explicitement signalés.
+- Documentation utilisateur, exploitation, architecture, coûts et livrables scolaires cohérents ; démonstration répétée et preuves référencées.
+- Aucun statut « livré » déduit d'une documentation, d'une PR ouverte ou d'un mock.
+
 ## Décisions produit — 4 novembre 2026
 
 Choix explicites de la porteuse du projet :
@@ -44,7 +88,7 @@ Propositions techniques à évaluer, non décisions produit : catalogue d'objets
 ### Pilote multicampus et imports — décisions confirmées
 
 - Accès : étudiants vérifiés de plusieurs campus. La cible de 50 connexions simultanées reste globale au pilote, et non 50 par campus.
-- Contenus : catalogue fourni, images personnelles et modèles 3D personnels.
+- Contenus obligatoires au 5 février 2027 : catalogue fourni et images personnelles. Imports de modèles 3D personnels reportés en bonus au semestre suivant.
 - Horaires : campus ouvert toute la journée, fréquentation variable. Ce choix n'est ni une promesse de disponibilité absolue ni une permanence humaine de support.
 - L'import de modèles 3D ne décide pas à lui seul du rendu global 2D/2.5D/3D : vérifier le rendu et le coût mobile avec un prototype représentatif.
 
@@ -52,7 +96,7 @@ Exigences proposées pour réalisation :
 1. Définir le niveau de vérification étudiante. Une adresse académique vérifiée prouve le contrôle de cette adresse, pas nécessairement une inscription actuelle. Prévoir statut en attente, source et date de vérification, expiration, révocation et recours ; SSO institutionnel uniquement si un accès officiel est disponible.
 2. Modéliser les appartenances à plusieurs campus. Distinguer espaces communs et espaces réservés ; tester lecture, édition, fichiers et audio entre campus, associations et chambres. Une appartenance ne donne pas de droit d'administration.
 3. Placer les imports en quarantaine privée avant publication. Vérifier type réel, taille et complexité après décodage ; traiter dans un worker isolé sans accès réseau ni secrets. Refuser les ressources externes, scripts et formats non pris en charge.
-4. Proposition de format initial : GLB autonome avec liste d'extensions autorisées ; images réencodées avec suppression des métadonnées inutiles. Limiter triangles, textures, dimensions, animations et coût total par scène, pas uniquement les octets du fichier. Les seuils seront fixés par mesure mobile.
+4. Images réencodées avec suppression des métadonnées inutiles. Pour le bonus ultérieur d'import 3D : proposition de format GLB autonome avec liste d'extensions autorisées. Limiter triangles, textures, dimensions, animations et coût total par scène, pas uniquement les octets du fichier. Les seuils seront fixés par mesure mobile.
 5. Prévoir quotas utilisateur/espace, droits sur les œuvres, signalement, retrait et suppression des objets dérivés. Tests négatifs : fichier trompeur, ressource externe, image ou modèle démesuré, écriture dans l'espace d'un tiers.
 6. Autoriser le campus sans connexion audio permanente. Rejoindre et quitter explicitement l'audio ; ne pas supposer qu'un microphone muet arrête la facturation d'une connexion WebRTC.
 7. Prévoir alertes d'incident, procédure de reprise, surveillance des dépenses et dégradation visible vers le texte si l'audio devient indisponible. L'ouverture du service ne vaut pas engagement d'assistance 24 h/24.
@@ -159,7 +203,7 @@ Séparer coûts ponctuels, fixes, variables par utilisateur/campus, abonnements 
 | P4 : mesurer l'usage | P3 + accord campus | Résultats sur cohortes, retours, coût réel et décision produit documentés |
 | P5 : extensions | Valeur et capacité démontrées | IA avancée, extensions du mentorat et du campus évaluées séparément, budgets et risques acceptés |
 
-Aucune date de livraison ferme n'est inventée. Les estimations sont produites après découpage et confirmation de capacité. La progression du programme est un travail continu ; le présent document rend les décisions et validations contrôlables.
+L'échéance scolaire fournie est le 5 février 2027. Le rétroplanning ci-dessous est une cible de travail ; sa faisabilité reste à confirmer par découpage et capacité réelle de l'équipe. La progression du programme est un travail continu ; le présent document rend les décisions et validations contrôlables.
 
 ## Objectifs de qualité et vidéo — décision du 4 novembre 2026
 
