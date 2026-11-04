@@ -2,6 +2,7 @@ import { plainToInstance, Transform } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
+  IsUrl,
   Max,
   Min,
   validateSync,
@@ -46,6 +47,13 @@ export class EnvironmentVariables {
   @Min(1)
   @IsInt()
   AUTH_RATE_LIMIT_MAX: number = 5;
+
+  @IsUrl({
+    protocols: ['postgresql', 'postgres'],
+    require_protocol: true,
+    require_tld: false,
+  })
+  DATABASE_URL: string;
 }
 
 export function validateEnv(

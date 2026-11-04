@@ -12,6 +12,7 @@ import argparse
 import bisect
 import json
 import math
+import os
 import random
 import re
 import subprocess
@@ -1038,8 +1039,26 @@ def main():
     parser.add_argument('--no-embeddings', action='store_true', help='ne pas générer content_embedding (fichier SQL bien plus léger)')
     parser.add_argument('--defects', type=float, default=0.0, metavar='PART',
                         help="part d'anomalies injectées pour tester les contrôles qualité, ex. 0.05 (0 = données propres)")
-    parser.add_argument('--load', action='store_true', help='charger dans les conteneurs Docker locaux après la génération')
+    parser.add_argument('--load', action='store_true', help='charger dans les conteneurs Docker locaux après la génération (efface les données précédentes)')
+    parser.add_argument('--confirm-local-reset', action='store_true',
+                        help='confirmation explicite de la suppression des données PostgreSQL/MongoDB locales')
     args = parser.parse_args()
+    if args.load:
+        if not args.confirm_local_reset:
+            parser.error('--load efface les données existantes ; fournir --confirm-local-reset après vérification de la cible')
+        if os.environ.get('NODE_ENV') == 'production' or os.environ.get('APP_ENV') == 'production':
+            parser.error('chargement destructif interdit avec NODE_ENV/APP_ENV=production')
+        # Docker Compose may point to a remote daemon through DOCKER_HOST/DOCKER_CONTEXT.
+        # Refuse network transports even if the remote context happens to be named "default".
+        docker_host = os.environ.get('DOCKER_HOST', '')
+        if docker_host and not docker_host.startswith(('unix://', 'npipe://')):
+            parser.error('DOCKER_HOST doit utiliser une socket Docker locale pour --load')
+        context = subprocess.run(
+            ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'],
+            capture_output=True, text=True, check=False,
+        )
+        if context.returncode != 0 or not context.stdout.strip().startswith(('unix://', 'npipe://')):
+            parser.error('contexte Docker distant ou inconnu : --load est réservé à une socket locale')
     sys.stdout.reconfigure(encoding='utf-8')
 
     day = datetime.strptime(args.reference_date, '%Y-%m-%d') if args.reference_date else datetime.now(timezone.utc)

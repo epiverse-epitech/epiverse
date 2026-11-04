@@ -13,9 +13,10 @@ on:
 permissions:
   contents: read
 
+# Annuler une PR obsolète, mais jamais une CI de develop qui publie ou déploie.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   # À ajuster si le squelette utilise d'autres dossiers (mêmes valeurs que .env et deploy.yml)
@@ -109,15 +110,15 @@ jobs:
           npx prisma generate
           npx prisma migrate deploy
       - name: Lint
-        run: npm run --if-present lint
+        run: npm run lint
       - name: Tests unitaires
-        run: npm run --if-present test
+        run: npm run test
       - name: Tests d'intégration (e2e)
-        run: npm run --if-present test:e2e
+        run: npm run test:e2e
       - name: Build
         run: npm run build
-      - name: Audit des dépendances de production (faille critique = bloquant)
-        run: npm audit --omit=dev --audit-level=critical
+      - name: Audit des dépendances de production (faille élevée ou critique = bloquant)
+        run: npm audit --omit=dev --audit-level=high
 
   app:
     name: App Expo — lint, types, tests, export web
@@ -144,25 +145,25 @@ jobs:
       - name: Lint
         # Le template Expo n'a pas de config ESLint : « expo lint » la créerait en pleine CI.
         run: |
-          if ls eslint.config.* .eslintrc* >/dev/null 2>&1; then
-            npm run --if-present lint
-          else
-            echo "::warning::Pas de config ESLint dans $APP_DIR : lancer « npx expo lint » une fois en local, puis commiter eslint.config.js"
+          if ! ls eslint.config.* .eslintrc* >/dev/null 2>&1; then
+            echo "::error::Configuration ESLint manquante dans $APP_DIR"
+            exit 1
           fi
+          npm run lint
       - name: Vérification des types
-        if: hashFiles(format('{0}/tsconfig.json', env.APP_DIR)) != ''
         # expo-env.d.ts est ignoré par Git mais nécessaire à TypeScript (types CSS, images…).
         run: |
           [ -f expo-env.d.ts ] || printf '/// <reference types="expo/types" />\n' > expo-env.d.ts
+          test -f tsconfig.json || { echo '::error::tsconfig.json manquant'; exit 1; }
           npx tsc --noEmit
       - name: Tests
-        run: npm run --if-present test
+        run: npm run test
       - name: Export web (même commande que l'image Docker)
         env:
           EXPO_OFFLINE: "1"
         run: npx expo export --platform web --output-dir dist
-      - name: Audit des dépendances de production (faille critique = bloquant)
-        run: npm audit --omit=dev --audit-level=critical
+      - name: Audit des dépendances de production (faille élevée ou critique = bloquant)
+        run: npm audit --omit=dev --audit-level=high
 
   images:
     name: Images Docker (build de contrôle)
@@ -198,3 +199,99 @@ jobs:
           push: false
           cache-from: type=gha,scope=epiverse-web
           cache-to: type=gha,mode=max,scope=epiverse-web
+
+  infrastructure:
+    name: Infrastructure — syntaxe et configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Vérifier les scripts Bash
+        run: bash -n infra/scripts/*.sh
+      - name: Vérifier les scripts POSIX shell
+        run: sh -n infra/docker/*.sh
+      - name: Compiler le générateur de fixtures
+        run: python3 -m py_compile data/fixtures/generate.py
+      - name: Exécuter les tests de sécurité des fixtures si présents
+        run: |
+          if [ -f data/fixtures/test_safety.py ]; then
+            python3 -m unittest discover -s data/fixtures -p 'test_*.py'
+          fi
+      - name: Valider Docker Compose local (tous profils)
+        run: docker compose --profile tools --profile full -f docker-compose.yml config --quiet
+
+  quality-gate:
+    name: Qualité — contrôle final obligatoire
+    # GitHub considère les jobs skipped comme réussis : les cas attendus
+    # doivent donc être explicitement vérifiés.
+    if: always()
+    needs: [detect, secrets, api, app, images, infrastructure]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Refuser tout contrôle manquant ou ignoré sans justification
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GIT_REF: ${{ github.ref }}
+          BASE_REF: ${{ github.base_ref }}
+          DETECT_RESULT: ${{ needs.detect.result }}
+          SECRETS_RESULT: ${{ needs.secrets.result }}
+          INFRA_RESULT: ${{ needs.infrastructure.result }}
+          API_PRESENT: ${{ needs.detect.outputs.api }}
+          APP_PRESENT: ${{ needs.detect.outputs.app }}
+          API_RESULT: ${{ needs.api.result }}
+          APP_RESULT: ${{ needs.app.result }}
+          IMAGES_RESULT: ${{ needs.images.result }}
+        run: |
+          set -euo pipefail
+          expect() {
+            if [ "$1" != "$2" ]; then
+              echo "::error::$3: attendu '$2', obtenu '$1'"
+              return 1
+            fi
+          }
+          expect "$DETECT_RESULT" success "Détection des applications"
+          expect "$SECRETS_RESULT" success "Gitleaks"
+          expect "$INFRA_RESULT" success "Infrastructure"
+          if [ "$GIT_REF" = 'refs/heads/develop' ] || [ "$BASE_REF" = 'develop' ]; then
+            expect "$API_PRESENT" true "API requise sur develop"
+          fi
+          if [ "$API_PRESENT" = true ]; then
+            expect "$API_RESULT" success "Tests API"
+          else
+            expect "$API_RESULT" skipped "API absente"
+          fi
+          if [ "$APP_PRESENT" = true ]; then
+            expect "$APP_RESULT" success "Tests Expo"
+          else
+            expect "$APP_RESULT" skipped "Expo absent"
+          fi
+          if [ "$EVENT_NAME" = pull_request ] && { [ "$API_PRESENT" = true ] || [ "$APP_PRESENT" = true ]; }; then
+            expect "$IMAGES_RESULT" success "Build Docker de la PR"
+          else
+            expect "$IMAGES_RESULT" skipped "Images Docker non applicables"
+          fi
+          echo "Contrôles requis validés ; seuls les skips prévus sont acceptés." >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    name: Publication après validation CI
+    needs: [detect, secrets, api, app, infrastructure, quality-gate]
+    if: >-
+      always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && github.ref == 'refs/heads/develop'
+      && needs.detect.result == 'success'
+      && needs.secrets.result == 'success'
+      && needs.infrastructure.result == 'success'
+      && needs.quality-gate.result == 'success'
+      && needs.api.result == 'success'
+      && (needs.app.result == 'success'
+          || (needs.app.result == 'skipped' && needs.detect.outputs.app == 'false'))
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+    secrets:
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}

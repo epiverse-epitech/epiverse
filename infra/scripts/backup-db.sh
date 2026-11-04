@@ -21,6 +21,32 @@ BACKUP_DIR="${BACKUP_DIR:-$BASE_DIR/backups/$ENV_NAME}"
 RETENTION="$(env_value BACKUP_RETENTION_DAYS)"
 RETENTION="${RETENTION:-14}"
 RCLONE_REMOTE="$(env_value BACKUP_RCLONE_REMOTE)"
+if [ "$ENV_NAME" = "production" ] && [ -z "$RCLONE_REMOTE" ]; then
+  echo "[backup production] BACKUP_RCLONE_REMOTE obligatoire pour éviter une sauvegarde uniquement locale." >&2
+  exit 1
+fi
+if [ -n "$RCLONE_REMOTE" ]; then
+  if ! command -v rclone >/dev/null 2>&1; then
+    echo "[backup $ENV_NAME] BACKUP_RCLONE_REMOTE est défini mais rclone n'est pas installé." >&2
+    exit 1
+  fi
+  RCLONE_NAME="${RCLONE_REMOTE%%:*}"
+  case "$RCLONE_REMOTE" in
+    :*|/*|./*|../*|local:*|"$RCLONE_NAME")
+      echo "[backup $ENV_NAME] BACKUP_RCLONE_REMOTE doit être un remote rclone distant au format remote:path (les destinations locales sont refusées)." >&2
+      exit 1
+      ;;
+  esac
+  if ! rclone listremotes | grep -Fxq "$RCLONE_NAME:"; then
+    echo "[backup $ENV_NAME] Remote rclone inconnu : $RCLONE_NAME." >&2
+    exit 1
+  fi
+  RCLONE_TYPE="$(rclone config show "$RCLONE_NAME" | sed -n 's/^type = //p' | tail -n 1)"
+  if [ "$RCLONE_TYPE" = "local" ]; then
+    echo "[backup $ENV_NAME] Le remote rclone local '$RCLONE_NAME' est refusé pour une copie hors serveur." >&2
+    exit 1
+  fi
+fi
 BACKUP_PASSPHRASE="$(env_value BACKUP_PASSPHRASE)"
 export BACKUP_PASSPHRASE
 [ -n "$BACKUP_PASSPHRASE" ] || { echo "BACKUP_PASSPHRASE vide dans .env : sauvegarde non chiffrée refusée." >&2; exit 1; }
@@ -41,10 +67,6 @@ echo "[backup $ENV_NAME] $(date -u +%Y-%m-%dT%H:%M:%SZ) $FILE ($(du -h "$FILE" |
 find "$BACKUP_DIR" -name "epiverse-$ENV_NAME-*.dump.enc" -type f -mtime +"$RETENTION" -delete
 
 if [ -n "$RCLONE_REMOTE" ]; then
-  if ! command -v rclone >/dev/null 2>&1; then
-    echo "[backup $ENV_NAME] BACKUP_RCLONE_REMOTE est défini mais rclone n'est pas installé." >&2
-    exit 1
-  fi
   rclone copy "$FILE" "$RCLONE_REMOTE/$ENV_NAME/"
   echo "[backup $ENV_NAME] Copie hors serveur : $RCLONE_REMOTE/$ENV_NAME/"
 fi

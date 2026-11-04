@@ -94,13 +94,9 @@ Dossiers : `apps/api` et `apps/app` par défaut. Si le squelette en utilise d'au
 | App Expo — lint, types, tests, export web | Lint, TypeScript, tests, export web, audit |
 | Images Docker (sur PR) | Construit les deux images pour détecter un Dockerfile cassé avant la fusion |
 
-**`deploy.yml`** :
+**`deploy.yml`** est un workflow réutilisable appelé uniquement depuis le job `release` de `ci.yml` après réussite des contrôles sur `develop` (push ou lancement manuel de la CI). Il publie les images GHCR taguées `sha-<SHA complet>` et `staging`. **Aucune release n'est lancée si la CI échoue.** La pile serveur staging n'est déployée que si `STAGING_HOST` est configuré **et** `apps/app/package.json` existe. Tant que l'app Expo n'existe pas, seule l'image API est publiée. **La production et les tags `vX.Y.Z` ne déclenchent aucun déploiement** jusqu'à la validation du gate G6 dans une future PR dédiée.
 
-- push sur `develop` → images publiées sur GitHub Container Registry (tags `sha-xxxxxxx` et `staging`) → déploiement automatique en staging ;
-- tag `vX.Y.Z` sur `main` → mêmes étapes vers la production, uniquement si la variable `PRODUCTION_HOST` est renseignée : elle reste vide jusqu'au gate pilote G6, c'est le verrou de la mise en production ;
-- lancement manuel possible depuis l'onglet Actions.
-
-Tant que le serveur n'est pas configuré, les images sont publiées et le déploiement est simplement sauté : le workflow reste vert. Le registre d'images de GitHub est gratuit, y compris pour des images privées (GitHub prévient un mois avant tout changement).
+Tant que le serveur staging n'est pas configuré ou que l'application web n'existe pas, les images disponibles sont publiées et le déploiement serveur est sauté : le workflow peut être vert sans qu'un site soit accessible. Vérifier explicitement le job `Déploiement staging` avant d'annoncer une mise en ligne. Le registre d'images de GitHub est gratuit, y compris pour des images privées (GitHub prévient un mois avant tout changement).
 
 **`mirror.yml`** recopie `main`, `develop` et les tags vers le dépôt officiel Epitech à chaque push, historique compris (section 4).
 
@@ -113,14 +109,14 @@ Git (DOC-013) : `main` protégée, `develop` pour l'intégration, branches `feat
 L'organisation `EpitechMscProPromo2027` appartient à Epitech : on y a le droit d'écriture sur nos dépôts, pas l'administration (ni secrets, ni réglages). D'où ce montage :
 
 1. **Une organisation GitHub dédiée, gratuite** (github.com/organizations/plan → Free), avec Estelle et Baye propriétaires et le reste de l'équipe membres. Le dépôt de développement y vit. Une organisation plutôt qu'un compte personnel : sur un compte personnel, les invités n'ont que le droit d'écriture.
-2. **Le miroir vers le dépôt officiel Epitech** (`mirror.yml`) garde ce dépôt à jour en continu. Dans Settings → General → Pull Requests, garder « Allow merge commits » : les commits de chacun restent visibles dans le dépôt Epitech, ce qui compte pour l'évaluation individuelle.
+2. **Le miroir vers le dépôt officiel Epitech** (`mirror.yml`) synchronise sans écraser l'historique distant ; les divergences exigent une réconciliation manuelle. Dans Settings → General → Pull Requests, garder « Allow merge commits » : les commits de chacun restent visibles dans le dépôt Epitech, ce qui compte pour l'évaluation individuelle.
 3. **Limites de l'offre gratuite pour un dépôt privé** : ni protection de branches, ni environnements GitHub (documentation GitHub, vérifiée le 22/09/2026). Les règles passent donc par l'équipe : jamais de push direct sur `main` ou `develop`, une PR avec CI verte avant chaque fusion. La production est verrouillée par `PRODUCTION_HOST`. Si Epitech autorise un dépôt public, ces protections deviennent gratuites : les activer alors (Settings → Rules → Rulesets : PR obligatoire, pas de force push, contrôles requis `Détection des applications`, `Recherche de secrets`, `API — lint, tests, build`, `App Expo — lint, types, tests, export web`).
 4. **Variables** (Settings → Secrets and variables → Actions → Variables) : `EPITECH_REPO` (URL SSH du dépôt officiel, ex. `git@github.com:EpitechMscProPromo2027/<dépôt>.git`), `STAGING_HOST` (IP du serveur), `STAGING_URL`, `DEPLOY_USER` (`deploy`). Au gate G6 seulement : `PRODUCTION_HOST`, `PRODUCTION_URL`.
 5. **Secrets** : `DEPLOY_SSH_KEY` (clé privée de déploiement, section 5), `DEPLOY_KNOWN_HOSTS` (sortie de `ssh-keyscan -t ed25519 <IP>`) et `EPITECH_MIRROR_SSH_KEY`.
 
 Mettre en place le miroir :
 
-1. Vérifier que le dépôt Epitech est vide. Sinon, récupérer d'abord son contenu dans notre dépôt : le miroir remplace `main` et `develop`.
+1. Vérifier que le dépôt Epitech est vide ou partage déjà un historique compatible. Sinon, réconcilier d'abord les historiques : le miroir **refuse les mises à jour non fast-forward**, sans écraser les branches et tags existants.
 2. Créer une clé réservée au miroir : `ssh-keygen -t ed25519 -f epiverse_mirror -C "epiverse-mirror" -N ""`.
 3. Donner à la clé publique le droit d'écrire sur le dépôt Epitech. Le mieux est de demander à Epitech (Guillaume) de l'ajouter en « deploy key » avec écriture sur ce seul dépôt. À défaut, l'ajouter au compte GitHub d'un membre de l'équipe (Settings → SSH and GPG keys) : elle a alors les mêmes droits que ce compte. Dans ce cas, la réserver à cet usage et la supprimer en fin de projet.
 4. Mettre la clé privée dans le secret `EPITECH_MIRROR_SSH_KEY`, renseigner `EPITECH_REPO`, puis lancer Actions → Miroir Epitech → Run workflow.
@@ -156,13 +152,13 @@ Quota : 2 000 minutes d'Actions par mois pour les dépôts privés de l'offre gr
    scp infra/server/api.env.example deploy@<IP>:/opt/epiverse/staging/api.env
    ```
    Puis sur le serveur : remplir `.env` (mots de passe via `openssl rand -hex 24`, `IMAGE_REGISTRY=ghcr.io/<organisation-en-minuscules>`, `BACKUP_PASSPHRASE`) et `api.env` (secrets via `openssl rand -hex 32`, `CORS_ORIGINS=https://<domaine du staging>`). Garder `BACKUP_PASSPHRASE` aussi dans un gestionnaire de mots de passe.
-7. Renseigner les variables et secrets GitHub (section 4), puis pousser sur `develop` : le déploiement part tout seul. Vérifier `https://<domaine>/api/health`. Pour la suite, ajouter la clé publique de déploiement à `/home/deploy/.ssh/authorized_keys` suffit : aucun mot de passe serveur n'est partagé.
+7. Renseigner les variables et secrets GitHub (section 4), puis lancer la CI de `develop`. Les images sont publiées uniquement après ses tests. Le déploiement staging est **désactivé tant que `apps/app` n'est pas implémenté**. Une fois l'app intégrée et la CI verte, vérifier `https://<domaine>/api/health`. Aucun mot de passe serveur n'est partagé.
 8. Planifier la sauvegarde quotidienne (`crontab -e` en tant que `deploy`) :
    ```
    15 3 * * * /opt/epiverse/scripts/backup-db.sh staging >> /opt/epiverse/backups/backup.log 2>&1
    ```
 
-**Production (gate G6 uniquement)** : mêmes étapes avec le dossier `/opt/epiverse/production`, `COMPOSE_PROJECT_NAME=epiverse-production`, `ENV_NAME=production`, `BACKUP_DIR=/opt/epiverse/backups/production`, le bloc production décommenté dans le Caddyfile, `PRODUCTION_DOMAIN` dans `/opt/epiverse/edge/.env`, et enfin les variables `PRODUCTION_*` dans GitHub. Renseigner ces variables vaut feu vert pour la production : c'est la dernière étape, après validation d'Estelle.
+**Production (gate G6 uniquement)** : le pipeline actuel **refuse la production**. Avant le pilote, créer une PR dédiée pour le workflow de release, les approbations, le contrôle du SHA issu de `main`, les tests de restauration et la configuration du domaine. Renseigner `PRODUCTION_HOST` seul ne déverrouille plus une release.
 
 ---
 
@@ -170,7 +166,7 @@ Quota : 2 000 minutes d'Actions par mois pour les dépôts privés de l'offre gr
 
 | Action | Commande (sur le serveur, utilisateur `deploy`) |
 |---|---|
-| Déployer | Automatique (push sur `develop`) ou Actions → Déploiement → Run workflow |
+| Déployer | Push sur `develop` ou Actions → CI → Run workflow sur `develop`, après succès de tous les jobs de qualité |
 | Revenir à une version | `bash /opt/epiverse/scripts/deploy.sh staging <tag>` (versions listées dans `/opt/epiverse/staging/deploy-history.log`) |
 | Voir les journaux | `cd /opt/epiverse/staging && docker compose -f docker-compose.server.yml logs -f api` |
 | État des services | `docker compose -f docker-compose.server.yml ps` |
@@ -202,7 +198,7 @@ Avant le pilote (gate G6), preuves à produire : une restauration testée en sta
 |---|---|---|
 | ADR-05 | Le web Expo est servi en fichiers statiques sur le même domaine que l'API (`/api`) | Pas de CORS pour le web, une seule image pour tous les environnements |
 | ADR-06 | Caddy comme reverse proxy, partagé par staging et production | HTTPS automatique, un seul serveur au départ pour tenir le budget |
-| ADR-07 | Images sur GitHub Container Registry avec tags immuables `sha-xxxxxxx`, déploiement par SSH | Chaque version est identifiable et un retour arrière prend une commande |
+| ADR-07 | Images sur GHCR taguées par SHA complet ; digest immuable recommandé avant la production, déploiement par SSH | Les tags permettent la traçabilité mais peuvent être déplacés : vérifier le digest lors d'une release de production |
 | ADR-08 | Sauvegarde chiffrée avant chaque migration et chaque nuit | Protège les données lors des déploiements (RPO 24 h) |
 | ADR-09 | Développement dans une organisation GitHub dédiée, miroir automatique vers le dépôt officiel Epitech | Droits d'administration pour la CI/CD, dépôt officiel toujours à jour avec l'historique de chacun |
 | ADR-10 | PostgreSQL avec pgvector dès le départ | Le schéma V1 stocke des embeddings (`VECTOR`) ; aucune migration d'image à prévoir plus tard |
