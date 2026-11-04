@@ -146,7 +146,7 @@ jobs:
       - name: Lint
         # Le template Expo n'a pas de config ESLint : « expo lint » la créerait en pleine CI.
         run: |
-          if ! ls eslint.config.* .eslintrc* >/dev/null 2>&1; then
+          if ! compgen -G 'eslint.config.*' >/dev/null && ! compgen -G '.eslintrc*' >/dev/null; then
             echo "::error::Configuration ESLint manquante dans $APP_DIR"
             exit 1
           fi
@@ -237,11 +237,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Vérifier les scripts Bash
-        run: bash -n infra/scripts/*.sh .github/scripts/*.sh
+        run: for script in infra/scripts/*.sh; do bash -n "$script" || exit; done .github/scripts/*.sh
       - name: Tester le gate de sécurité des images (tests négatifs)
         run: python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
       - name: Vérifier les scripts POSIX shell
-        run: sh -n infra/docker/*.sh
+        run: for script in infra/docker/*.sh; do sh -n "$script" || exit; done
+      - name: Tester les gardes CI
+        run: python3 -m unittest discover -s .github/tests -p 'test_*.py' -v
       - name: Compiler le générateur de fixtures
         run: python3 -m py_compile data/fixtures/generate.py
       - name: Exécuter les tests de sécurité des fixtures si présents
