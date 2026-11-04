@@ -23,6 +23,8 @@ Une preuve comporte une référence consultable, une date et la révision testé
 
 ## Gouvernance documentaire
 
-Estelle est l'interlocutrice de direction du projet dans cette demande. Les documents de juin attribuent aussi une direction opérationnelle à Soumia, en contradiction avec des consignes antérieures. Ce conflit doit être arbitré explicitement avant republication d'un organigramme nominatif. Le registre utilise des rôles fonctionnels pour ne pas transformer cette ambiguïté en nouvelle décision.
+La décision de gouvernance est établie : Estelle assure seule la direction du projet ; Soumia intervient au frontend, sans rôle de direction. Les attributions contradictoires dans les documents Word doivent être corrigées, sans redemander cet arbitrage. Cette correction du référentiel ne signifie pas que les fichiers Word ont déjà été révisés. Les autres affectations nominatives restent à confirmer selon la disponibilité des contributeurs.
+
+Les choix produit du 4 novembre 2026 sont enregistrés dans le [plan de réalisation](plan-de-realisation.md) : quatre parcours inclus dans la première version testable, navigateur ordinateur/mobile d'abord, budget à établir après chiffrage. Ils priment sur les propositions antérieures de séquencement ; les registres et livrables détaillés restent à aligner.
 
 Tout changement de périmètre, fournisseur, coût récurrent, données collectées ou niveau de service nécessite une décision datée, ses alternatives, ses conséquences et un responsable. Les 36 domaines constituent une vision, pas 36 engagements simultanés.
