@@ -8,7 +8,7 @@ Choix explicites de la porteuse du projet :
 - Supports : navigateur sur ordinateur et mobile d'abord. Les applications distribuées dans les stores ne sont pas un prérequis de cette version.
 - Direction unique : Estelle. Soumia intervient au frontend, sans rôle de direction.
 
-La livraison des quatre parcours peut être incrémentale, mais une démonstration d'un seul parcours ne valide pas la première version complète. Tous restent à réaliser et à éprouver ; cette décision n'atteste aucune fonctionnalité livrée. Les stades du catalogue initial sont des propositions historiques à réconcilier avec ce périmètre avant planification détaillée.
+La livraison des quatre parcours peut être incrémentale, mais une démonstration d'un seul parcours ne valide pas la première version complète. Tous restent à réaliser et à éprouver ; cette décision n'atteste aucune fonctionnalité livrée. Le catalogue est aligné sur ces parcours ; le stade mvp vise uniquement leur périmètre décrit, pas toutes les fonctions de la vision à 36 domaines.
 
 Critères proposés pour découper les parcours :
 | Parcours | Démonstration attendue |
@@ -18,7 +18,30 @@ Critères proposés pour découper les parcours :
 | Ressources, mentorat | Partager une ressource autorisée, trouver un mentor, envoyer puis accepter/refuser une demande |
 | Campus, avatars | Entrer dans un espace, personnaliser son avatar et interagir ; reconnexion, contrôle des accès et alternative accessible |
 
-À décider par sélection avant chiffrage définitif : capacité simultanée cible, audio/vidéo intégrés, profondeur de personnalisation des espaces. Aucun choix de moteur ou fournisseur n'est déduit de ces réponses.
+### Campus : décisions confirmées
+
+- Cible du premier pilote : jusqu'à 50 personnes simultanées. Hypothèse de dimensionnement : 50 au total sur le pilote ; inclure un scénario de concentration dans un même espace. Ce chiffre est un objectif à mesurer, pas une capacité démontrée.
+- Communications : chat texte et audio de proximité dès la première version ; vidéo non requise.
+- Personnalisation : avatars, chambres personnelles et espaces associatifs aménageables.
+- Budget : chiffrer séparément hébergement, stockage, sauvegardes, audio (minutes participants et trafic), supervision et outils partagés. La simultanéité seule ne permet pas de calculer un coût mensuel.
+- Aucun fournisseur, moteur, abonnement ou hébergement payant n'est sélectionné par ces décisions.
+
+### Critères de validation à implémenter
+
+| Domaine | Critère de sortie proposé |
+|---|---|
+| Capacité | Test reproductible de 50 sessions actives, avec déplacements, chat et audio ; publier durée, appareils, réseau, latences, erreurs et consommation. Distinguer test synthétique et essai audio sur appareils réels. |
+| Microphone | Activation explicite, état visible, commande muet et arrêt de la capture en quittant l'audio ; parcours utilisable si permission refusée. Aucun enregistrement audio dans cette version. |
+| Proximité | Le serveur détermine les abonnements audio autorisés ; quitter une zone ou un espace révoque les flux. Baisser seulement le volume côté client ne constitue pas une isolation. |
+| Accès | Un utilisateur non autorisé ne peut ni entrer, ni écouter, ni modifier un espace ; tester aussi jeton expiré, révocation et reconnexion. |
+| Modération | Couper un participant, bloquer, signaler et exclure selon les droits ; limites de fréquence du chat, sans journaliser le contenu audio. |
+| Aménagement | Sauvegarder puis recharger une disposition ; propriétaire ou éditeur autorisé uniquement, validation serveur des objets, positions et quotas, gestion des modifications concurrentes. |
+| Navigateur mobile | Vérifier tactile, clavier virtuel, permissions micro, interruptions audio et reconnexion sur Safari iOS et Chrome Android, puis navigateurs desktop ciblés. |
+| Accessibilité | Les quatre parcours restent accessibles hors déplacement dans le monde ; chat texte disponible pour participer sans audio. |
+
+Propositions techniques à évaluer, non décisions produit : catalogue d'objets contrôlé pour commencer, quotas par espace et plafond de flux audio reçus simultanément. Un plafond doit être visible et ne pas être présenté comme 50 voix simultanément audibles.
+
+À préciser pour le chiffrage : fréquence et durée d'utilisation de l'audio, ouverture du pilote et autorisation éventuelle d'importer des médias personnels.
 
 ## 1. Produit et marché
 
