@@ -6,6 +6,7 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
 import { AuthRateLimit } from '../src/security/auth-rate-limit.decorator';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 // Test-only route, standing in for any ordinary endpoint.
 @Controller('test-rate-limit')
@@ -21,27 +22,32 @@ class TestRateLimitController {
   }
 }
 
+async function createApp(
+  env: Record<string, number>,
+): Promise<INestApplication<App>> {
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+    controllers: [TestRateLimitController],
+  })
+    .overrideProvider(ConfigService)
+    .useValue(new ConfigService(env))
+    .compile();
+
+  const app: INestApplication<App> = moduleRef.createNestApplication();
+  configureApp(app);
+  await app.init();
+  return app;
+}
+
 describe('Rate limiting (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-      controllers: [TestRateLimitController],
-    })
-      .overrideProvider(ConfigService)
-      .useValue(
-        new ConfigService({
-          RATE_LIMIT_TTL_SECONDS: 60,
-          RATE_LIMIT_MAX: 3,
-          AUTH_RATE_LIMIT_MAX: 2,
-        }),
-      )
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    configureApp(app);
-    await app.init();
+  app = await createApp({
+    RATE_LIMIT_TTL_SECONDS: 60,
+    RATE_LIMIT_MAX: 3,
+    AUTH_RATE_LIMIT_MAX: 2,
+    });
   });
 
   afterAll(async () => {
@@ -82,5 +88,32 @@ describe('Rate limiting (e2e)', () => {
       .expect(429);
 
     expect(response.headers['retry-after']).toBeDefined();
+  });
+});
+
+describe('Rate limiting recovery (e2e)', () => {
+  let app: INestApplication<App>;
+
+  beforeAll(async () => {
+    app = await createApp({
+      RATE_LIMIT_TTL_SECONDS: 1,
+      RATE_LIMIT_MAX: 1,
+      AUTH_RATE_LIMIT_MAX: 1,
+    });
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('after the window, the client gets access again', async () => {
+    const server = app.getHttpServer();
+
+    await request(server).get('/api/test-rate-limit/open').expect(200);
+    await request(server).get('/api/test-rate-limit/open').expect(429);
+
+    await sleep(1100);
+
+    await request(server).get('/api/test-rate-limit/open').expect(200);
   });
 });
