@@ -41,7 +41,40 @@ Critères proposés pour découper les parcours :
 
 Propositions techniques à évaluer, non décisions produit : catalogue d'objets contrôlé pour commencer, quotas par espace et plafond de flux audio reçus simultanément. Un plafond doit être visible et ne pas être présenté comme 50 voix simultanément audibles.
 
-À préciser pour le chiffrage : fréquence et durée d'utilisation de l'audio, ouverture du pilote et autorisation éventuelle d'importer des médias personnels.
+### Pilote multicampus et imports — décisions confirmées
+
+- Accès : étudiants vérifiés de plusieurs campus. La cible de 50 connexions simultanées reste globale au pilote, et non 50 par campus.
+- Contenus : catalogue fourni, images personnelles et modèles 3D personnels.
+- Horaires : campus ouvert toute la journée, fréquentation variable. Ce choix n'est ni une promesse de disponibilité absolue ni une permanence humaine de support.
+- L'import de modèles 3D ne décide pas à lui seul du rendu global 2D/2.5D/3D : vérifier le rendu et le coût mobile avec un prototype représentatif.
+
+Exigences proposées pour réalisation :
+1. Définir le niveau de vérification étudiante. Une adresse académique vérifiée prouve le contrôle de cette adresse, pas nécessairement une inscription actuelle. Prévoir statut en attente, source et date de vérification, expiration, révocation et recours ; SSO institutionnel uniquement si un accès officiel est disponible.
+2. Modéliser les appartenances à plusieurs campus. Distinguer espaces communs et espaces réservés ; tester lecture, édition, fichiers et audio entre campus, associations et chambres. Une appartenance ne donne pas de droit d'administration.
+3. Placer les imports en quarantaine privée avant publication. Vérifier type réel, taille et complexité après décodage ; traiter dans un worker isolé sans accès réseau ni secrets. Refuser les ressources externes, scripts et formats non pris en charge.
+4. Proposition de format initial : GLB autonome avec liste d'extensions autorisées ; images réencodées avec suppression des métadonnées inutiles. Limiter triangles, textures, dimensions, animations et coût total par scène, pas uniquement les octets du fichier. Les seuils seront fixés par mesure mobile.
+5. Prévoir quotas utilisateur/espace, droits sur les œuvres, signalement, retrait et suppression des objets dérivés. Tests négatifs : fichier trompeur, ressource externe, image ou modèle démesuré, écriture dans l'espace d'un tiers.
+6. Autoriser le campus sans connexion audio permanente. Rejoindre et quitter explicitement l'audio ; ne pas supposer qu'un microphone muet arrête la facturation d'une connexion WebRTC.
+7. Prévoir alertes d'incident, procédure de reprise, surveillance des dépenses et dégradation visible vers le texte si l'audio devient indisponible. L'ouverture du service ne vaut pas engagement d'assistance 24 h/24.
+
+### Pré-chiffrage audio : scénarios, pas fréquentation mesurée
+
+Base de calcul : mois de 30 jours, moyenne des connexions WebRTC actives sur les 24 heures. Minutes participants = moyenne × 60 × 24 × 30.
+
+| Scénario hypothétique | Moyenne de connexions audio | Minutes participants/mois |
+|---|---:|---:|
+| Faible | 2 | 86 400 |
+| Central de travail | 5 | 216 000 |
+| Soutenu | 15 | 648 000 |
+| Maximum théorique continu | 50 | 2 160 000 |
+
+Exemple de référence commerciale, sans sélection ni souscription : LiveKit Cloud Ship affiche 50 USD/mois, 150 000 minutes WebRTC et 250 Go sortants inclus ; dépassements de 0,0005 USD/minute et 0,12 USD/Go. Source officielle consultée le 4 novembre 2026 : https://livekit.com/pricing (rubriques Participants / Media transport). Ne pas appliquer les tarifs des agents vocaux IA à une conversation humaine.
+
+Avec cette grille, composante abonnement + minutes uniquement : 50 / 83 / 299 / 1 055 USD par mois pour les quatre scénarios. Ajouter transfert au-delà du quota, taxes éventuelles, change et tous les autres services. Le scénario extrême n'est pas une recommandation de plan tarifaire ; comparer les offres et l'auto-hébergement pour ce volume.
+
+Formule indicative Ship : 50 + max(0, minutes - 150000) × 0,0005 + max(0, Go_sortants - 250) × 0,12 USD/mois, hors autres options et fiscalité. Le débit, les flux reçus, TURN, le fournisseur et la région restent à qualifier. Le choix de localisation des données doit être vérifié avant toute sélection commerciale.
+
+Le budget complet reste à établir : API et monde temps réel, bases, stockage d'assets et dérivés, trafic CDN, traitement isolé des imports, sauvegardes, logs, supervision, emails, GitHub et exploitation humaine. Aucun total global ni achat n'est validé par ce pré-chiffrage.
 
 ## 1. Produit et marché
 
