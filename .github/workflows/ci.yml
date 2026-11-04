@@ -203,7 +203,7 @@ jobs:
           tags: epiverse-web:ci
           cache-from: type=gha,scope=epiverse-web
           cache-to: type=gha,mode=max,scope=epiverse-web
-      - name: Trivy — image API : bloquer les vulnérabilités graves
+      - name: "Trivy — image API : bloquer les vulnérabilités graves"
         if: needs.detect.outputs.api == 'true'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -214,7 +214,7 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: '1'
           format: table
-      - name: Trivy — image web : bloquer les vulnérabilités graves
+      - name: "Trivy — image web : bloquer les vulnérabilités graves"
         if: needs.detect.outputs.app == 'true'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
