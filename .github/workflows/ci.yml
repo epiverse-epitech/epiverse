@@ -199,14 +199,30 @@ jobs:
           cache-from: type=gha,scope=epiverse-web
           cache-to: type=gha,mode=max,scope=epiverse-web
 
+  infrastructure:
+    name: Infrastructure — syntaxe et configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Vérifier les scripts Bash
+        run: bash -n infra/scripts/*.sh
+      - name: Vérifier les scripts POSIX shell
+        run: sh -n infra/docker/*.sh
+      - name: Compiler le générateur de fixtures
+        run: python3 -m py_compile data/fixtures/generate.py
+      - name: Valider Docker Compose local (tous profils)
+        run: docker compose --profile tools --profile full -f docker-compose.yml config --quiet
+
   release:
     name: Publication après validation CI
-    needs: [detect, secrets, api, app]
+    needs: [detect, secrets, api, app, infrastructure]
     if: >-
       always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
       && github.ref == 'refs/heads/develop'
       && needs.detect.result == 'success'
       && needs.secrets.result == 'success'
+      && needs.infrastructure.result == 'success'
       && needs.api.result == 'success'
       && (needs.app.result == 'success'
           || (needs.app.result == 'skipped' && needs.detect.outputs.app == 'false'))
