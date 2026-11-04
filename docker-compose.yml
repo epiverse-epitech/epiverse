@@ -78,6 +78,23 @@ services:
 
   # --- Profil "full" : les mêmes images qu'en staging, derrière le même routage ---
 
+  migrate:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+      target: migrate
+      args:
+        API_DIR: ${API_DIR:-apps/api}
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      APP_ENV: local
+      DATABASE_URL: postgresql://${POSTGRES_USER:-epiverse}:${POSTGRES_PASSWORD:-epiverse_dev}@postgres:5432/${POSTGRES_DB:-epiverse}?schema=public
+
   api:
     profiles: ["full"]
     build:
@@ -93,6 +110,14 @@ services:
         condition: service_healthy
       mongo:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m
+    pids_limit: 128
     env_file:
       - path: infra/env/api.env
         required: false
@@ -103,7 +128,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-epiverse}:${POSTGRES_PASSWORD:-epiverse_dev}@postgres:5432/${POSTGRES_DB:-epiverse}?schema=public
       REDIS_URL: redis://redis:6379
       MONGO_URL: mongodb://${MONGO_USER:-epiverse}:${MONGO_PASSWORD:-epiverse_dev}@mongo:27017/${MONGO_DB:-epiverse_ai}?authSource=admin
-      RUN_MIGRATIONS: "true"
+      RUN_MIGRATIONS: "false"
 
   web:
     profiles: ["full"]

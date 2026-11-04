@@ -62,7 +62,7 @@ log "Version demandée : $TAG (en service : ${PREVIOUS_TAG:-aucune})"
 set_tag "$TAG"
 
 log "Téléchargement des images…"
-compose pull api web || rollback "images introuvables pour le tag $TAG"
+compose pull api web migrate || rollback "images introuvables pour le tag $TAG"
 
 log "Démarrage de PostgreSQL et Redis…"
 compose up -d --wait postgres redis || rollback "PostgreSQL ou Redis ne démarre pas"

@@ -25,6 +25,8 @@ RUN EXPO_OFFLINE=1 npx expo export --platform web --output-dir dist
 FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
 COPY infra/docker/nginx-web.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
+# Make the unprivileged account explicit for IaC scanners and image review.
+USER 101:101
 EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD ["wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
