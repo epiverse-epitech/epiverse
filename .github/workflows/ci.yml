@@ -5,7 +5,8 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    # Stacked verification: this PR is tested against the runtime-hardening branch.
+    branches: [main, develop, fix/container-runtime-hardening]
   push:
     branches: [main, develop]
   workflow_dispatch:
@@ -191,6 +192,18 @@ jobs:
           tags: epiverse-api:ci
           cache-from: type=gha,scope=epiverse-api
           cache-to: type=gha,mode=max,scope=epiverse-api
+      - name: Image migrations Prisma (contrôle)
+        if: needs.detect.outputs.api == 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: infra/docker/api.Dockerfile
+          target: migrate
+          build-args: API_DIR=${{ env.API_DIR }}
+          push: false
+          load: true
+          tags: epiverse-migrate:ci
+          cache-from: type=gha,scope=epiverse-api
       - name: Image web
         if: needs.detect.outputs.app == 'true'
         uses: docker/build-push-action@v7
@@ -211,6 +224,12 @@ jobs:
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
             --severity HIGH,CRITICAL --exit-code 1 --no-progress epiverse-api:ci
+      - name: "Trivy — image de migration Prisma (contrôle des CVE critiques)"
+        if: needs.detect.outputs.api == 'true'
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
+            --severity CRITICAL --exit-code 1 --no-progress epiverse-migrate:ci
       - name: "Trivy — image web : bloquer les vulnérabilités graves"
         if: needs.detect.outputs.app == 'true'
         run: |
