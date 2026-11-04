@@ -172,10 +172,10 @@ Critères d'acceptation à décliner en tests :
 
 ## Vérification documentaire complémentaire — 4 novembre 2026
 
-- Sources scolaires fournies : kickoff T-ESP-700, phase one, kickoff et deliveries T-ESP-800. Elles ne permettent pas de certifier le rubric T-ESP-901 actuel.
+- Sources scolaires : documents 700/800 et, reçu le 4 novembre 2026, sujet END-OF-STUDY PROJECT BUILD v4.1.1 (Project_ESP-build.zip). Ce dernier définit les attendus de l'itération BUILD ; le retour pédagogique transmis est distingué d'une grille de notation exhaustive.
 - T-ESP-800 demande notamment plan qualité, description fonctionnelle avec OBS/PBS/WBS et exigences, Definition of Done, besoins matériels et coûts. Relier chaque exigence à une preuve ; ne pas multiplier les documents sans nécessité.
 - Les DOC-002/004/010/018 v1.0 fournis attribuent encore coordination et planning à Soumia : incohérence à corriger selon la décision déjà confirmée.
-- Le DOC-018 historique nomme dix membres ; le README du dépôt cite aussi Julien. Composition actuelle, disponibilité, compétences et affectations à confirmer ; aucun rôle nouveau n'est attribué par cet audit.
+- Composition actuelle confirmée par Estelle le 4 novembre 2026 : Baye Ousmane Beye, Belaid Ioudjaoudene, Eckson Glitho, Estelle Giroud, Julien Lefebvre, Lina Laddada, Patrick Brugiere, Philimon Rusom, Soumia Michel, Thomas Pradeau. Hugo ne figure pas dans la liste actuelle. Disponibilités très variables, à chiffrer individuellement ; les responsabilités techniques restent à confirmer, sans transfert automatique du rôle historique de Hugo à Julien.
 - Le 5 février 2027 est la soutenance du semestre selon le calendrier communiqué ; ne pas la confondre avec la soutenance finale de cursus mentionnée en S10 dans la documentation générale.
 - Les objectifs de charge, de performance et de livraison restent des cibles tant que leurs tests et versions de référence ne sont pas disponibles.
 
@@ -301,3 +301,41 @@ Le pré-chiffrage audio précédent est conservé comme scénario historique aud
 Ordre de grandeur calculé, non débit garanti : 1 Mbit/s reçu en continu pendant 1 heure représente 0,45 Go décimal hors surcoûts protocolaires. Avec 5 participants moyens, 4 flux reçus à 0,5 Mbit/s chacun pendant 720 heures, le trafic serait de 3 240 Go/mois. À 25 % de temps avec vidéo, ce serait 810 Go avant audio, surcoûts et autres trafics. Mesurer le facteur d'activité et les couches réellement reçues avant tout achat.
 
 Source technique consultée le 4 novembre 2026 : https://docs.livekit.io/transport/media/subscribe/ (abonnements sélectifs et qualité adaptative). LiveKit reste une option étudiée, pas un fournisseur retenu. Le budget complet et les garanties de localisation restent à comparer.
+
+
+## Attendus BUILD v4.1.1 et retour pédagogique — 4 novembre 2026
+
+Source scolaire reçue : `Project_ESP-build.zip/Project/endStudyProject_build-project.pdf`, version 4.1.1. Le sujet exige un premier incrément exécutable v0.1 ; la version complète en préproduction au 5 février reste une ambition produit distincte, non une exigence de complétude démontrée par ce sujet.
+
+### Livrables et preuves obligatoires
+
+| Attendu | Preuve à produire | État |
+|---|---|---|
+| Incrément v0.1 fonctionnel respectant la DoD | Révision identifiée, scénario métier exécutable et résultats de tests | Non démontré dans cette vérification |
+| Installation à froid par un tiers | Clone, configuration, installation, build et exécution depuis le README, sur environnement propre ; auteur, date, durée, erreurs et révision | À réaliser |
+| ADR renseignés | Répertoire /docs/adr/ ; décisions structurelles, raisons, alternatives et conséquences | À inventorier puis compléter |
+| Delta Log consolidé | /reporting/ ; action prescrite, friction réelle, correction et source modifiée avec commit | À établir à partir d'exécutions réelles |
+| Tableau de bord de gouvernance et KPI | PDR, écart estimé/réel, ETC par tâche active, couverture, résultats CI et durée d'onboarding à froid | À instrumenter |
+| Roadmap actualisée | Estimations révisées et arbitrages fondés sur les mesures | À recalculer |
+| Rétrospective | Efficacité des rituels, répartition, outils ; actions avec responsable individuel et échéance | À réaliser collectivement |
+| Contribution et compréhension | Branches explicites, commits conventionnels, contributions équilibrées et compréhension des ADR/KPI par chaque membre | À vérifier ; ne pas assimiler nombre de commits et effort |
+
+Le PDR demandé est : actions ou ajustements manuels non prescrits / actions prescrites dans la procédure de référence × 100. Définir une unité d'action et figer la référence de chaque essai. Si le dénominateur est nul, indiquer non calculable. Conserver les essais échoués ; une procédure corrigée doit être rejouée à froid.
+
+Pour chaque tâche active : responsable, estimation initiale en heures, heures réelles, ETC (reste à faire réestimé), risque, dépendances, échéance, preuve. Prévision totale = heures réelles + ETC ; écart prévisionnel = prévision totale - estimation initiale. Ne pas utiliser automatiquement estimation initiale - heures réelles comme ETC.
+
+### Retour pédagogique communiqué par Estelle
+
+- Patrick figure dans l'équipe actuelle ; la remarque « il manque Patrick » peut concerner l'inscription ou un accès scolaire. Cause et correction non vérifiées.
+- Le retour cite T-ESP-901-LYN-9-1-T-ESP-901-15, tandis que le lien initial termine par -2. Les deux références renvoient 404 avec le connecteur le 4 novembre. Cela ne prouve ni l'absence du dépôt ni l'absence de push. Destination du miroir à confirmer avant configuration.
+- Le constat de non-push est un retour pédagogique historique transmis, pas une mesure actuelle indépendante.
+- README : résumé compréhensible, architecture réelle, état du produit, procédure exécutable et vérifiée par un tiers.
+- KPI : compléter API/gestion avec réactivité, accessibilité et expérience globale. Le sujet BUILD impose aussi les indicateurs procéduraux ci-dessus.
+- « 60 FPS » seul est insuffisant : préciser appareil, OS, navigateur, scène, population, médias, réseau, durée et mesure des temps de trame. Aucun objectif chiffré n'est un résultat acquis.
+- DoD : relier validation fonctionnelle et technique au suivi des estimations, heures réelles, ETC et risques ; éviter de transformer l'estimation initiale en preuve de livraison.
+
+### Résumé produit de référence
+
+EpiVerse est un réseau social de campus destiné aux étudiants de plusieurs établissements. Il associe profils et projets, événements, ressources, mentorat et recrutement à un campus virtuel isométrique 2,5D avec avatars et espaces personnalisables. Texte, audio et vidéo permettent les échanges ; les mentors externes et recruteurs disposent d'accès limités. La cible de février est une préproduction testée pour 50 utilisateurs simultanés, et non une capacité déjà mesurée.
+
+Les adresses personnelles de contact fournies ne sont pas recopiées dans ce référentiel technique. La liste de membres ne prouve pas leurs droits GitHub ou leur inscription scolaire.
