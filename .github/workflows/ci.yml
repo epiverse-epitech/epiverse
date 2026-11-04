@@ -222,19 +222,19 @@ jobs:
         if: needs.detect.outputs.api == 'true'
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
+            aquasec/trivy@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e image --scanners vuln --vuln-type os,library \
             --severity HIGH,CRITICAL --exit-code 1 --no-progress epiverse-api:ci
       - name: "Trivy — image de migration Prisma (contrôle des CVE critiques)"
         if: needs.detect.outputs.api == 'true'
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
+            aquasec/trivy@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e image --scanners vuln --vuln-type os,library \
             --severity CRITICAL --exit-code 1 --no-progress epiverse-migrate:ci
       - name: "Trivy — image web : bloquer les vulnérabilités graves"
         if: needs.detect.outputs.app == 'true'
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:0.70.0 image --scanners vuln --vuln-type os,library \
+            aquasec/trivy@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e image --scanners vuln --vuln-type os,library \
             --severity HIGH,CRITICAL --exit-code 1 --no-progress epiverse-web:ci
   infrastructure:
     name: Infrastructure — syntaxe et configuration
@@ -265,7 +265,7 @@ jobs:
       - name: Trivy — configurations infrastructure
         run: |
           docker run --rm -v "$PWD:/workspace:ro" \
-            aquasec/trivy:0.70.0 fs --scanners misconfig \
+            aquasec/trivy@sha256:be1190afcb28352bfddc4ddeb71470835d16462af68d310f9f4bca710961a41e fs --scanners misconfig \
             --severity HIGH,CRITICAL --exit-code 1 --no-progress /workspace
 
   quality-gate:
