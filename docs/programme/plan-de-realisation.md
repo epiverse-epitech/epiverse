@@ -1,5 +1,25 @@
 # Plan de réalisation et critères de passage
 
+## Décisions produit — 4 novembre 2026
+
+Choix explicites de la porteuse du projet :
+- Budget mensuel : à établir après chiffrage ; aucun plafond ni achat autorisé par cette décision.
+- Première version testable : les quatre parcours profils/projets/entraide, campus virtuel/avatars, événements/inscriptions, ressources/mentorat sont inclus.
+- Supports : navigateur sur ordinateur et mobile d'abord. Les applications distribuées dans les stores ne sont pas un prérequis de cette version.
+- Direction unique : Estelle. Soumia intervient au frontend, sans rôle de direction.
+
+La livraison des quatre parcours peut être incrémentale, mais une démonstration d'un seul parcours ne valide pas la première version complète. Tous restent à réaliser et à éprouver ; cette décision n'atteste aucune fonctionnalité livrée. Les stades du catalogue initial sont des propositions historiques à réconcilier avec ce périmètre avant planification détaillée.
+
+Critères proposés pour découper les parcours :
+| Parcours | Démonstration attendue |
+|---|---|
+| Profils, projets, entraide | Éditer son profil, publier un projet, demander et proposer une aide ; visibilité et modifications autorisées côté serveur |
+| Événements, inscriptions | Publier, consulter, s'inscrire et annuler ; capacité contrôlée, absence de double inscription |
+| Ressources, mentorat | Partager une ressource autorisée, trouver un mentor, envoyer puis accepter/refuser une demande |
+| Campus, avatars | Entrer dans un espace, personnaliser son avatar et interagir ; reconnexion, contrôle des accès et alternative accessible |
+
+À décider par sélection avant chiffrage définitif : capacité simultanée cible, audio/vidéo intégrés, profondeur de personnalisation des espaces. Aucun choix de moteur ou fournisseur n'est déduit de ces réponses.
+
 ## 1. Produit et marché
 
 Conserver les 36 domaines dans le catalogue, mais engager des verticales complètes. Première verticale proposée : un étudiant se connecte, découvre un événement, s'inscrit, annule ; une association publie dans son périmètre ; un modérateur traite un signalement. Chaque action dispose d'une autorisation serveur et d'un parcours d'erreur.
@@ -12,7 +32,7 @@ Mesurer l'activation par une action utile, le temps jusqu'à cette action, la r�
 
 GitHub porte le code, les tâches techniques, PR, décisions et preuves. Un seul backlog de référence ; un outil supplémentaire n'est adopté que s'il supprime une friction mesurée. Chaque tâche indique exigence, responsable, dépendance, critère vérifiable, estimation et risque. Limiter le travail en cours à une tâche principale par contributeur/agent.
 
-Estelle arbitre périmètre et priorités dans cette demande. Réconcilier la responsabilité opérationnelle contradictoire avant mise à jour des RACI nominatives. La disponibilité et la compétence de chaque contributeur doivent être confirmées ; un document n'engage pas quelqu'un à son insu.
+Estelle assure seule la direction du projet et arbitre périmètre et priorités. Soumia intervient au frontend, sans rôle de direction. Corriger en conséquence les documents Word et RACI contradictoires ; leur réconciliation reste à réaliser. La disponibilité et la compétence de chaque contributeur doivent être confirmées ; un document n'engage pas quelqu'un à son insu.
 
 | Demande scolaire | Livrable source | Preuve opérationnelle |
 |---|---|---|
@@ -78,9 +98,9 @@ Séparer coûts ponctuels, fixes, variables par utilisateur/campus, abonnements 
 |---|---|---|
 | P0 : établir les faits | État du dépôt et accès | Registre, rôle de direction clarifié, protections prouvées, secrets inventoriés |
 | P1 : intégrer le durcissement | P0 | PR combinées testées ; scans, permissions, fixtures et migrations validés ensemble |
-| P2 : première verticale | P1 + UX et identité | Parcours réel web/mobile prioritaire, autorisations négatives, démo reproductible |
+| P2 : première version en quatre incréments | P1 + UX et identité | Quatre parcours choisis utilisables dans les navigateurs ordinateur/mobile, autorisations négatives et démonstrations reproductibles |
 | P3 : préparer le pilote | P2 | Restauration réelle, observabilité, support, données et accessibilité vérifiés |
 | P4 : mesurer l'usage | P3 + accord campus | Résultats sur cohortes, retours, coût réel et décision produit documentés |
-| P5 : extensions | Valeur et capacité démontrées | IA/mentorat/campus virtuel évalués séparément, budgets et risques acceptés |
+| P5 : extensions | Valeur et capacité démontrées | IA avancée, extensions du mentorat et du campus évaluées séparément, budgets et risques acceptés |
 
 Aucune date de livraison ferme n'est inventée. Les estimations sont produites après découpage et confirmation de capacité. La progression du programme est un travail continu ; le présent document rend les décisions et validations contrôlables.
