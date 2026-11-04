@@ -1,0 +1,22 @@
+name: MongoDB — conservation et validation des données
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  retention-safety:
+    name: Validation des TTL MongoDB
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Vérifier la syntaxe JavaScript
+        run: node --check infra/mongo/init/01-user-interactions.js
+      - name: Exécuter les tests de limites et de purge
+        run: node --test infra/mongo/tests/retention.test.cjs
