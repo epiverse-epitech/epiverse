@@ -5,7 +5,8 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    # Temporary stacked PR: test runtime changes against the SQL-roles feature branch.
+    branches: [main, develop, fix/postgres-app-least-privilege]
   push:
     branches: [main, develop]
   workflow_dispatch:
