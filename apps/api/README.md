@@ -11,6 +11,7 @@ Owner: Eckson Glitho (backend). Architecture reference: DOC-014 (modular monolit
 | Framework | NestJS 12 (CommonJS build) |
 | Language | TypeScript 6, `strict` mode |
 | Configuration | `@nestjs/config`, validated with `class-validator` |
+| API docs | `@nestjs/swagger` (OpenAPI 3) |
 | Tests | Jest 30 + Supertest |
 | Lint / format | oxlint, Prettier |
 | Database | PostgreSQL 17 + pgvector, Prisma 7 (`pg` driver adapter) |
@@ -103,6 +104,7 @@ src/
   main.ts               Entry point: creates the app, applies configureApp, listens on PORT
   app.setup.ts          configureApp(): app-wide settings shared by main.ts and e2e tests
   app.module.ts         Root module: assembles the feature modules
+  common/               Shared contracts: AllExceptionsFilter, ErrorResponseDto
   config/               Environment validation (EnvironmentVariables, validateEnv)
   health/               GET /api/health (liveness check)
   prisma/               PrismaModule (global) and PrismaService
@@ -123,6 +125,41 @@ The API is developed test-first (TDD): a failing test describes the behaviour, t
 - **Unit tests** sit next to the code (`*.spec.ts`) and cover pure logic such as configuration rules, permissions and validation.
 - **End-to-end tests** (`test/`) send real HTTP requests with Supertest. They call `configureApp()` so they exercise the same application as production.
 - Acceptance criteria of a ticket become test cases.
+
+## API contracts
+
+Rules shared by every route, set up in `configureApp()` (`src/app.setup.ts`) and covered by the e2e tests.
+
+### Documentation
+
+- Interactive docs: `http://localhost:3000/api/docs`. OpenAPI spec (JSON): `/api/docs-json`; clients can generate their types from it.
+- Every route is documented: `@ApiTags('<domain>')` on the controller, a response DTO (`@ApiOkResponse({ type: … })`, `@ApiCreatedResponse`, …) and `@ApiProperty` on each DTO field. `src/health/` is the reference example.
+
+### Errors
+
+Every error, expected or not, has the same shape (`ErrorResponseDto`):
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "message": ["email must be an email"],
+  "path": "/api/auth/register",
+  "timestamp": "2026-10-31T10:00:00.000Z"
+}
+```
+
+- `message` is a string, or a list of strings for validation errors.
+- Throw Nest exceptions (`NotFoundException`, `ConflictException`, …); `AllExceptionsFilter` formats them.
+- Any other error becomes a generic 500: its details are logged on the server and never sent to the client.
+- `path` never includes the query string.
+
+### Validation
+
+- Each request body is a DTO class decorated with `class-validator`; the global `ValidationPipe` checks it before the controller runs.
+- Invalid fields are rejected with a 400 that lists every problem.
+- Unknown fields are rejected too (`property role should not exist`), so a client cannot slip in fields such as `role`.
+- The body reaches the controller as a DTO instance, and route parameters are converted to their declared types.
 
 ## Contract with the infrastructure
 
