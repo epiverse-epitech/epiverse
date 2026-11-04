@@ -10,8 +10,8 @@ WORKFLOW = Path(__file__).resolve().parents[1] / "workflows" / "ci.yml"
 class CIGuards(unittest.TestCase):
     def syntax_guard(self, directory, shell):
         text = WORKFLOW.read_text()
-        pattern = r'run: (for script in ' + re.escape(directory) + r'/\*\.sh; do ' + shell + r' -n "\$script" \|\| exit; done)'
-        match = re.search(pattern, text)
+        pattern = r'run: (for script in ' + re.escape(directory) + r'/\*\.sh(?: \.github/scripts/\*\.sh)?; do ' + shell + r' -n "\$script" \|\| exit; done)\s*$'
+        match = re.search(pattern, text, re.MULTILINE)
         self.assertIsNotNone(match, "CI must check every script")
         return match.group(1)
 
@@ -19,6 +19,9 @@ class CIGuards(unittest.TestCase):
         command = self.syntax_guard(directory, shell)
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
+            extra = root / ".github/scripts"
+            extra.mkdir(parents=True)
+            (extra / "check.sh").write_text("echo valid\n")
             folder = root / directory
             folder.mkdir(parents=True)
             (folder / "a-valid.sh").write_text("echo valid\n")

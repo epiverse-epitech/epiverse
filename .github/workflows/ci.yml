@@ -237,7 +237,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Vérifier les scripts Bash
-        run: for script in infra/scripts/*.sh; do bash -n "$script" || exit; done .github/scripts/*.sh
+        run: for script in infra/scripts/*.sh .github/scripts/*.sh; do bash -n "$script" || exit; done
       - name: Tester le gate de sécurité des images (tests négatifs)
         run: python3 -m unittest discover -s .github/scripts/tests -p 'test_*.py' -v
       - name: Vérifier les scripts POSIX shell
