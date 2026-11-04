@@ -48,6 +48,8 @@ jobs:
             -e DATABASE_URL=postgresql://epiverse:epiverse-ci@pg-smoke:5432/epiverse_smoke \
             epiverse-migrate:smoke
           docker run -d --name api-smoke --network epiverse-smoke \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --read-only --tmpfs /tmp:rw,noexec,nosuid,size=32m --pids-limit 128 \
             -e NODE_ENV=production \
             -e DATABASE_URL=postgresql://epiverse:epiverse-ci@pg-smoke:5432/epiverse_smoke \
             epiverse-api:smoke
