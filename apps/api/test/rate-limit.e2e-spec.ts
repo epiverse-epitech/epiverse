@@ -117,3 +117,79 @@ describe('Rate limiting recovery (e2e)', () => {
     await request(server).get('/api/test-rate-limit/open').expect(200);
   });
 });
+
+describe('Rate limiting behind a proxy (e2e)', () => {
+  const path = '/api/test-rate-limit/open';
+  const limits = {
+    RATE_LIMIT_TTL_SECONDS: 60,
+    RATE_LIMIT_MAX: 1,
+    AUTH_RATE_LIMIT_MAX: 1,
+  };
+
+  describe('with one trusted proxy', () => {
+    let app: INestApplication<App>;
+
+    beforeAll(async () => {
+      app = await createApp({ ...limits, TRUST_PROXY_HOPS: 1 });
+    });
+
+    afterAll(async () => {
+      await app.close();
+    });
+
+    it('counts each client separately', async () => {
+      const server = app.getHttpServer();
+
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '203.0.113.1')
+        .expect(200);
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '203.0.113.1')
+        .expect(429);
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '203.0.113.2')
+        .expect(200);
+    });
+
+    it('ignores addresses forged by the client', async () => {
+      const server = app.getHttpServer();
+
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '198.51.100.1, 203.0.113.3')
+        .expect(200);
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '198.51.100.2, 203.0.113.3')
+        .expect(429);
+    });
+  });
+
+  describe('without a trusted proxy', () => {
+    let app: INestApplication<App>;
+
+    beforeAll(async () => {
+      app = await createApp({ ...limits, TRUST_PROXY_HOPS: 0 });
+    });
+
+    afterAll(async () => {
+      await app.close();
+    });
+
+    it('ignores X-Forwarded-For', async () => {
+      const server = app.getHttpServer();
+
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '203.0.113.1')
+        .expect(200);
+      await request(server)
+        .get(path)
+        .set('X-Forwarded-For', '203.0.113.2')
+        .expect(429);
+    });
+  });
+});

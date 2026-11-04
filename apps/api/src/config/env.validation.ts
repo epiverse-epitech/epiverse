@@ -48,6 +48,13 @@ export class EnvironmentVariables {
   @IsInt()
   AUTH_RATE_LIMIT_MAX: number = 5;
 
+  // Number of reverse proxies in front of the API. At 0, X-Forwarded-For is
+  // ignored, so a client cannot forge its address when no proxy is there.
+  @Transform(toStrictInteger)
+  @Min(0)
+  @IsInt()
+  TRUST_PROXY_HOPS: number = 0;
+
   @IsUrl({
     protocols: ['postgresql', 'postgres'],
     require_protocol: true,

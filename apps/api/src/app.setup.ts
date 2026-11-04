@@ -2,8 +2,11 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
 import { ErrorResponseDto } from './common/error-response.dto';
+import { ConfigService } from '@nestjs/config';
+import { EnvironmentVariables } from './config/env.validation';
 
 export function configureApp(app: INestApplication): void {
+  trustConfiguredProxies(app);
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(
@@ -28,4 +31,14 @@ function setupApiDocs(app: INestApplication): void {
     extraModels: [ErrorResponseDto],
   });
   SwaggerModule.setup('api/docs', app, document);
+}
+
+// Behind a proxy, every client would otherwise share the proxy's address, and
+// so a single rate limit. Each trusted hop reads one more address from the
+// right of X-Forwarded-For; the entries further left can be forged by the client.
+function trustConfiguredProxies(app: INestApplication): void {
+  const config = app.get(ConfigService<EnvironmentVariables, true>);
+  const hops = config.get('TRUST_PROXY_HOPS', { infer: true });
+
+  app.getHttpAdapter().getInstance().set('trust proxy', hops);
 }

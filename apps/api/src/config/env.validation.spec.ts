@@ -98,4 +98,22 @@ describe('validateEnv', () => {
       expect(() => validateEnv({ ...baseEnv, [name]: value })).toThrow(name);
     });
   });
+
+  describe('TRUST_PROXY_HOPS', () => {
+  it('defaults to 0, so no proxy is trusted', () => {
+    expect(validateEnv({ ...baseEnv }).TRUST_PROXY_HOPS).toBe(0);
+  });
+
+  it('accepts the number of proxies', () => {
+    const env = validateEnv({ ...baseEnv, TRUST_PROXY_HOPS: '1' });
+
+    expect(env.TRUST_PROXY_HOPS).toBe(1);
+  });
+
+  it.each(['-1', '1.5', 'abc'])('rejects %s', (value) => {
+    expect(() =>
+      validateEnv({ ...baseEnv, TRUST_PROXY_HOPS: value }),
+    ).toThrow('TRUST_PROXY_HOPS');
+    });
+  });
 });
