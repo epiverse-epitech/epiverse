@@ -74,4 +74,46 @@ describe('validateEnv', () => {
 
     expect(env).not.toHaveProperty('PATH');
   });
+
+  it('applies rate limit defaults', () => {
+    const env = validateEnv(baseEnv);
+
+    expect(env.RATE_LIMIT_TTL_SECONDS).toBe(60);
+    expect(env.RATE_LIMIT_MAX).toBe(100);
+    expect(env.AUTH_RATE_LIMIT_MAX).toBe(5);
+  });
+
+  describe.each([
+    'RATE_LIMIT_TTL_SECONDS',
+    'RATE_LIMIT_MAX',
+    'AUTH_RATE_LIMIT_MAX',
+  ])('%s', (name) => {
+    it('converts the value to a number', () => {
+      const env = validateEnv({ ...baseEnv, [name]: '10' });
+
+      expect(env[name as keyof typeof env]).toBe(10);
+    });
+
+    it.each(['0', 'abc', '1.5', ''])('rejects %j', (value) => {
+      expect(() => validateEnv({ ...baseEnv, [name]: value })).toThrow(name);
+    });
+  });
+
+  describe('TRUST_PROXY_HOPS', () => {
+    it('defaults to 0, so no proxy is trusted', () => {
+      expect(validateEnv({ ...baseEnv }).TRUST_PROXY_HOPS).toBe(0);
+    });
+
+    it('accepts the number of proxies', () => {
+      const env = validateEnv({ ...baseEnv, TRUST_PROXY_HOPS: '1' });
+
+      expect(env.TRUST_PROXY_HOPS).toBe(1);
+    });
+
+    it.each(['-1', '1.5', 'abc'])('rejects %s', (value) => {
+      expect(() =>
+        validateEnv({ ...baseEnv, TRUST_PROXY_HOPS: value }),
+      ).toThrow('TRUST_PROXY_HOPS');
+    });
+  });
 });

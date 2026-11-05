@@ -5,6 +5,8 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
+import { ConfigModule } from '@nestjs/config';
+import { validateEnv } from '../src/config/env.validation';
 
 describe('API documentation (e2e)', () => {
   let app: INestApplication<App>;
@@ -67,6 +69,11 @@ describe('API documentation (e2e)', () => {
       delete process.env.API_DOCS_ENABLED;
       // A minimal module avoids opening another Prisma connection in this test.
       const moduleRef = await Test.createTestingModule({
+        imports: [
+          ConfigModule.forRoot({
+              ignoreEnvFile: true, validate: validateEnv
+          })
+        ],
         controllers: [HealthController],
       }).compile();
       productionApp = moduleRef.createNestApplication();
