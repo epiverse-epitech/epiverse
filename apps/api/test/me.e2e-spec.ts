@@ -115,4 +115,28 @@ describe('Current account (e2e)', () => {
 
     await me().set('Authorization', `Bearer ${token}`).expect(200);
   });
+
+  it.each([
+    ['deactivated', { is_active: false }],
+    ['deleted', { deleted_at: new Date() }],
+  ])(
+    'refuses the session of an account %s after login with the same generic 401',
+    async (_case, state) => {
+      const token = await createSession(new Date(Date.now() + 60_000));
+      await prisma.users.update({ where: { id: userId }, data: state });
+
+      try {
+        const response = await me()
+          .set('Authorization', `Bearer ${token}`)
+          .expect(401);
+
+        expect(response.body.message).toBe('Authentication required');
+      } finally {
+        await prisma.users.update({
+          where: { id: userId },
+          data: { is_active: true, deleted_at: null },
+        });
+      }
+    },
+  );
 });

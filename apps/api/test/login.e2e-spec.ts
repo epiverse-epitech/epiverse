@@ -104,4 +104,30 @@ describe('Login (e2e)', () => {
       email: credentials.email.toUpperCase(),
     }).expect(200);
   });
+
+  it.each([
+    ['a deactivated account', { is_active: false }],
+    ['a deleted account', { deleted_at: new Date() }],
+  ])(
+    'refuses %s with the same generic 401 and opens no session',
+    async (_case, state) => {
+      const email = `closed-${Date.now()}${TEST_DOMAIN}`;
+      const closed = await prisma.users.create({
+        data: {
+          email,
+          password_hash: await new PasswordService().hash(credentials.password),
+          first_name: 'Ada',
+          last_name: 'Lovelace',
+          ...state,
+        },
+      });
+
+      const response = await login({ ...credentials, email }).expect(401);
+
+      expect(response.body.message).toBe('Invalid email or password');
+      expect(
+        await prisma.user_session.count({ where: { user_id: closed.id } }),
+      ).toBe(0);
+    },
+  );
 });

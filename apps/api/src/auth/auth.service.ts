@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from '../config/env.validation';
 import { SessionDto } from './dto/session.dto';
 import { generateSessionToken, hashSessionToken } from './session-token';
+import { isOpenAccount } from './account-state';
 
 @Injectable()
 export class AuthService {
@@ -72,7 +73,12 @@ export class AuthService {
   async login(dto: LoginDto): Promise<SessionDto> {
     const user = await this.prisma.users.findFirst({
       where: { email: dto.email },
-      select: { id: true, password_hash: true },
+      select: {
+        id: true,
+        password_hash: true,
+        is_active: true,
+        deleted_at: true,
+      },
     });
 
     const passwordMatches = await this.passwords.verify(
@@ -80,7 +86,9 @@ export class AuthService {
       user?.password_hash ?? (await this.unknownUserHash),
     );
 
-    if (!user || !passwordMatches) {
+    // A deactivated or deleted account gets the same answer as a wrong
+    // password, so the response does not reveal the state of an account.
+    if (!user || !passwordMatches || !isOpenAccount(user)) {
       throw new UnauthorizedException('Invalid email or password');
     }
 

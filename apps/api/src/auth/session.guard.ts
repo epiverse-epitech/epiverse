@@ -9,6 +9,7 @@ import { Request } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { AccountDto } from './dto/account.dto';
 import { hashSessionToken } from './session-token';
+import { isOpenAccount } from './account-state';
 
 type AuthenticatedRequest = Request & {
   account?: AccountDto;
@@ -17,7 +18,7 @@ type AuthenticatedRequest = Request & {
 
 // Protects a route with the session token sent as "Authorization: Bearer <token>".
 // Every failure gets the same message, so a client cannot tell a missing token
-// from an unknown, revoked or expired one.
+// from an unknown, revoked or expired one, or one of a closed account.
 @Injectable()
 export class SessionGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
@@ -42,11 +43,18 @@ export class SessionGuard implements CanActivate {
             email: true,
             first_name: true,
             last_name: true,
+            is_active: true,
+            deleted_at: true,
           },
         },
       },
     });
-    if (!session || session.revoked_at || session.expires_at <= new Date()) {
+    if (
+      !session ||
+      session.revoked_at ||
+      session.expires_at <= new Date() ||
+      !isOpenAccount(session.users)
+    ) {
       throw new UnauthorizedException('Authentication required');
     }
 
