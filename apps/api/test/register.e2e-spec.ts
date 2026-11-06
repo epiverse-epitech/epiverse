@@ -5,6 +5,7 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { PasswordService } from '../src/security/password.service';
 
 // Every account created here uses this domain, so cleanup never touches other data.
 const TEST_DOMAIN = '@register.e2e.test';
@@ -58,5 +59,28 @@ describe('Account registration (e2e)', () => {
 
     expect(response.body.statusCode).toBe(400);
     expect(await accountCount()).toBe(0);
+  });
+
+  it('creates the account with a hashed password and returns only public fields', async () => {
+    const response = await register(validBody).expect(201);
+
+    expect(response.body).toEqual({
+      id: expect.any(String),
+      email: validBody.email,
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+    });
+
+    const account = await prisma.users.findFirstOrThrow({
+      where: { email: validBody.email },
+    });
+    expect(account.public_id).toBe(response.body.id);
+    expect(account.password_hash).not.toBe(validBody.password);
+    expect(
+      await new PasswordService().verify(
+        validBody.password,
+        account.password_hash,
+      ),
+    ).toBe(true);
   });
 });
