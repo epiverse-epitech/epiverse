@@ -386,6 +386,7 @@ class Fixtures:
                                        deleted or last_login or created, deleted, anonymized])
             user['last_seen'] = last_login or created
             self.users.append(user)
+            self.rows('user_cgu_acceptance').append((uid, '1.0', created))
             if kind == 'student':
                 school = next(s for s in self.schools if s['id'] == user['school'])
                 grad = now.year + (1 if now.month >= 9 else 0) + user['program']['duration'] - user['year']
@@ -897,6 +898,7 @@ TABLES = [
     ('user_interest', 'user_id, interest_id, created_at'),
     ('user_role', 'user_id, role_id, granted_at'),
     ('consent', 'id, user_id, purpose, granted_at, withdrawn_at, policy_version'),
+    ('user_cgu_acceptance', 'user_id, version, accepted_at'),
     ('user_session', 'id, user_id, token_hash, ip_address, user_agent, created_at, last_used_at, expires_at, revoked_at'),
     ('auth_token', 'id, user_id, type, token_hash, expires_at, used_at, created_at'),
     ('association_member', 'user_id, association_id, role, joined_at'),

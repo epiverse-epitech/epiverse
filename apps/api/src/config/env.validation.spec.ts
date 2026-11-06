@@ -125,4 +125,22 @@ describe('validateEnv', () => {
       ).toThrow('TRUST_PROXY_HOPS');
     });
   });
+
+  describe('CGU_VERSION', () => {
+    it('defaults to 1.0, the version seeded in the fixtures', () => {
+      expect(validateEnv(baseEnv).CGU_VERSION).toBe('1.0');
+    });
+
+    it('accepts another version', () => {
+      expect(validateEnv({ ...baseEnv, CGU_VERSION: '2.1' }).CGU_VERSION).toBe(
+        '2.1',
+      );
+    });
+
+    it.each(['', 'x'.repeat(21)])('rejects %j', (value) => {
+      expect(() => validateEnv({ ...baseEnv, CGU_VERSION: value })).toThrow(
+        'CGU_VERSION',
+      );
+    });
+  });
 });

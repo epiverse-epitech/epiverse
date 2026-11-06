@@ -44,6 +44,13 @@ export class AuthService {
           password_hash: passwordHash,
           first_name: dto.firstName,
           last_name: dto.lastName,
+          // Created in the same statement as the account, so an account never
+          // exists without its recorded acceptance of the terms of use.
+          user_cgu_acceptance: {
+            create: {
+              version: this.config.get('CGU_VERSION', { infer: true }),
+            },
+          },
         },
         // Only public columns are read back, so the hash never leaves the database.
         select: {

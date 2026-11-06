@@ -71,6 +71,7 @@ Variables are read from the process environment and, in local development, from 
 | `LOGIN_FAILURE_WINDOW_MINUTES` | No | `15` | Length of that window, in minutes. Integer of at least 1 |
 | `TRUST_PROXY_HOPS` | No | `0` | Number of reverse proxies in front of the API. Integer of at least 0 |
 | `SESSION_TTL_HOURS` | No | `168` | Lifetime of a session after login, in hours (7 days). Integer of at least 1 |
+| `CGU_VERSION` | No | `1.0` | Version of the terms of use accepted at registration. 1 to 20 characters |
 
 The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`REDIS_URL` will come with Redis).
 
@@ -144,6 +145,7 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 | `email` | Valid email, at most 255 characters. Trimmed and stored in lowercase. |
 | `password` | `@IsPassword()` (see Passwords). |
 | `firstName`, `lastName` | Required, 1 to 50 characters once surrounding spaces are removed. |
+| `cguAccepted` | Must be the boolean `true`. The acceptance of the current terms of use (`CGU_VERSION`) is recorded in `user_cgu_acceptance` with its date, in the same statement as the account (FR-AUTH-001). |
 
 | Response | When |
 |---|---|
@@ -157,7 +159,7 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 ### Known limits
 
 - The 409 tells whether an email is registered (account enumeration). Accepted for now and slowed down by the rate limit. Sending an email to the existing owner instead would remove it, once email delivery exists (EPI-53).
-- Acceptance of the terms of use is not recorded yet (required by FR-AUTH-001). The `user_cgu_acceptance` table now exists on `develop`; recording it at registration is the second part of EPI-44.
+- The client does not send the version it displayed: the API records the version it currently serves (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` must be deployed together. Asking existing users to accept a new version is not handled yet.
 
 ## Sessions
 
