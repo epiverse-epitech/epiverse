@@ -6,6 +6,8 @@ import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { PasswordService } from '../src/security/password.service';
+import { ConfigService } from '@nestjs/config';
+import { validateEnv } from '../src/config/env.validation';
 
 // Every account created here uses this domain, so cleanup never touches other data.
 const TEST_DOMAIN = '@register.e2e.test';
@@ -17,18 +19,36 @@ const validBody = {
   lastName: 'Lovelace',
 };
 
+// Builds the app with the real configuration, except the stricter limit on
+// credential routes, which each test group sets for itself.
+async function createApp(
+  authRateLimitMax: number,
+): Promise<INestApplication<App>> {
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule],
+  })
+    .overrideProvider(ConfigService)
+    .useValue(
+      new ConfigService({
+        ...validateEnv(process.env),
+        AUTH_RATE_LIMIT_MAX: authRateLimitMax,
+      }),
+    )
+    .compile();
+
+  const app: INestApplication<App> = moduleRef.createNestApplication();
+  configureApp(app);
+  await app.init();
+  return app;
+}
+
 describe('Account registration (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleRef.createNestApplication();
-    configureApp(app);
-    await app.init();
+    // High enough that the functional tests below never hit the limit.
+    app = await createApp(100);
     prisma = app.get(PrismaService);
   });
 
@@ -115,5 +135,42 @@ describe('Account registration (e2e)', () => {
       where: { email: validBody.email },
     });
     expect(account.first_name).toBe('Ada');
+  });
+
+  describe('Account registration rate limit (e2e)', () => {
+    let app: INestApplication<App>;
+    let prisma: PrismaService;
+
+    const testAccounts = {
+      email: { endsWith: TEST_DOMAIN, mode: 'insensitive' as const },
+    };
+
+    beforeAll(async () => {
+      app = await createApp(2);
+      prisma = app.get(PrismaService);
+    });
+
+    afterAll(async () => {
+      await prisma.users.deleteMany({ where: testAccounts });
+      await app.close();
+    });
+
+    it('blocks attempts beyond the limit, before any account is created', async () => {
+      const server = app.getHttpServer();
+
+      for (let i = 0; i < 2; i++) {
+        await request(server)
+          .post('/api/auth/register')
+          .send({ ...validBody, email: 'ada@' })
+          .expect(400);
+      }
+
+      await request(server)
+        .post('/api/auth/register')
+        .send(validBody)
+        .expect(429);
+
+      expect(await prisma.users.count({ where: testAccounts })).toBe(0);
+    });
   });
 });
