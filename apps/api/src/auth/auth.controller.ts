@@ -24,6 +24,7 @@ import {
   AllowPendingCgu,
   CurrentAccount,
   CurrentCguAccepted,
+  CurrentRoles,
   CurrentSessionId,
   CurrentUserId,
   SessionGuard,
@@ -93,8 +94,9 @@ export class AuthController {
   me(
     @CurrentAccount() account: AccountDto,
     @CurrentCguAccepted() cguAccepted: boolean,
+    @CurrentRoles() roles: string[],
   ): CurrentAccountDto {
-    return { ...account, cguAccepted };
+    return { ...account, cguAccepted, roles };
   }
 
   @UseGuards(SessionGuard)

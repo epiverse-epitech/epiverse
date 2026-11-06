@@ -72,6 +72,8 @@ describe('Current account (e2e)', () => {
       lastName: 'Lovelace',
       // This account was created without accepting the terms of use.
       cguAccepted: false,
+      // No path chosen yet, so no role.
+      roles: [],
     });
   });
 

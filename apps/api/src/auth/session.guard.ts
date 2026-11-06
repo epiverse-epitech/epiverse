@@ -21,6 +21,7 @@ type AuthenticatedRequest = Request & {
   sessionId?: number;
   userId?: number;
   cguAccepted?: boolean;
+  roles?: string[];
 };
 
 const ALLOW_PENDING_CGU_KEY = 'allowPendingCgu';
@@ -72,6 +73,7 @@ export class SessionGuard implements CanActivate {
               },
               select: { version: true },
             },
+            user_role: { select: { role: { select: { name: true } } } },
           },
         },
       },
@@ -88,6 +90,7 @@ export class SessionGuard implements CanActivate {
     request.sessionId = session.id;
     request.userId = session.users.id;
     request.cguAccepted = session.users.user_cgu_acceptance.length > 0;
+    request.roles = session.users.user_role.map((r) => r.role.name).sort();
     request.account = {
       id: session.users.public_id,
       email: session.users.email,
@@ -136,4 +139,10 @@ export const CurrentUserId = createParamDecorator(
 export const CurrentCguAccepted = createParamDecorator(
   (_data: unknown, context: ExecutionContext): boolean =>
     requestOf(context).cguAccepted!,
+);
+
+// Reads the role names of the account (such as "student"), sorted.
+export const CurrentRoles = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): string[] =>
+    requestOf(context).roles!,
 );

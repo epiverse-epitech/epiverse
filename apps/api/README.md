@@ -171,7 +171,7 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 | | 400 | Invalid or unknown field. |
 | | 401 `Invalid email or password` | Unknown email, wrong password, deactivated or deleted account: always the same answer. |
 | | 429 with `Retry-After` | Too many requests from the address (`@AuthRateLimit()`), or too many failed logins for this account from this address (see Rate limiting). |
-| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName, cguAccepted }` | Valid session. `cguAccepted` is false when the current terms of use are not accepted yet. |
+| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName, cguAccepted, roles }` | Valid session. `cguAccepted` is false when the current terms of use are not accepted yet; `roles` lists role names (empty until a path is chosen). |
 | `POST /api/auth/cgu/accept` with `{ version }` | 204 | Records the acceptance of the current terms of use (version and date). Accepting again keeps the first date. |
 | | 400 `The terms of use have changed: accept the current version` | `version` is not the current one. |
 | `POST /api/auth/logout` | 204 | The session is revoked. The other sessions of the account stay open. |
@@ -191,6 +191,24 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 - `last_used_at`, `ip_address` and `user_agent` of `user_session` are not filled yet. They will be needed for a list of active sessions.
 - No route revokes all the sessions of an account yet (for a password change or a stolen device).
 - Expired and revoked rows are never deleted; a cleanup job will be needed.
+
+## Paths
+
+After registration, the user chooses a path (Soumia's workflow, EPI-42). A new account has no role until then.
+
+| Route | Response | When |
+|---|---|---|
+| `POST /api/me/paths/student` | 200 with the account as `GET /api/auth/me` shows it | Gives the `student` role and an empty `student_profile`, without approval. Choosing it again changes nothing and keeps the profile. |
+| | 401 / 403 | No valid session, or current terms of use not accepted (see Sessions). |
+
+- The `student` role is seeded by the fixtures; the API creates it if a fresh database does not have it.
+- The role, the link and the profile are written in one transaction.
+
+### Known limits
+
+- Mentor and organization paths need an approval and wait for role requests in the schema (EPI-41). A pending applicant must then see only a waiting page (Soumia).
+- Nothing stops a student from also requesting another path; how roles combine is EPI-93.
+- Two simultaneous first calls on a database without the `student` role could make one of them fail with 500 (unique role name). The fixtures seed the role, so it only concerns an empty database.
 
 ## Rate limiting
 
