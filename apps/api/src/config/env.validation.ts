@@ -46,7 +46,10 @@ export class EnvironmentVariables {
   @Transform(toStrictInteger)
   @Min(1)
   @IsInt()
-  AUTH_RATE_LIMIT_MAX: number = 5;
+  // Per client address on credential routes. Sized for a campus where many
+  // students share one address: guessing one account is already capped by
+  // LOGIN_FAILURE_MAX, so this limit only slows down trying many accounts.
+  AUTH_RATE_LIMIT_MAX: number = 30;
 
   // Failed logins allowed per account and client address within the window
   // (NFR-SEC-003). Students behind one address each get their own count.

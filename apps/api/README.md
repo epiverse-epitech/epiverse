@@ -66,7 +66,7 @@ Variables are read from the process environment and, in local development, from 
 | `DATABASE_URL` | Yes | — | PostgreSQL connection URL (`postgresql://` or `postgres://`) |
 | `RATE_LIMIT_TTL_SECONDS` | No | `60` | Length of the rate limit window. Integer of at least 1 |
 | `RATE_LIMIT_MAX` | No | `100` | Requests allowed per window on a route. Integer of at least 1 |
-| `AUTH_RATE_LIMIT_MAX` | No | `5` | Same, on routes marked `@AuthRateLimit()`. Integer of at least 1 |
+| `AUTH_RATE_LIMIT_MAX` | No | `30` | Same, on routes marked `@AuthRateLimit()`. Integer of at least 1 |
 | `LOGIN_FAILURE_MAX` | No | `5` | Failed logins allowed per account and client address within the window below. Integer of at least 1 |
 | `LOGIN_FAILURE_WINDOW_MINUTES` | No | `15` | Length of that window, in minutes. Integer of at least 1 |
 | `TRUST_PROXY_HOPS` | No | `0` | Number of reverse proxies in front of the API. Integer of at least 0 |
@@ -210,7 +210,7 @@ Clients are identified by IP address, so the API must know how many proxies stan
 ### Known limits
 
 - Registration and login carry the decorator; account recovery routes do not exist yet and must carry it too.
-- The address limit still applies to login and registration: more than `AUTH_RATE_LIMIT_MAX` students logging in or registering within one minute from the school Wi-Fi would be blocked, whatever their own count. `AUTH_RATE_LIMIT_MAX` must be sized for the campus peak before going live. An attacker with many addresses is not stopped by it either; the account limit only slows down guessing one account from one address.
+- The address limit still applies to login and registration: more than `AUTH_RATE_LIMIT_MAX` (30) students logging in or registering within one minute from the school Wi-Fi would be blocked, whatever their own count. It is set high on purpose: guessing one account is already capped by the account limit, so the address limit only slows down trying many accounts from one address. Raise it if a larger group connects at once. An attacker with many addresses is not stopped by it.
 - Counters live in the memory of each API process: a restart resets them and several instances do not share them. Redis will be needed before running more than one instance.
 
 ## Testing approach
