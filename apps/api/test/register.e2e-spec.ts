@@ -11,7 +11,9 @@ const TEST_DOMAIN = '@register.e2e.test';
 
 const validBody = {
   email: `ada${TEST_DOMAIN}`,
-  password: 'Lovelace1815',
+  // Valid under both the current rule and the NIST one proposed in PR #28
+  // (15+ characters), so these tests do not depend on which is merged first.
+  password: 'Lovelace1815Analytical',
   firstName: 'Ada',
   lastName: 'Lovelace',
   // Set in beforeAll to the version the API serves.
