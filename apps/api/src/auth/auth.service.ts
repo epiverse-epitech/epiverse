@@ -1,4 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { EnvironmentVariables } from '../config/env.validation';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordService } from '../security/password.service';
@@ -10,6 +12,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly passwords: PasswordService,
+    private readonly config: ConfigService<EnvironmentVariables, true>,
   ) {}
 
   async register(dto: RegisterDto): Promise<AccountDto> {
@@ -22,6 +25,13 @@ export class AuthService {
           password_hash: passwordHash,
           first_name: dto.firstName,
           last_name: dto.lastName,
+          // Created in the same statement as the account, so an account never
+          // exists without its recorded acceptance of the terms of use.
+          user_cgu_acceptance: {
+            create: {
+              version: this.config.get('CGU_VERSION', { infer: true }),
+            },
+          },
         },
         // Only public columns are read back, so the hash never leaves the database.
         select: {
