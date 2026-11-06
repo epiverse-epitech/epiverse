@@ -42,7 +42,7 @@ Sources : `recommendation` (`shown_at`, `clicked_at`, `feedback`) et les interac
 
 | KPI | Cible |
 |---|---|
-| Étudiants recevant au moins 5 suggestions par catégorie (repli compris) | 100 % |
+| Utilisateurs recevant `min(5, nombre d’éléments éligibles disponibles)` suggestions distinctes par catégorie (repli compris) | 100 % des requêtes réussies ; disponibilité mesurée séparément |
 | Temps de réponse de l'API de recommandation (p95) | ≤ 300 ms |
 | Taux d'erreur | ≤ 1 %, avec affichage du repli à chaque erreur |
 
@@ -53,3 +53,7 @@ Sources : `recommendation` (`shown_at`, `clicked_at`, `feedback`) et les interac
 | Données d'activité supprimées après la durée de conservation (NFR-PRIV-001) | 100 % |
 | Recommandations affichant une raison à l'étudiant (`reason`) | ≥ 90 % |
 | Évaluation reproductible (jeu de données versionné, graine fixe, `model_version`) | oui |
+
+## Précisions de mesure
+
+Une suggestion doit rester autorisée, active et éligible ; ne jamais inventer des éléments ni contourner une permission pour atteindre un quota. Si aucun élément n’est éligible, afficher un état vide explicite. Les objectifs ci-dessus sont des cibles, pas des résultats mesurés. Documenter pour chaque KPI le dénominateur, la fenêtre, la cohorte, la version du catalogue et les exclusions. Pour la suppression TTL, définir le délai maximal accepté et mesurer la purge ; un TTL ne garantit pas un effacement à la seconde exacte.

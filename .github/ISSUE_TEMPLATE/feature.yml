@@ -1,0 +1,37 @@
+name: Fonctionnalité vérifiable
+description: Décrire une verticale produit avec preuve de valeur et critères de livraison.
+title: "[Feature] "
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Utilisateur, problème et résultat attendu
+      description: Indiquer le domaine du catalogue, l'exigence et la preuve du besoin.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Périmètre, dépendances et responsable
+      description: Inclure exclusions, API, données, design et dépendances externes.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critères vérifiables et tests
+      description: Parcours nominal, erreurs, autorisations, accessibilité et données personnelles.
+    validations:
+      required: true
+  - type: textarea
+    id: operations
+    attributes:
+      label: Exploitation et coût
+      description: Migration, reprise, monitoring, budget, documentation et suppression des données.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Preuves de livraison
+      description: Ajouter PR, commit, tests, démo et limitations après réalisation ; ne pas déclarer fini à la création.
