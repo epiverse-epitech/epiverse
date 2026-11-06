@@ -26,6 +26,7 @@ import {
 } from './session.guard';
 import { AuthService } from './auth.service';
 import { AccountDto } from './dto/account.dto';
+import { CguDto } from './dto/cgu.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthRateLimit } from '../security/auth-rate-limit.decorator';
 import { LoginDto } from './dto/login.dto';
@@ -36,6 +37,12 @@ import { SessionDto } from './dto/session.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
+
+  @Get('cgu')
+  @ApiOkResponse({ type: CguDto, description: 'Current terms of use version.' })
+  cgu(): CguDto {
+    return this.auth.currentCgu();
+  }
 
   @AuthRateLimit()
   @Post('register')

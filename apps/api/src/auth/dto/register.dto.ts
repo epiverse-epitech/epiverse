@@ -1,12 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import {
-  Equals,
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { IsPassword } from '../../security/is-password.decorator';
 import { normalizeEmail, trim } from './transforms';
 
@@ -39,13 +33,17 @@ export class RegisterDto {
   @MaxLength(50)
   lastName!: string;
 
-  // Explicit acceptance of the terms of use (FR-AUTH-001): only the boolean
-  // true is accepted, so a missing field, false or "true" are refused.
+  // Explicit acceptance of the terms of use (FR-AUTH-001): the client sends
+  // the version it displayed, read from GET /api/auth/cgu. The service refuses
+  // a version that is no longer the current one.
   @ApiProperty({
-    example: true,
+    example: '1.0',
+    maxLength: 20,
     description:
-      'Must be true: the user accepts the current terms of use, recorded with their version and date.',
+      'Version of the terms of use the user accepted, as served by GET /api/auth/cgu.',
   })
-  @Equals(true, { message: 'cguAccepted must be true' })
-  cguAccepted!: true;
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(20)
+  cguVersion!: string;
 }
