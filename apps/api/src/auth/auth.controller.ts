@@ -10,10 +10,15 @@ import {
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { CurrentAccount, SessionGuard } from './session.guard';
+import {
+  CurrentAccount,
+  CurrentSessionId,
+  SessionGuard,
+} from './session.guard';
 import { AuthService } from './auth.service';
 import { AccountDto } from './dto/account.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -49,5 +54,15 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid session.' })
   me(@CurrentAccount() account: AccountDto): AccountDto {
     return account;
+  }
+
+  @UseGuards(SessionGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiNoContentResponse({ description: 'Session revoked.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid session.' })
+  logout(@CurrentSessionId() sessionId: number): Promise<void> {
+    return this.auth.logout(sessionId);
   }
 }

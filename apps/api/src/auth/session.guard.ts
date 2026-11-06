@@ -10,11 +10,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AccountDto } from './dto/account.dto';
 import { hashSessionToken } from './session-token';
 
-type AuthenticatedRequest = Request & { account?: AccountDto };
+type AuthenticatedRequest = Request & {
+  account?: AccountDto;
+  sessionId?: number;
+};
 
 // Protects a route with the session token sent as "Authorization: Bearer <token>".
 // Every failure gets the same message, so a client cannot tell a missing token
-// from an unknown one.
+// from an unknown or revoked one.
 @Injectable()
 export class SessionGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
@@ -30,6 +33,8 @@ export class SessionGuard implements CanActivate {
     const session = await this.prisma.user_session.findUnique({
       where: { token_hash: hashSessionToken(token) },
       select: {
+        id: true,
+        revoked_at: true,
         users: {
           select: {
             public_id: true,
@@ -40,10 +45,11 @@ export class SessionGuard implements CanActivate {
         },
       },
     });
-    if (!session) {
+    if (!session || session.revoked_at) {
       throw new UnauthorizedException('Authentication required');
     }
 
+    request.sessionId = session.id;
     request.account = {
       id: session.users.public_id,
       email: session.users.email,
@@ -63,4 +69,10 @@ function readBearerToken(request: Request): string | undefined {
 export const CurrentAccount = createParamDecorator(
   (_data: unknown, context: ExecutionContext): AccountDto =>
     context.switchToHttp().getRequest<AuthenticatedRequest>().account!,
+);
+
+// Reads the id of the session that SessionGuard checked.
+export const CurrentSessionId = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): number =>
+    context.switchToHttp().getRequest<AuthenticatedRequest>().sessionId!,
 );

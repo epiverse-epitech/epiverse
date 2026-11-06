@@ -98,4 +98,12 @@ export class AuthService {
 
     return { token, expiresAt: expiresAt.toISOString() };
   }
+
+  async logout(sessionId: number): Promise<void> {
+    // The row is kept, marked as revoked, so the session history stays readable.
+    await this.prisma.user_session.update({
+      where: { id: sessionId },
+      data: { revoked_at: new Date() },
+    });
+  }
 }
