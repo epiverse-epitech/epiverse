@@ -83,10 +83,19 @@ describe('validateEnv', () => {
     expect(env.AUTH_RATE_LIMIT_MAX).toBe(5);
   });
 
+  it('applies login failure defaults: 5 failures per 15 minutes', () => {
+    const env = validateEnv(baseEnv);
+
+    expect(env.LOGIN_FAILURE_MAX).toBe(5);
+    expect(env.LOGIN_FAILURE_WINDOW_MINUTES).toBe(15);
+  });
+
   describe.each([
     'RATE_LIMIT_TTL_SECONDS',
     'RATE_LIMIT_MAX',
     'AUTH_RATE_LIMIT_MAX',
+    'LOGIN_FAILURE_MAX',
+    'LOGIN_FAILURE_WINDOW_MINUTES',
   ])('%s', (name) => {
     it('converts the value to a number', () => {
       const env = validateEnv({ ...baseEnv, [name]: '10' });

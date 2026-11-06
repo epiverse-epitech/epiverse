@@ -4,16 +4,21 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { TooManyLoginFailuresException } from '../security/login-attempts';
 import {
   CurrentAccount,
   CurrentSessionId,
@@ -43,8 +48,24 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: SessionDto, description: 'Session opened.' })
-  login(@Body() body: LoginDto): Promise<SessionDto> {
-    return this.auth.login(body);
+  @ApiUnauthorizedResponse({ description: 'Invalid email or password.' })
+  @ApiTooManyRequestsResponse({
+    description:
+      'Too many requests from this address, or too many failed logins for this account from this address.',
+  })
+  async login(
+    @Body() body: LoginDto,
+    @Ip() clientIp: string,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<SessionDto> {
+    try {
+      return await this.auth.login(body, clientIp);
+    } catch (error) {
+      if (error instanceof TooManyLoginFailuresException) {
+        response.setHeader('Retry-After', error.retryAfterSeconds);
+      }
+      throw error;
+    }
   }
 
   @UseGuards(SessionGuard)

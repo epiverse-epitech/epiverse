@@ -48,6 +48,18 @@ export class EnvironmentVariables {
   @IsInt()
   AUTH_RATE_LIMIT_MAX: number = 5;
 
+  // Failed logins allowed per account and client address within the window
+  // (NFR-SEC-003). Students behind one address each get their own count.
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  LOGIN_FAILURE_MAX: number = 5;
+
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  LOGIN_FAILURE_WINDOW_MINUTES: number = 15;
+
   // Number of reverse proxies in front of the API. At 0, X-Forwarded-For is
   // ignored, so a client cannot forge its address when no proxy is there.
   @Transform(toStrictInteger)

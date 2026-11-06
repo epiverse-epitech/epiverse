@@ -67,6 +67,8 @@ Variables are read from the process environment and, in local development, from 
 | `RATE_LIMIT_TTL_SECONDS` | No | `60` | Length of the rate limit window. Integer of at least 1 |
 | `RATE_LIMIT_MAX` | No | `100` | Requests allowed per window on a route. Integer of at least 1 |
 | `AUTH_RATE_LIMIT_MAX` | No | `5` | Same, on routes marked `@AuthRateLimit()`. Integer of at least 1 |
+| `LOGIN_FAILURE_MAX` | No | `5` | Failed logins allowed per account and client address within the window below. Integer of at least 1 |
+| `LOGIN_FAILURE_WINDOW_MINUTES` | No | `15` | Length of that window, in minutes. Integer of at least 1 |
 | `TRUST_PROXY_HOPS` | No | `0` | Number of reverse proxies in front of the API. Integer of at least 0 |
 
 The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`REDIS_URL` will come with Redis).

@@ -7,9 +7,11 @@ import { configureApp } from '../../src/app.setup';
 import { validateEnv } from '../../src/config/env.validation';
 
 // Builds the app with the real configuration, except the stricter limit on
-// credential routes, which each test group sets for itself.
+// credential routes, which each test group sets for itself, and any other
+// variable a test group needs to change.
 export async function createTestApp(
   authRateLimitMax: number,
+  overrides: Record<string, number> = {},
 ): Promise<INestApplication<App>> {
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
@@ -19,6 +21,7 @@ export async function createTestApp(
       new ConfigService({
         ...validateEnv(process.env),
         AUTH_RATE_LIMIT_MAX: authRateLimitMax,
+        ...overrides,
       }),
     )
     .compile();

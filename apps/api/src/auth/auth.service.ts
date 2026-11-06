@@ -14,6 +14,10 @@ import { EnvironmentVariables } from '../config/env.validation';
 import { SessionDto } from './dto/session.dto';
 import { generateSessionToken, hashSessionToken } from './session-token';
 import { isOpenAccount } from './account-state';
+import {
+  LoginAttempts,
+  TooManyLoginFailuresException,
+} from '../security/login-attempts';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +29,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly passwords: PasswordService,
     private readonly config: ConfigService<EnvironmentVariables, true>,
+    private readonly loginAttempts: LoginAttempts,
   ) {
     this.unknownUserHash = passwords.hash('unknown-user-placeholder');
   }
@@ -70,7 +75,15 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto): Promise<SessionDto> {
+  // clientIp is the address seen through the trusted proxies (TRUST_PROXY_HOPS).
+  async login(dto: LoginDto, clientIp: string): Promise<SessionDto> {
+    // Unknown emails are counted too, so a 429 does not reveal which exist.
+    const attemptKey = `${clientIp}\n${dto.email}`;
+    const retryAfterSeconds = this.loginAttempts.start(attemptKey);
+    if (retryAfterSeconds > 0) {
+      throw new TooManyLoginFailuresException(retryAfterSeconds);
+    }
+
     const user = await this.prisma.users.findFirst({
       where: { email: dto.email },
       select: {
@@ -91,6 +104,7 @@ export class AuthService {
     if (!user || !passwordMatches || !isOpenAccount(user)) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    this.loginAttempts.succeeded(attemptKey);
 
     const token = generateSessionToken();
     const ttlHours = this.config.get('SESSION_TTL_HOURS', { infer: true });
