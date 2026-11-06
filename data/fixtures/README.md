@@ -13,7 +13,7 @@ python data/fixtures/generate.py --load --confirm-local-reset       # génère p
 
 | Fichier | Contenu | Chargement manuel |
 |---|---|---|
-| `seed.sql` | les 41 tables remplies | `docker compose exec -T postgres psql -U epiverse -d epiverse < data/fixtures/out/seed.sql` |
+| `seed.sql` | les 42 tables remplies | `docker compose exec -T postgres psql -U epiverse -d epiverse < data/fixtures/out/seed.sql` |
 | `user_interactions.jsonl` | les interactions | `mongoimport` dans la collection `user_interactions` de `epiverse_ai` |
 | `world_maps.jsonl`, `world_characters.jsonl` | plateforme 2D : 6 cartes, un personnage pour 80 % des comptes actifs | `mongoimport` dans `maps` et `characters` de `epiverse_world` |
 
