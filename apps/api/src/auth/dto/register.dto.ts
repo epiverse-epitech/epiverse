@@ -2,14 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { IsPassword } from '../../security/is-password.decorator';
-
-// Strips surrounding spaces so that a name made only of spaces counts as empty.
-const trim = ({ value }: { value: unknown }): unknown =>
-  typeof value === 'string' ? value.trim() : value;
-
-// Emails are stored in lowercase, matching the unique index on lower(email).
-const normalizeEmail = ({ value }: { value: unknown }): unknown =>
-  typeof value === 'string' ? value.trim().toLowerCase() : value;
+import { normalizeEmail, trim } from './transforms';
 
 // Maximum lengths match the columns of the users table.
 export class RegisterDto {

@@ -1,16 +1,27 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordService } from '../security/password.service';
 import { AccountDto } from './dto/account.dto';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
+  // Verified when the email is unknown, so that both failures take the same
+  // time and the response time does not reveal which emails have an account.
+  private readonly unknownUserHash: Promise<string>;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly passwords: PasswordService,
-  ) {}
+  ) {
+    this.unknownUserHash = passwords.hash('unknown-user-placeholder');
+  }
 
   async register(dto: RegisterDto): Promise<AccountDto> {
     const passwordHash = await this.passwords.hash(dto.password);
@@ -50,6 +61,22 @@ export class AuthService {
         );
       }
       throw error;
+    }
+  }
+
+  async login(dto: LoginDto): Promise<void> {
+    const user = await this.prisma.users.findFirst({
+      where: { email: dto.email },
+      select: { id: true, password_hash: true },
+    });
+
+    const passwordMatches = await this.passwords.verify(
+      dto.password,
+      user?.password_hash ?? (await this.unknownUserHash),
+    );
+
+    if (!user || !passwordMatches) {
+      throw new UnauthorizedException('Invalid email or password');
     }
   }
 }
