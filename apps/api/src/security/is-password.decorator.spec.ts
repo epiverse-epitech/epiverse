@@ -14,41 +14,30 @@ function errorsFor(password: unknown): string[] {
   );
 }
 
-describe('IsPassword', () => {
-  it.each(['Correct-Horse-1', 'Abcdefg1', `A1${'a'.repeat(126)}`])(
-    'accepts %p',
-    (password) => {
-      expect(errorsFor(password)).toEqual([]);
-    },
-  );
+describe('IsPassword (single-factor password policy)', () => {
+  it.each([
+    'correct horse battery staple',
+    'onlylowercasecharacters',
+    'étoiles paisibles pour toujours',
+    'A1' + 'a'.repeat(126),
+    'x'.repeat(15),
+  ])('accepts passphrases and passwords without composition constraints: %p', (password) => {
+    expect(errorsFor(password)).toEqual([]);
+  });
 
-  it('rejects fewer than 8 characters', () => {
-    expect(errorsFor('Abcde1')).toContain(
-      'password must be longer than or equal to 8 characters',
+  it('rejects fewer than 15 characters', () => {
+    expect(errorsFor('abcdefghijklm')).toContain(
+      'password must be longer than or equal to 15 characters',
     );
   });
 
   it('rejects more than 128 characters', () => {
-    expect(errorsFor(`A1${'a'.repeat(127)}`)).toContain(
+    expect(errorsFor('x'.repeat(129))).toContain(
       'password must be shorter than or equal to 128 characters',
     );
   });
 
-  it('requires an uppercase letter', () => {
-    expect(errorsFor('abcdefg1')).toContain(
-      'password must contain an uppercase letter',
-    );
-  });
-
-  it('requires a digit', () => {
-    expect(errorsFor('Abcdefgh')).toContain('password must contain a digit');
-  });
-
-  it('rejects whitespace anywhere in the password', () => {
-    expect(errorsFor('A1 bcdefg')).toContain('password must not contain whitespace');
-  });
-
-  it('rejects a value that is not a string', () => {
+  it('does not coerce non-string inputs', () => {
     expect(errorsFor(12345678)).toContain('password must be a string');
   });
 });

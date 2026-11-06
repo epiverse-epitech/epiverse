@@ -213,3 +213,7 @@ Defined in `infra/README.md`, section 2:
 
 - Code, tests, comments, error messages and commit messages are written in English.
 - Branches `feature/<ticket>-<topic>`, `fix/…`, `docs/…`; commits `type(scope): message`; pull requests to `develop` with a green CI and a review (DOC-013).
+
+## Politique de mots de passe
+
+Pour un mot de passe utilisé comme facteur unique, la validation exige **15 à 128 caractères** et accepte les espaces et phrases de passe, sans règle obligatoire de majuscule ou de chiffre (NIST SP 800-63B-4). **Attention :** cette validation ne remplace pas la comparaison à une liste de mots de passe compromis/fréquents, ni l'anti-abus et l'authentification multifacteur : ces contrôles doivent être ajoutés avec les flux d'inscription/connexion (issue #18). Les mots de passe existants ne sont pas modifiés par ce changement de DTO.
