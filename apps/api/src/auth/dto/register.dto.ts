@@ -7,9 +7,14 @@ import { IsPassword } from '../../security/is-password.decorator';
 const trim = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string' ? value.trim() : value;
 
+// Emails are stored in lowercase, matching the unique index on lower(email).
+const normalizeEmail = ({ value }: { value: unknown }): unknown =>
+  typeof value === 'string' ? value.trim().toLowerCase() : value;
+
 // Maximum lengths match the columns of the users table.
 export class RegisterDto {
   @ApiProperty({ example: 'ada@epitech.eu', maxLength: 255 })
+  @Transform(normalizeEmail)
   @IsEmail()
   @MaxLength(255)
   email!: string;

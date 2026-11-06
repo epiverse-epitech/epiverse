@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordService } from '../security/password.service';
 import { AccountDto } from './dto/account.dto';
@@ -12,27 +13,43 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AccountDto> {
-    const account = await this.prisma.users.create({
-      data: {
-        email: dto.email,
-        password_hash: await this.passwords.hash(dto.password),
-        first_name: dto.firstName,
-        last_name: dto.lastName,
-      },
-      // Only public columns are read back, so the hash never leaves the database.
-      select: {
-        public_id: true,
-        email: true,
-        first_name: true,
-        last_name: true,
-      },
-    });
+    const passwordHash = await this.passwords.hash(dto.password);
 
-    return {
-      id: account.public_id,
-      email: account.email,
-      firstName: account.first_name,
-      lastName: account.last_name,
-    };
+    try {
+      const account = await this.prisma.users.create({
+        data: {
+          email: dto.email,
+          password_hash: passwordHash,
+          first_name: dto.firstName,
+          last_name: dto.lastName,
+        },
+        // Only public columns are read back, so the hash never leaves the database.
+        select: {
+          public_id: true,
+          email: true,
+          first_name: true,
+          last_name: true,
+        },
+      });
+
+      return {
+        id: account.public_id,
+        email: account.email,
+        firstName: account.first_name,
+        lastName: account.last_name,
+      };
+    } catch (error) {
+      // The unique index on lower(email) is the real guard: checking before
+      // inserting would let two simultaneous requests both pass.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'An account already exists with this email',
+        );
+      }
+      throw error;
+    }
   }
 }

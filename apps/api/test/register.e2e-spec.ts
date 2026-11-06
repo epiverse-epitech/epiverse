@@ -34,7 +34,7 @@ describe('Account registration (e2e)', () => {
 
   afterEach(async () => {
     await prisma.users.deleteMany({
-      where: { email: { endsWith: TEST_DOMAIN } },
+      where: { email: { endsWith: TEST_DOMAIN, mode: 'insensitive' } },
     });
   });
 
@@ -46,7 +46,9 @@ describe('Account registration (e2e)', () => {
     request(app.getHttpServer()).post('/api/auth/register').send(body);
 
   const accountCount = () =>
-    prisma.users.count({ where: { email: { endsWith: TEST_DOMAIN } } });
+    prisma.users.count({
+      where: { email: { endsWith: TEST_DOMAIN, mode: 'insensitive' } },
+    });
 
   it.each([
     ['an invalid email', { email: 'ada@' }],
@@ -82,5 +84,36 @@ describe('Account registration (e2e)', () => {
         account.password_hash,
       ),
     ).toBe(true);
+  });
+
+  it('stores the email in lowercase', async () => {
+    const response = await register({
+      ...validBody,
+      email: `Ada${TEST_DOMAIN.toUpperCase()}`,
+    }).expect(201);
+
+    expect(response.body.email).toBe(validBody.email);
+    expect(await accountCount()).toBe(1);
+    await prisma.users.findFirstOrThrow({ where: { email: validBody.email } });
+  });
+
+  it('refuses an email already used, whatever its case, and keeps the first account', async () => {
+    await register(validBody).expect(201);
+
+    const response = await register({
+      ...validBody,
+      email: validBody.email.toUpperCase(),
+      firstName: 'Grace',
+    }).expect(409);
+
+    expect(response.body.message).toBe(
+      'An account already exists with this email',
+    );
+    expect(JSON.stringify(response.body)).not.toContain('Ada');
+    expect(await accountCount()).toBe(1);
+    const account = await prisma.users.findFirstOrThrow({
+      where: { email: validBody.email },
+    });
+    expect(account.first_name).toBe('Ada');
   });
 });
