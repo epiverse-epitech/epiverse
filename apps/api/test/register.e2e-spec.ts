@@ -17,7 +17,8 @@ const validBody = {
   password: 'Lovelace1815',
   firstName: 'Ada',
   lastName: 'Lovelace',
-  cguAccepted: true,
+  // Set in beforeAll to the version the API serves.
+  cguVersion: '',
 };
 
 // Builds the app with the real configuration, except the stricter limit on
@@ -51,6 +52,7 @@ describe('Account registration (e2e)', () => {
     // High enough that the functional tests below never hit the limit.
     app = await createApp(100);
     prisma = app.get(PrismaService);
+    validBody.cguVersion = app.get(ConfigService).get<string>('CGU_VERSION')!;
   });
 
   afterEach(async () => {
@@ -77,9 +79,9 @@ describe('Account registration (e2e)', () => {
     ['a missing first name', { firstName: undefined }],
     ['a blank last name', { lastName: '   ' }],
     ['an unknown field', { role: 'admin' }],
-    ['terms of use not accepted', { cguAccepted: false }],
-    ['terms of use acceptance missing', { cguAccepted: undefined }],
-    ['terms of use accepted as text', { cguAccepted: 'true' }],
+    ['terms of use not accepted', { cguVersion: undefined }],
+    ['an empty terms of use version', { cguVersion: '' }],
+    ['the old acceptance flag', { cguVersion: undefined, cguAccepted: true }],
   ])('rejects %s with 400 and creates no account', async (_case, override) => {
     const response = await register({ ...validBody, ...override }).expect(400);
 
@@ -108,6 +110,26 @@ describe('Account registration (e2e)', () => {
         account.password_hash,
       ),
     ).toBe(true);
+  });
+
+  it('refuses an outdated terms of use version with 400 and creates no account', async () => {
+    const response = await register({
+      ...validBody,
+      cguVersion: 'outdated',
+    }).expect(400);
+
+    expect(response.body.message).toBe(
+      'The terms of use have changed: accept the current version',
+    );
+    expect(await accountCount()).toBe(0);
+  });
+
+  it('serves the current terms of use version', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/auth/cgu')
+      .expect(200);
+
+    expect(response.body).toEqual({ version: validBody.cguVersion });
   });
 
   it('records the acceptance of the current terms of use, with version and date', async () => {

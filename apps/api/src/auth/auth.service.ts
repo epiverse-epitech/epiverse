@@ -1,10 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from '../config/env.validation';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordService } from '../security/password.service';
 import { AccountDto } from './dto/account.dto';
+import { CguDto } from './dto/cgu.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
@@ -15,7 +20,20 @@ export class AuthService {
     private readonly config: ConfigService<EnvironmentVariables, true>,
   ) {}
 
+  currentCgu(): CguDto {
+    return { version: this.config.get('CGU_VERSION', { infer: true }) };
+  }
+
   async register(dto: RegisterDto): Promise<AccountDto> {
+    // The terms may have changed while the user was reading them: only the
+    // current version can be accepted.
+    const cguVersion = this.currentCgu().version;
+    if (dto.cguVersion !== cguVersion) {
+      throw new BadRequestException(
+        'The terms of use have changed: accept the current version',
+      );
+    }
+
     const passwordHash = await this.passwords.hash(dto.password);
 
     try {
@@ -28,9 +46,7 @@ export class AuthService {
           // Created in the same statement as the account, so an account never
           // exists without its recorded acceptance of the terms of use.
           user_cgu_acceptance: {
-            create: {
-              version: this.config.get('CGU_VERSION', { infer: true }),
-            },
+            create: { version: cguVersion },
           },
         },
         // Only public columns are read back, so the hash never leaves the database.
