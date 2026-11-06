@@ -1,5 +1,19 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { CurrentAccount, SessionGuard } from './session.guard';
 import { AuthService } from './auth.service';
 import { AccountDto } from './dto/account.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -26,5 +40,14 @@ export class AuthController {
   @ApiOkResponse({ type: SessionDto, description: 'Session opened.' })
   login(@Body() body: LoginDto): Promise<SessionDto> {
     return this.auth.login(body);
+  }
+
+  @UseGuards(SessionGuard)
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: AccountDto, description: 'Account of the session.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid session.' })
+  me(@CurrentAccount() account: AccountDto): AccountDto {
+    return account;
   }
 }

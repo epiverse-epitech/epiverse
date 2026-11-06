@@ -18,7 +18,10 @@ export function configureApp(app: INestApplication): void {
   );
   // The public OpenAPI spec may expose endpoints, schemas and implementation details.
   // Opt in explicitly to serve Swagger in production.
-  if (process.env.NODE_ENV !== 'production' || process.env.API_DOCS_ENABLED === 'true') {
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.API_DOCS_ENABLED === 'true'
+  ) {
     setupApiDocs(app);
   }
 }
@@ -30,6 +33,7 @@ function setupApiDocs(app: INestApplication): void {
     .setTitle('EpiVerse API')
     .setDescription('REST API of EpiVerse, used by the web and mobile clients.')
     .setVersion('0.0.1')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     extraModels: [ErrorResponseDto],
