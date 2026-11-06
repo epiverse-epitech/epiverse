@@ -1,6 +1,6 @@
 -- =============================================================================
 -- EpiVerse : schéma PostgreSQL
--- Généré depuis esp_schema.drawdb.json (42 tables, 61 clés étrangères, 20 types énumérés)
+-- Généré depuis esp_schema.drawdb.json (43 tables, 62 clés étrangères, 20 types énumérés)
 -- Cible : PostgreSQL 17 + pgvector (image pgvector/pgvector:pg17-bookworm du docker-compose)
 --
 -- À exécuter sur une base vide :
@@ -180,6 +180,14 @@ CREATE TABLE consent (
 );
 COMMENT ON TABLE consent IS 'Explicit consent per purpose, off by default: no active row = no tracking, no profiling (DOC-014 §08)';
 COMMENT ON COLUMN consent.withdrawn_at IS 'set when the user withdraws';
+
+CREATE TABLE user_cgu_acceptance (
+    user_id     INTEGER NOT NULL,
+    version     VARCHAR(20) NOT NULL,
+    accepted_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT pk_user_cgu_acceptance PRIMARY KEY (user_id, version)
+);
+COMMENT ON TABLE user_cgu_acceptance IS 'CGU accepted by the user: a row for the current version = CGU accepted. One row per accepted version.';
 
 -- ---- Organisations ----
 
@@ -728,6 +736,8 @@ ALTER TABLE report ADD CONSTRAINT fk_report_handled_by_users
     FOREIGN KEY (handled_by) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE SET NULL;
 ALTER TABLE consent ADD CONSTRAINT fk_consent_user_id_users
     FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE user_cgu_acceptance ADD CONSTRAINT fk_user_cgu_acceptance_user_id_users
+    FOREIGN KEY (user_id) REFERENCES users (id) ON UPDATE NO ACTION ON DELETE CASCADE;
 ALTER TABLE program ADD CONSTRAINT fk_program_school_id_school
     FOREIGN KEY (school_id) REFERENCES school (id) ON UPDATE NO ACTION ON DELETE CASCADE;
 ALTER TABLE student_profile ADD CONSTRAINT fk_student_profile_program_id_program
@@ -764,6 +774,7 @@ CREATE INDEX idx_role_permission_permission_id ON role_permission (permission_id
 CREATE INDEX idx_user_session_user_id ON user_session (user_id);
 CREATE INDEX idx_auth_token_user_id ON auth_token (user_id);
 CREATE INDEX idx_consent_user_purpose ON consent (user_id, purpose);
+-- user_cgu_acceptance (user_id) : couvert par pk_user_cgu_acceptance
 CREATE INDEX idx_organisation_type_name ON organisation (type, name);
 CREATE INDEX idx_organisation_logo_media_id ON organisation (logo_media_id);
 CREATE INDEX idx_association_school ON association (school_id);
