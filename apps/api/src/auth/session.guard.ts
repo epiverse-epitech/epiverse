@@ -17,7 +17,7 @@ type AuthenticatedRequest = Request & {
 
 // Protects a route with the session token sent as "Authorization: Bearer <token>".
 // Every failure gets the same message, so a client cannot tell a missing token
-// from an unknown or revoked one.
+// from an unknown, revoked or expired one.
 @Injectable()
 export class SessionGuard implements CanActivate {
   constructor(private readonly prisma: PrismaService) {}
@@ -35,6 +35,7 @@ export class SessionGuard implements CanActivate {
       select: {
         id: true,
         revoked_at: true,
+        expires_at: true,
         users: {
           select: {
             public_id: true,
@@ -45,7 +46,7 @@ export class SessionGuard implements CanActivate {
         },
       },
     });
-    if (!session || session.revoked_at) {
+    if (!session || session.revoked_at || session.expires_at <= new Date()) {
       throw new UnauthorizedException('Authentication required');
     }
 

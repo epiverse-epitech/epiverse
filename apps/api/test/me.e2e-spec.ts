@@ -3,6 +3,10 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { PasswordService } from '../src/security/password.service';
+import {
+  generateSessionToken,
+  hashSessionToken,
+} from '../src/auth/session-token';
 import { createTestApp } from './support/create-test-app';
 
 // Every account created here uses this domain, so cleanup never touches other data.
@@ -17,6 +21,7 @@ describe('Current account (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
   let publicId: string;
+  let userId: number;
 
   beforeAll(async () => {
     // High enough that these tests never hit the limit.
@@ -32,6 +37,7 @@ describe('Current account (e2e)', () => {
       },
     });
     publicId = user.public_id;
+    userId = user.id;
   });
 
   afterAll(async () => {
@@ -79,5 +85,34 @@ describe('Current account (e2e)', () => {
     const response = await call.expect(401);
 
     expect(response.body.message).toBe('Authentication required');
+  });
+
+  // Writes a session straight into the database, to control its expiry.
+  const createSession = async (expiresAt: Date): Promise<string> => {
+    const token = generateSessionToken();
+    await prisma.user_session.create({
+      data: {
+        user_id: userId,
+        token_hash: hashSessionToken(token),
+        expires_at: expiresAt,
+      },
+    });
+    return token;
+  };
+
+  it('refuses an expired session with the same generic 401', async () => {
+    const token = await createSession(new Date(Date.now() - 1000));
+
+    const response = await me()
+      .set('Authorization', `Bearer ${token}`)
+      .expect(401);
+
+    expect(response.body.message).toBe('Authentication required');
+  });
+
+  it('accepts a session until it expires', async () => {
+    const token = await createSession(new Date(Date.now() + 60_000));
+
+    await me().set('Authorization', `Bearer ${token}`).expect(200);
   });
 });
