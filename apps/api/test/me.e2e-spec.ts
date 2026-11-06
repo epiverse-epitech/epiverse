@@ -70,6 +70,8 @@ describe('Current account (e2e)', () => {
       email: credentials.email,
       firstName: 'Ada',
       lastName: 'Lovelace',
+      // This account was created without accepting the terms of use.
+      cguAccepted: false,
     });
   });
 

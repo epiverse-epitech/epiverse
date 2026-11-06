@@ -159,7 +159,7 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 ### Known limits
 
 - The 409 tells whether an email is registered (account enumeration). Accepted for now and slowed down by the rate limit. Sending an email to the existing owner instead would remove it, once email delivery exists (EPI-53).
-- `GET /api/auth/cgu` returns `{ version }`, the current terms of use version (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` are deployed together. Asking existing users to accept a new version comes with sessions (EPI-490).
+- `GET /api/auth/cgu` returns `{ version }`, the current terms of use version (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` are deployed together; existing accounts then accept the new version through `POST /api/auth/cgu/accept` (see Sessions).
 
 ## Sessions
 
@@ -171,16 +171,19 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 | | 400 | Invalid or unknown field. |
 | | 401 `Invalid email or password` | Unknown email, wrong password, deactivated or deleted account: always the same answer. |
 | | 429 with `Retry-After` | Too many requests from the address (`@AuthRateLimit()`), or too many failed logins for this account from this address (see Rate limiting). |
-| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName }` | Valid session. Same public view as registration. |
+| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName, cguAccepted }` | Valid session. `cguAccepted` is false when the current terms of use are not accepted yet. |
+| `POST /api/auth/cgu/accept` with `{ version }` | 204 | Records the acceptance of the current terms of use (version and date). Accepting again keeps the first date. |
+| | 400 `The terms of use have changed: accept the current version` | `version` is not the current one. |
 | `POST /api/auth/logout` | 204 | The session is revoked. The other sessions of the account stay open. |
-| `GET /api/auth/me`, `POST /api/auth/logout` | 401 `Authentication required` | Missing, malformed, unknown, revoked or expired token, or account deactivated or deleted since login: always the same answer. |
+| Every protected route | 401 `Authentication required` | Missing, malformed, unknown, revoked or expired token, or account deactivated or deleted since login: always the same answer. |
 
 - The token is 32 random bytes (base64url). The API returns it once and stores only its SHA-256 hash in `user_session`, so a database leak does not give working tokens.
 - Every request checks the session in the database, so a logout or a deactivated account takes effect at once.
 - A session lasts `SESSION_TTL_HOURS` (7 days by default) and is not extended by use.
 - A logout keeps the row with `revoked_at` set, so the session history stays readable.
 - An unknown email is checked against a dummy Argon2 hash, so both failures take the same time and the response time does not reveal which emails have an account.
-- A route is protected with `@UseGuards(SessionGuard)`; `@CurrentAccount()` reads the account and `@CurrentSessionId()` the session.
+- A route is protected with `@UseGuards(SessionGuard)`; `@CurrentAccount()` reads the account, `@CurrentSessionId()` the session and `@CurrentUserId()` the internal account id (never returned to the client).
+- When the terms of use change (`CGU_VERSION`), an account that has not accepted the new version gets 403 `The current terms of use must be accepted` on every protected route, except those marked `@AllowPendingCgu()`: `GET /api/auth/me`, `POST /api/auth/cgu/accept` and `POST /api/auth/logout`. Login still works, so the client can show the new terms (EPI-490).
 
 ### Known limits
 

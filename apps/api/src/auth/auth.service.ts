@@ -40,15 +40,32 @@ export class AuthService {
     return { version: this.config.get('CGU_VERSION', { infer: true }) };
   }
 
-  async register(dto: RegisterDto): Promise<AccountDto> {
-    // The terms may have changed while the user was reading them: only the
-    // current version can be accepted.
-    const cguVersion = this.currentCgu().version;
-    if (dto.cguVersion !== cguVersion) {
+  // Returns the version when it is the current one, otherwise refuses it.
+  private checkCurrentCgu(version: string): string {
+    const current = this.currentCgu().version;
+    if (version !== current) {
       throw new BadRequestException(
         'The terms of use have changed: accept the current version',
       );
     }
+    return current;
+  }
+
+  // Records the acceptance of the current terms of use by an existing account.
+  // Accepting a version already accepted keeps its first date.
+  async acceptCgu(userId: number, version: string): Promise<void> {
+    const current = this.checkCurrentCgu(version);
+    await this.prisma.user_cgu_acceptance.upsert({
+      where: { user_id_version: { user_id: userId, version: current } },
+      create: { user_id: userId, version: current },
+      update: {},
+    });
+  }
+
+  async register(dto: RegisterDto): Promise<AccountDto> {
+    // The terms may have changed while the user was reading them: only the
+    // current version can be accepted.
+    const cguVersion = this.checkCurrentCgu(dto.cguVersion);
 
     const passwordHash = await this.passwords.hash(dto.password);
 

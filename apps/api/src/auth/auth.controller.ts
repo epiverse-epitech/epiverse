@@ -12,6 +12,7 @@ import {
 import type { Response } from 'express';
 import {
   ApiBearerAuth,
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiTags,
@@ -20,10 +21,15 @@ import {
 } from '@nestjs/swagger';
 import { TooManyLoginFailuresException } from '../security/login-attempts';
 import {
+  AllowPendingCgu,
   CurrentAccount,
+  CurrentCguAccepted,
   CurrentSessionId,
+  CurrentUserId,
   SessionGuard,
 } from './session.guard';
+import { AcceptCguDto } from './dto/accept-cgu.dto';
+import { CurrentAccountDto } from './dto/current-account.dto';
 import { AuthService } from './auth.service';
 import { AccountDto } from './dto/account.dto';
 import { CguDto } from './dto/cgu.dto';
@@ -76,15 +82,38 @@ export class AuthController {
   }
 
   @UseGuards(SessionGuard)
+  @AllowPendingCgu()
   @Get('me')
   @ApiBearerAuth()
-  @ApiOkResponse({ type: AccountDto, description: 'Account of the session.' })
+  @ApiOkResponse({
+    type: CurrentAccountDto,
+    description: 'Account of the session.',
+  })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid session.' })
-  me(@CurrentAccount() account: AccountDto): AccountDto {
-    return account;
+  me(
+    @CurrentAccount() account: AccountDto,
+    @CurrentCguAccepted() cguAccepted: boolean,
+  ): CurrentAccountDto {
+    return { ...account, cguAccepted };
   }
 
   @UseGuards(SessionGuard)
+  @AllowPendingCgu()
+  @Post('cgu/accept')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiNoContentResponse({ description: 'Acceptance recorded.' })
+  @ApiBadRequestResponse({ description: 'Not the current version.' })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid session.' })
+  acceptCgu(
+    @CurrentUserId() userId: number,
+    @Body() body: AcceptCguDto,
+  ): Promise<void> {
+    return this.auth.acceptCgu(userId, body.version);
+  }
+
+  @UseGuards(SessionGuard)
+  @AllowPendingCgu()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
