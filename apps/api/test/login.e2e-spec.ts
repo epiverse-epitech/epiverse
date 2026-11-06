@@ -4,6 +4,8 @@ import { App } from 'supertest/types';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { PasswordService } from '../src/security/password.service';
 import { createTestApp } from './support/create-test-app';
+import { ConfigService } from '@nestjs/config';
+import { createHash } from 'node:crypto';
 
 // Every account created here uses this domain, so cleanup never touches other data.
 const TEST_DOMAIN = '@login.e2e.test';
@@ -36,6 +38,10 @@ describe('Login (e2e)', () => {
     userId = user.id;
   });
 
+  afterEach(async () => {
+    await prisma.user_session.deleteMany({ where: { user_id: userId } });
+  });
+
   afterAll(async () => {
     // Deleting the account also deletes its sessions (ON DELETE CASCADE).
     await prisma.users.deleteMany({
@@ -64,5 +70,38 @@ describe('Login (e2e)', () => {
 
   it('refuses a malformed request with 400', async () => {
     await login({ email: 'ada@' }).expect(400);
+  });
+
+  it('opens a session and returns its token, stored only as a hash', async () => {
+    const before = Date.now();
+    const response = await login(credentials).expect(200);
+
+    expect(response.body).toEqual({
+      token: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/),
+      expiresAt: expect.any(String),
+    });
+    const { token, expiresAt } = response.body;
+
+    const sessions = await prisma.user_session.findMany({
+      where: { user_id: userId },
+    });
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0].token_hash).toBe(
+      createHash('sha256').update(token).digest('hex'),
+    );
+    expect(sessions[0].revoked_at).toBeNull();
+    expect(sessions[0].expires_at.toISOString()).toBe(expiresAt);
+
+    const ttlHours = app.get(ConfigService).get<number>('SESSION_TTL_HOURS');
+    const expectedExpiry = before + ttlHours! * 60 * 60 * 1000;
+    expect(Date.parse(expiresAt)).toBeGreaterThanOrEqual(expectedExpiry);
+    expect(Date.parse(expiresAt)).toBeLessThan(expectedExpiry + 60_000);
+  });
+
+  it('accepts the email in any letter case', async () => {
+    await login({
+      ...credentials,
+      email: credentials.email.toUpperCase(),
+    }).expect(200);
   });
 });

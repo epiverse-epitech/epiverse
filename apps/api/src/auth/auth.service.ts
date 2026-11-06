@@ -9,6 +9,10 @@ import { PasswordService } from '../security/password.service';
 import { AccountDto } from './dto/account.dto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ConfigService } from '@nestjs/config';
+import { EnvironmentVariables } from '../config/env.validation';
+import { SessionDto } from './dto/session.dto';
+import { generateSessionToken, hashSessionToken } from './session-token';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +23,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly passwords: PasswordService,
+    private readonly config: ConfigService<EnvironmentVariables, true>,
   ) {
     this.unknownUserHash = passwords.hash('unknown-user-placeholder');
   }
@@ -64,7 +69,7 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto): Promise<void> {
+  async login(dto: LoginDto): Promise<SessionDto> {
     const user = await this.prisma.users.findFirst({
       where: { email: dto.email },
       select: { id: true, password_hash: true },
@@ -78,5 +83,19 @@ export class AuthService {
     if (!user || !passwordMatches) {
       throw new UnauthorizedException('Invalid email or password');
     }
+
+    const token = generateSessionToken();
+    const ttlHours = this.config.get('SESSION_TTL_HOURS', { infer: true });
+    const expiresAt = new Date(Date.now() + ttlHours * 60 * 60 * 1000);
+
+    await this.prisma.user_session.create({
+      data: {
+        user_id: user.id,
+        token_hash: hashSessionToken(token),
+        expires_at: expiresAt,
+      },
+    });
+
+    return { token, expiresAt: expiresAt.toISOString() };
   }
 }

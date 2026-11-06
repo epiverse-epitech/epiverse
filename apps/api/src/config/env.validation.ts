@@ -55,6 +55,13 @@ export class EnvironmentVariables {
   @IsInt()
   TRUST_PROXY_HOPS: number = 0;
 
+  // How long a session stays valid after login. Sessions can also be revoked
+  // at any time (logout, password change).
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  SESSION_TTL_HOURS: number = 168;
+
   @IsUrl({
     protocols: ['postgresql', 'postgres'],
     require_protocol: true,

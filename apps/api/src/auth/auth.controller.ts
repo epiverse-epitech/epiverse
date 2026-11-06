@@ -5,6 +5,8 @@ import { AccountDto } from './dto/account.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthRateLimit } from '../security/auth-rate-limit.decorator';
 import { LoginDto } from './dto/login.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { SessionDto } from './dto/session.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,7 +23,8 @@ export class AuthController {
   @AuthRateLimit()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() body: LoginDto): Promise<void> {
+  @ApiOkResponse({ type: SessionDto, description: 'Session opened.' })
+  login(@Body() body: LoginDto): Promise<SessionDto> {
     return this.auth.login(body);
   }
 }
