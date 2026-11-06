@@ -131,7 +131,7 @@ jobs:
       - name: Envoyer la configuration serveur versionnée
         run: |
           scp infra/server/docker-compose.server.yml "epiverse:/opt/epiverse/$ENV_NAME/"
-          scp infra/scripts/deploy.sh infra/scripts/backup-db.sh infra/scripts/restore-db.sh "epiverse:/opt/epiverse/scripts/"
+          scp infra/scripts/deploy.sh infra/scripts/backup-db.sh infra/scripts/restore-db.sh infra/scripts/provision-app-db.sh "epiverse:/opt/epiverse/scripts/"
           ssh epiverse "chmod 750 /opt/epiverse/scripts/*.sh"
       - name: Autoriser le serveur à lire les images (jeton valable le temps du job)
         env:

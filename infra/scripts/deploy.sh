@@ -16,6 +16,10 @@ usage() { echo "Usage : $0 <staging|production> <tag-image>" >&2; exit 2; }
 ENV_NAME="$1"
 TAG="$2"
 case "$ENV_NAME" in staging|production) ;; *) usage ;; esac
+if [ "$ENV_NAME" = "production" ] && [ "${SKIP_BACKUP:-false}" = "true" ]; then
+  echo "SKIP_BACKUP interdit en production : sauvegarde obligatoire avant migration." >&2
+  exit 2
+fi
 [[ "$TAG" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "Tag invalide : $TAG" >&2; exit 2; }
 
 BASE_DIR="${EPIVERSE_BASE_DIR:-/opt/epiverse}"
@@ -68,8 +72,11 @@ if [ "${SKIP_BACKUP:-false}" != "true" ]; then
   "$SCRIPTS_DIR/backup-db.sh" "$ENV_NAME" || rollback "sauvegarde impossible, migration annulée"
 fi
 
-log "Migrations de la base…"
-compose run --rm --no-deps api migrate || rollback "migration refusée"
+log "Migrations de la base (identité administrateur éphémère)…"
+compose run --rm --no-deps migrate migrate || rollback "migration refusée"
+
+log "Provision du rôle SQL applicatif sans droits DDL…"
+"$SCRIPTS_DIR/provision-app-db.sh" "$ENV_NAME" || rollback "provisionnement du rôle applicatif impossible"
 
 log "Mise à jour des conteneurs…"
 if ! compose up -d --remove-orphans --wait --wait-timeout "$HEALTH_TIMEOUT"; then
