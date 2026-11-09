@@ -61,6 +61,14 @@ export class DisabledMailer extends Mailer {
 }
 
 export function createMailer(settings: MailSettings): Mailer {
+  if (
+    settings.get('NODE_ENV') === 'production' &&
+    String(settings.get('WEB_BASE_URL')).includes('localhost')
+  ) {
+    new Logger('Mail').warn(
+      'WEB_BASE_URL points to localhost: links in emails will not work',
+    );
+  }
   if (settings.get('SMTP_HOST')) {
     return new SmtpMailer(settings);
   }

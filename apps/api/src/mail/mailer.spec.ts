@@ -50,4 +50,24 @@ describe('createMailer', () => {
     warn.mockRestore();
     log.mockRestore();
   });
+
+  it('warns in production when links would point to localhost', () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    createMailer(
+      settings({
+        NODE_ENV: 'production',
+        SMTP_HOST: 'smtp.example.test',
+        SMTP_PORT: 587,
+        SMTP_REQUIRE_TLS: true,
+        MAIL_FROM: 'EpiVerse <no-reply@example.test>',
+        WEB_BASE_URL: 'http://localhost:8080',
+      }),
+    );
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('WEB_BASE_URL'));
+    warn.mockRestore();
+  });
 });

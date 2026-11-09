@@ -58,13 +58,21 @@ export class EmailVerificationService {
   }
 
   async verify(token: string): Promise<void> {
-    const userId = await this.tokens.consume(token, 'email_verification');
-    // A closed account gets the same answer as a bad link.
-    const { count } = await this.prisma.users.updateMany({
-      where: { id: userId ?? -1, is_active: true, deleted_at: null },
-      data: { email_verified_at: new Date() },
+    // One transaction: a failure cannot use up the link and leave the address
+    // unverified.
+    const verified = await this.prisma.$transaction(async (tx) => {
+      const userId = await this.tokens.consume(token, 'email_verification', tx);
+      if (userId === null) {
+        return false;
+      }
+      // A closed account gets the same answer as a bad link.
+      const { count } = await tx.users.updateMany({
+        where: { id: userId, is_active: true, deleted_at: null },
+        data: { email_verified_at: new Date() },
+      });
+      return count === 1;
     });
-    if (count !== 1) {
+    if (!verified) {
       throw new BadRequestException('This link is invalid or has expired');
     }
   }
