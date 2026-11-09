@@ -2,7 +2,9 @@ import { plainToInstance, Transform } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
+  IsBoolean,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUrl,
   Max,
@@ -23,6 +25,10 @@ export enum NodeEnv {
 // rejects it, instead of silently fixing it.
 const toStrictInteger = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+
+// Converts only the exact words, so that "yes" or "1" are rejected, not guessed.
+const toStrictBoolean = ({ value }: { value: unknown }): unknown =>
+  value === 'true' ? true : value === 'false' ? false : value;
 
 export class EnvironmentVariables {
   @IsEnum(NodeEnv)
@@ -86,6 +92,50 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   @IsString()
   CGU_VERSION: string = '1.0';
+
+  // SMTP server. Without a host, emails are printed in development and not
+  // sent at all in production (see src/mail/mailer.ts).
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  SMTP_HOST?: string;
+
+  @Transform(toStrictInteger)
+  @Max(65535)
+  @Min(1)
+  @IsInt()
+  SMTP_PORT: number = 587;
+
+  @IsOptional()
+  @IsString()
+  SMTP_USER?: string;
+
+  @IsOptional()
+  @IsString()
+  SMTP_PASSWORD?: string;
+
+  // On by default, so that credentials and links never travel unencrypted.
+  @Transform(toStrictBoolean)
+  @IsBoolean()
+  SMTP_REQUIRE_TLS: boolean = true;
+
+  @IsNotEmpty()
+  @IsString()
+  MAIL_FROM: string = 'EpiVerse <no-reply@epiverse.local>';
+
+  // Base of the links sent by email. Read from here and never from the request,
+  // so a forged Host header cannot send users to another site.
+  @IsUrl({
+    protocols: ['http', 'https'],
+    require_protocol: true,
+    require_tld: false,
+  })
+  WEB_BASE_URL: string = 'http://localhost:8080';
+
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  EMAIL_VERIFICATION_TTL_HOURS: number = 24;
 
   @IsUrl({
     protocols: ['postgresql', 'postgres'],

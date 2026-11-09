@@ -5,6 +5,7 @@ import { validateEnv } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { MailModule } from './mail/mail.module';
 import { PathsModule } from './paths/paths.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { PathsModule } from './paths/paths.module';
     }),
     RateLimitModule,
     PrismaModule,
+    MailModule,
     HealthModule,
     AuthModule,
     PathsModule,

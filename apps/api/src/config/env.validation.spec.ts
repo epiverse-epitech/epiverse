@@ -143,4 +143,33 @@ describe('validateEnv', () => {
       );
     });
   });
+
+  describe('email settings', () => {
+    it('has safe defaults: no SMTP server, TLS required, links to the local web app', () => {
+      const env = validateEnv(baseEnv);
+
+      expect(env.SMTP_HOST).toBeUndefined();
+      expect(env.SMTP_PORT).toBe(587);
+      expect(env.SMTP_REQUIRE_TLS).toBe(true);
+      expect(env.WEB_BASE_URL).toBe('http://localhost:8080');
+      expect(env.EMAIL_VERIFICATION_TTL_HOURS).toBe(24);
+    });
+
+    it('reads SMTP_REQUIRE_TLS as a boolean', () => {
+      expect(
+        validateEnv({ ...baseEnv, SMTP_REQUIRE_TLS: 'false' }).SMTP_REQUIRE_TLS,
+      ).toBe(false);
+    });
+
+    it.each([
+      ['SMTP_REQUIRE_TLS', 'maybe'],
+      ['SMTP_PORT', '70000'],
+      ['SMTP_HOST', ''],
+      ['WEB_BASE_URL', 'not-a-url'],
+      ['WEB_BASE_URL', 'javascript:alert(1)'],
+      ['EMAIL_VERIFICATION_TTL_HOURS', '0'],
+    ])('rejects %s = %j', (name, value) => {
+      expect(() => validateEnv({ ...baseEnv, [name]: value })).toThrow(name);
+    });
+  });
 });

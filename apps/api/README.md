@@ -72,6 +72,13 @@ Variables are read from the process environment and, in local development, from 
 | `TRUST_PROXY_HOPS` | No | `0` | Number of reverse proxies in front of the API. Integer of at least 0 |
 | `SESSION_TTL_HOURS` | No | `168` | Lifetime of a session after login, in hours (7 days). Integer of at least 1 |
 | `CGU_VERSION` | No | `1.0` | Version of the terms of use accepted at registration. 1 to 20 characters |
+| `SMTP_HOST` | No | — | SMTP server. Without it, emails are printed in development and not sent in production |
+| `SMTP_PORT` | No | `587` | Integer from 1 to 65535 (`465` uses implicit TLS) |
+| `SMTP_USER`, `SMTP_PASSWORD` | No | — | SMTP credentials, kept out of Git |
+| `SMTP_REQUIRE_TLS` | No | `true` | `true` or `false`. Set to `false` only for a local test server |
+| `MAIL_FROM` | No | `EpiVerse <no-reply@epiverse.local>` | Sender of the emails |
+| `WEB_BASE_URL` | No | `http://localhost:8080` | Base of the links sent by email. Must be set in staging and production |
+| `EMAIL_VERIFICATION_TTL_HOURS` | No | `24` | Lifetime of an email verification link. Integer of at least 1 |
 
 The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`REDIS_URL` will come with Redis).
 
@@ -209,6 +216,16 @@ After registration, the user chooses a path (Soumia's workflow, EPI-42). A new a
 - Mentor and organization paths need an approval and wait for role requests in the schema (EPI-41). A pending applicant must then see only a waiting page (Soumia).
 - Nothing stops a student from also requesting another path; how roles combine is EPI-93.
 - Two simultaneous first calls on a database without the `student` role could make one of them fail with 500 (unique role name). The fixtures seed the role, so it only concerns an empty database.
+
+## Emails
+
+Inject `Mailer` (`src/mail/`, global module) and call `send({ to, subject, text })`. Text only: no HTML, so nothing from a user can become markup.
+
+- With `SMTP_HOST`, messages go through SMTP (nodemailer), with TLS required by default.
+- Without it, in development, messages are printed in the console, so links can be tried without a server.
+- Without it, in production, the API starts with a warning and no email leaves. The content is never logged there, because links are secrets.
+- Emails are sent after the response, in the background: a slow or failing server neither fails the request nor reveals through timing which accounts exist. A failure is logged without any address or link.
+- Tests replace `Mailer` with `FakeMailer` (`test/support/`).
 
 ## Rate limiting
 
