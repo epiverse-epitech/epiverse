@@ -153,6 +153,7 @@ describe('validateEnv', () => {
       expect(env.SMTP_REQUIRE_TLS).toBe(true);
       expect(env.WEB_BASE_URL).toBe('http://localhost:8080');
       expect(env.EMAIL_VERIFICATION_TTL_HOURS).toBe(24);
+      expect(env.PASSWORD_RESET_TTL_MINUTES).toBe(30);
     });
 
     it('reads SMTP_REQUIRE_TLS as a boolean', () => {
@@ -168,6 +169,7 @@ describe('validateEnv', () => {
       ['WEB_BASE_URL', 'not-a-url'],
       ['WEB_BASE_URL', 'javascript:alert(1)'],
       ['EMAIL_VERIFICATION_TTL_HOURS', '0'],
+      ['PASSWORD_RESET_TTL_MINUTES', '0'],
     ])('rejects %s = %j', (name, value) => {
       expect(() => validateEnv({ ...baseEnv, [name]: value })).toThrow(name);
     });

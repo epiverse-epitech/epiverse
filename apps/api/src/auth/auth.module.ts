@@ -10,6 +10,7 @@ import { AccountTokens } from './account-tokens.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { EmailVerificationService } from './email-verification.service';
+import { PasswordResetService } from './password-reset.service';
 import { SessionGuard } from './session.guard';
 
 // Failures and email requests are counted apart, with the same limits.
@@ -28,6 +29,7 @@ const attemptsFactory = (config: ConfigService<EnvironmentVariables, true>) =>
     SessionGuard,
     AccountTokens,
     EmailVerificationService,
+    PasswordResetService,
     {
       provide: LoginAttempts,
       inject: [ConfigService],

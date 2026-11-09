@@ -74,6 +74,10 @@ export class LoginAttempts {
   }
 }
 
+// Key of a login attempt: one account seen from one client address.
+export const loginAttemptKey = (clientIp: string, email: string): string =>
+  `${clientIp}\n${email}`;
+
 // Second counter, for requests that send an email to an account.
 export const EMAIL_REQUEST_ATTEMPTS = 'EMAIL_REQUEST_ATTEMPTS';
 

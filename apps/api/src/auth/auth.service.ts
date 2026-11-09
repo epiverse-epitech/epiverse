@@ -19,6 +19,7 @@ import { isOpenAccount } from './account-state';
 import { EmailVerificationService } from './email-verification.service';
 import {
   LoginAttempts,
+  loginAttemptKey,
   TooManyLoginFailuresException,
 } from '../security/login-attempts';
 
@@ -120,7 +121,7 @@ export class AuthService {
   // clientIp is the address seen through the trusted proxies (TRUST_PROXY_HOPS).
   async login(dto: LoginDto, clientIp: string): Promise<SessionDto> {
     // Unknown emails are counted too, so a 429 does not reveal which exist.
-    const attemptKey = `${clientIp}\n${dto.email}`;
+    const attemptKey = loginAttemptKey(clientIp, dto.email);
     const retryAfterSeconds = this.loginAttempts.start(attemptKey);
     if (retryAfterSeconds > 0) {
       throw new TooManyLoginFailuresException(retryAfterSeconds);

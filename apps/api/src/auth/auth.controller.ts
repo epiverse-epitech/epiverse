@@ -29,7 +29,13 @@ import {
   SessionGuard,
 } from './session.guard';
 import { AcceptCguDto } from './dto/accept-cgu.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordResponseDto,
+  ResetPasswordDto,
+} from './dto/password-reset.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { PasswordResetService } from './password-reset.service';
 import { EmailVerificationService } from './email-verification.service';
 import { CurrentAccountDto } from './dto/current-account.dto';
 import { AuthService } from './auth.service';
@@ -47,6 +53,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly emailVerification: EmailVerificationService,
+    private readonly passwordReset: PasswordResetService,
   ) {}
 
   @Get('cgu')
@@ -115,6 +122,41 @@ export class AuthController {
   @ApiTooManyRequestsResponse({ description: 'Too many emails requested.' })
   resendVerification(@CurrentUserId() userId: number): Promise<void> {
     return this.emailVerification.resend(userId);
+  }
+
+  @AuthRateLimit()
+  @Post('password/forgot')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiAcceptedResponse({
+    type: ForgotPasswordResponseDto,
+    description: 'Same answer whether the account exists or not.',
+  })
+  @ApiTooManyRequestsResponse({ description: 'Too many emails requested.' })
+  forgotPassword(
+    @Body() body: ForgotPasswordDto,
+    @Ip() clientIp: string,
+  ): ForgotPasswordResponseDto {
+    this.passwordReset.requestLink(body.email, clientIp);
+    return {
+      message: 'If an account exists for this address, a link has been sent',
+    };
+  }
+
+  @AuthRateLimit()
+  @Post('password/reset')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({
+    description: 'Password changed; every session of the account is revoked.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Invalid, expired or used link, or password breaking the policy.',
+  })
+  resetPassword(
+    @Body() body: ResetPasswordDto,
+    @Ip() clientIp: string,
+  ): Promise<void> {
+    return this.passwordReset.reset(body.token, body.password, clientIp);
   }
 
   @UseGuards(SessionGuard)

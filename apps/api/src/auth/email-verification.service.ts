@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EnvironmentVariables } from '../config/env.validation';
+import { emailLink } from '../mail/email-link';
 import { Mailer } from '../mail/mailer';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -77,12 +78,12 @@ export class EmailVerificationService {
       'email_verification',
       ttlHours * 60 * 60 * 1000,
     );
-    const baseUrl = this.config
-      .get('WEB_BASE_URL', { infer: true })
-      .replace(/\/+$/, '');
+    const link = emailLink(
+      this.config.get('WEB_BASE_URL', { infer: true }),
+      'verify-email',
+      token,
+    );
 
-    // The token is in the fragment: browsers never send it to any server, so
-    // it stays out of access logs and Referer headers.
     // No name in the text: anyone can register with someone else's address,
     // and a chosen name must not put their words in an email to that person.
     await this.mailer.send({
@@ -92,7 +93,7 @@ export class EmailVerificationService {
         'Bonjour,',
         '',
         `Pour confirmer votre adresse e-mail sur EpiVerse, ouvrez ce lien, valable ${ttlHours} heures :`,
-        `${baseUrl}/verify-email#token=${token}`,
+        link,
         '',
         "Si vous n'avez pas créé de compte, ignorez ce message.",
       ].join('\n'),

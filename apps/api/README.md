@@ -79,6 +79,7 @@ Variables are read from the process environment and, in local development, from 
 | `MAIL_FROM` | No | `EpiVerse <no-reply@epiverse.local>` | Sender of the emails |
 | `WEB_BASE_URL` | No | `http://localhost:8080` | Base of the links sent by email. Must be set in staging and production |
 | `EMAIL_VERIFICATION_TTL_HOURS` | No | `24` | Lifetime of an email verification link. Integer of at least 1 |
+| `PASSWORD_RESET_TTL_MINUTES` | No | `30` | Lifetime of a password reset link. Integer of at least 1 |
 
 The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`REDIS_URL` will come with Redis).
 
@@ -218,6 +219,28 @@ Registration sends a link to the address (EPI-52, FR-AUTH-005). Opening it confi
 
 - An unverified account can still use every route: which actions need a confirmed address is not decided yet (FR-AUTH-005). `emailVerified` lets the client explain it.
 - Counters live in the memory of each API process, like the other limits.
+
+## Password reset
+
+A forgotten password is replaced through a link sent by email (EPI-60, FR-AUTH-004).
+
+| Route | Response | When |
+|---|---|---|
+| `POST /api/auth/password/forgot` with `{ email }` | 202 `If an account exists for this address, a link has been sent` | Always the same answer: known, unknown, deactivated or deleted account. |
+| | 400 | Malformed email. |
+| | 429 with `Retry-After` | Too many emails requested for this email from this address (`LOGIN_FAILURE_MAX` per `LOGIN_FAILURE_WINDOW_MINUTES`), or too many requests from the address (`@AuthRateLimit()`). Unknown emails are counted too. |
+| `POST /api/auth/password/reset` with `{ token, password }` | 204 | Password changed. Every session of the account is revoked, other reset links stop working, and the owner gets a notice by email. |
+| | 400 `This link is invalid or has expired` | Unknown, expired, already used or replaced token, or closed account. A password breaking the policy also gets 400, and the link stays usable. |
+
+- The link is `WEB_BASE_URL/reset-password#token=...`, lasts `PASSWORD_RESET_TTL_MINUTES` and works once. Only its SHA-256 hash is stored, in `auth_token`.
+- The account lookup and the email happen after the response, so neither the content nor the timing reveals which accounts exist.
+- The token, the password and the sessions change in one transaction.
+- A reset lifts the login limit for this account from this address, so the owner can sign in at once.
+
+### Known limits
+
+- The limit on emails is per email and address, so that nobody can block someone else's recovery: an attacker with many addresses can still send several emails to one mailbox.
+- Passwords are not checked against a list of compromised passwords yet (NIST SP 800-63B, issue #18).
 
 ## Paths
 

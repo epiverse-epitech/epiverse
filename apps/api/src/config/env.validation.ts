@@ -137,6 +137,11 @@ export class EnvironmentVariables {
   @IsInt()
   EMAIL_VERIFICATION_TTL_HOURS: number = 24;
 
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  PASSWORD_RESET_TTL_MINUTES: number = 30;
+
   @IsUrl({
     protocols: ['postgresql', 'postgres'],
     require_protocol: true,
