@@ -74,6 +74,7 @@ describe('Current account (e2e)', () => {
       cguAccepted: false,
       // No path chosen yet, so no role.
       roles: [],
+      emailVerified: false,
     });
   });
 

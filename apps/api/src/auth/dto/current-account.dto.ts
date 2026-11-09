@@ -14,4 +14,10 @@ export class CurrentAccountDto extends AccountDto {
       'Role names of the account. Empty until a path is chosen (POST /api/me/paths/student).',
   })
   roles!: string[];
+
+  @ApiProperty({
+    description:
+      'False until the link sent by email is opened (POST /api/auth/email/verify).',
+  })
+  emailVerified!: boolean;
 }

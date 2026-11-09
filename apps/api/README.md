@@ -178,7 +178,7 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 | | 400 | Invalid or unknown field. |
 | | 401 `Invalid email or password` | Unknown email, wrong password, deactivated or deleted account: always the same answer. |
 | | 429 with `Retry-After` | Too many requests from the address (`@AuthRateLimit()`), or too many failed logins for this account from this address (see Rate limiting). |
-| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName, cguAccepted, roles }` | Valid session. `cguAccepted` is false when the current terms of use are not accepted yet; `roles` lists role names (empty until a path is chosen). |
+| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName, cguAccepted, roles, emailVerified }` | Valid session. `cguAccepted` is false when the current terms of use are not accepted yet; `roles` lists role names (empty until a path is chosen); `emailVerified` is false until the address is confirmed. |
 | `POST /api/auth/cgu/accept` with `{ version }` | 204 | Records the acceptance of the current terms of use (version and date). Accepting again keeps the first date. |
 | | 400 `The terms of use have changed: accept the current version` | `version` is not the current one. |
 | `POST /api/auth/logout` | 204 | The session is revoked. The other sessions of the account stay open. |
@@ -198,6 +198,26 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 - `last_used_at`, `ip_address` and `user_agent` of `user_session` are not filled yet. They will be needed for a list of active sessions.
 - No route revokes all the sessions of an account yet (for a password change or a stolen device).
 - Expired and revoked rows are never deleted; a cleanup job will be needed.
+
+## Email verification
+
+Registration sends a link to the address (EPI-52, FR-AUTH-005). Opening it confirms the address; the status is kept apart from the session, in `users.email_verified_at`.
+
+| Route | Response | When |
+|---|---|---|
+| `POST /api/auth/email/verify` with `{ token }` | 204 | Address confirmed. No session needed: the token proves it. |
+| | 400 `This link is invalid or has expired` | Unknown, expired, already used or replaced token, or closed account: always the same answer. |
+| `POST /api/auth/email/resend` | 202 | With a session. A new link leaves, unless the address is already confirmed. The previous link stops working. |
+| | 429 with `Retry-After` | Too many emails requested for this account (`LOGIN_FAILURE_MAX` per `LOGIN_FAILURE_WINDOW_MINUTES`), or too many requests from the address. |
+
+- The link is `WEB_BASE_URL/verify-email#token=...`. The token is in the fragment, so browsers never send it to a server: the web page reads it and calls `POST /api/auth/email/verify`.
+- Only the SHA-256 hash of the token is stored, in `auth_token`. A link lasts `EMAIL_VERIFICATION_TTL_HOURS` and works once (`AccountTokens`).
+- The text of the email contains nothing chosen by the user, since anyone can register with someone else's address.
+
+### Known limits
+
+- An unverified account can still use every route: which actions need a confirmed address is not decided yet (FR-AUTH-005). `emailVerified` lets the client explain it.
+- Counters live in the memory of each API process, like the other limits.
 
 ## Paths
 

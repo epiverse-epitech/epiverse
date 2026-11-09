@@ -22,6 +22,7 @@ type AuthenticatedRequest = Request & {
   userId?: number;
   cguAccepted?: boolean;
   roles?: string[];
+  emailVerified?: boolean;
 };
 
 const ALLOW_PENDING_CGU_KEY = 'allowPendingCgu';
@@ -66,6 +67,7 @@ export class SessionGuard implements CanActivate {
             last_name: true,
             is_active: true,
             deleted_at: true,
+            email_verified_at: true,
             // Read in the same query: the acceptance of the current version, if any.
             user_cgu_acceptance: {
               where: {
@@ -90,6 +92,7 @@ export class SessionGuard implements CanActivate {
     request.sessionId = session.id;
     request.userId = session.users.id;
     request.cguAccepted = session.users.user_cgu_acceptance.length > 0;
+    request.emailVerified = session.users.email_verified_at !== null;
     request.roles = session.users.user_role.map((r) => r.role.name).sort();
     request.account = {
       id: session.users.public_id,
@@ -145,4 +148,10 @@ export const CurrentCguAccepted = createParamDecorator(
 export const CurrentRoles = createParamDecorator(
   (_data: unknown, context: ExecutionContext): string[] =>
     requestOf(context).roles!,
+);
+
+// Reads whether the account confirmed its email address.
+export const CurrentEmailVerified = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): boolean =>
+    requestOf(context).emailVerified!,
 );

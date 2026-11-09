@@ -6,11 +6,10 @@ import {
   HttpStatus,
   Ip,
   Post,
-  Res,
   UseGuards,
 } from '@nestjs/common';
-import type { Response } from 'express';
 import {
+  ApiAcceptedResponse,
   ApiBearerAuth,
   ApiBadRequestResponse,
   ApiCreatedResponse,
@@ -19,17 +18,19 @@ import {
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { TooManyLoginFailuresException } from '../security/login-attempts';
 import {
   AllowPendingCgu,
   CurrentAccount,
   CurrentCguAccepted,
+  CurrentEmailVerified,
   CurrentRoles,
   CurrentSessionId,
   CurrentUserId,
   SessionGuard,
 } from './session.guard';
 import { AcceptCguDto } from './dto/accept-cgu.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { EmailVerificationService } from './email-verification.service';
 import { CurrentAccountDto } from './dto/current-account.dto';
 import { AuthService } from './auth.service';
 import { AccountDto } from './dto/account.dto';
@@ -43,7 +44,10 @@ import { SessionDto } from './dto/session.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly emailVerification: EmailVerificationService,
+  ) {}
 
   @Get('cgu')
   @ApiOkResponse({ type: CguDto, description: 'Current terms of use version.' })
@@ -67,19 +71,8 @@ export class AuthController {
     description:
       'Too many requests from this address, or too many failed logins for this account from this address.',
   })
-  async login(
-    @Body() body: LoginDto,
-    @Ip() clientIp: string,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<SessionDto> {
-    try {
-      return await this.auth.login(body, clientIp);
-    } catch (error) {
-      if (error instanceof TooManyLoginFailuresException) {
-        response.setHeader('Retry-After', error.retryAfterSeconds);
-      }
-      throw error;
-    }
+  login(@Body() body: LoginDto, @Ip() clientIp: string): Promise<SessionDto> {
+    return this.auth.login(body, clientIp);
   }
 
   @UseGuards(SessionGuard)
@@ -95,8 +88,33 @@ export class AuthController {
     @CurrentAccount() account: AccountDto,
     @CurrentCguAccepted() cguAccepted: boolean,
     @CurrentRoles() roles: string[],
+    @CurrentEmailVerified() emailVerified: boolean,
   ): CurrentAccountDto {
-    return { ...account, cguAccepted, roles };
+    return { ...account, cguAccepted, roles, emailVerified };
+  }
+
+  @AuthRateLimit()
+  @Post('email/verify')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ description: 'Address confirmed.' })
+  @ApiBadRequestResponse({ description: 'Invalid, expired or used link.' })
+  verifyEmail(@Body() body: VerifyEmailDto): Promise<void> {
+    return this.emailVerification.verify(body.token);
+  }
+
+  @AuthRateLimit()
+  @UseGuards(SessionGuard)
+  @AllowPendingCgu()
+  @Post('email/resend')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiBearerAuth()
+  @ApiAcceptedResponse({
+    description: 'A new link is on its way, unless the address is confirmed.',
+  })
+  @ApiUnauthorizedResponse({ description: 'Missing or invalid session.' })
+  @ApiTooManyRequestsResponse({ description: 'Too many emails requested.' })
+  resendVerification(@CurrentUserId() userId: number): Promise<void> {
+    return this.emailVerification.resend(userId);
   }
 
   @UseGuards(SessionGuard)

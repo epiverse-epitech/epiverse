@@ -16,6 +16,7 @@ import { AccountDto } from '../auth/dto/account.dto';
 import { CurrentAccountDto } from '../auth/dto/current-account.dto';
 import {
   CurrentAccount,
+  CurrentEmailVerified,
   CurrentUserId,
   SessionGuard,
 } from '../auth/session.guard';
@@ -44,9 +45,10 @@ export class PathsController {
   async chooseStudent(
     @CurrentAccount() account: AccountDto,
     @CurrentUserId() userId: number,
+    @CurrentEmailVerified() emailVerified: boolean,
   ): Promise<CurrentAccountDto> {
     const roles = await this.paths.chooseStudentPath(userId);
     // SessionGuard lets this route through only once the terms are accepted.
-    return { ...account, cguAccepted: true, roles };
+    return { ...account, cguAccepted: true, roles, emailVerified };
   }
 }

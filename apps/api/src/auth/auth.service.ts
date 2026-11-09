@@ -16,6 +16,7 @@ import { EnvironmentVariables } from '../config/env.validation';
 import { SessionDto } from './dto/session.dto';
 import { generateSessionToken, hashSessionToken } from './session-token';
 import { isOpenAccount } from './account-state';
+import { EmailVerificationService } from './email-verification.service';
 import {
   LoginAttempts,
   TooManyLoginFailuresException,
@@ -32,6 +33,7 @@ export class AuthService {
     private readonly passwords: PasswordService,
     private readonly config: ConfigService<EnvironmentVariables, true>,
     private readonly loginAttempts: LoginAttempts,
+    private readonly emailVerification: EmailVerificationService,
   ) {
     this.unknownUserHash = passwords.hash('unknown-user-placeholder');
   }
@@ -84,12 +86,15 @@ export class AuthService {
         },
         // Only public columns are read back, so the hash never leaves the database.
         select: {
+          id: true,
           public_id: true,
           email: true,
           first_name: true,
           last_name: true,
         },
       });
+
+      this.emailVerification.sendInBackground(account.id, account.email);
 
       return {
         id: account.public_id,

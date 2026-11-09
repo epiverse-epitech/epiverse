@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { STATUS_CODES } from 'node:http';
+import { TooManyAttemptsException } from '../security/login-attempts';
 import { ErrorResponseDto } from './error-response.dto';
 
 @Catch()
@@ -36,6 +37,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path,
       timestamp: new Date().toISOString(),
     };
+
+    if (exception instanceof TooManyAttemptsException) {
+      response.setHeader('Retry-After', exception.retryAfterSeconds);
+    }
 
     response.status(statusCode).json(body);
   }

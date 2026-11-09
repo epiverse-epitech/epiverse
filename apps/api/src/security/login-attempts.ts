@@ -74,11 +74,21 @@ export class LoginAttempts {
   }
 }
 
-export class TooManyLoginFailuresException extends HttpException {
-  constructor(readonly retryAfterSeconds: number) {
-    super(
-      'Too many failed login attempts, try again later',
-      HttpStatus.TOO_MANY_REQUESTS,
-    );
+// Second counter, for requests that send an email to an account.
+export const EMAIL_REQUEST_ATTEMPTS = 'EMAIL_REQUEST_ATTEMPTS';
+
+// A 429 with a Retry-After header, set by AllExceptionsFilter.
+export class TooManyAttemptsException extends HttpException {
+  constructor(
+    message: string,
+    readonly retryAfterSeconds: number,
+  ) {
+    super(message, HttpStatus.TOO_MANY_REQUESTS);
+  }
+}
+
+export class TooManyLoginFailuresException extends TooManyAttemptsException {
+  constructor(retryAfterSeconds: number) {
+    super('Too many failed login attempts, try again later', retryAfterSeconds);
   }
 }
