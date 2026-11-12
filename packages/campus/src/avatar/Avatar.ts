@@ -54,9 +54,11 @@ export class Avatar extends Phaser.GameObjects.Container {
     return this.playAll();
   }
 
-  idle(): this {
-    if (this.motion === 'idle') return this;
+  /** Au repos, tourné vers la direction donnée (par défaut : celle où il regardait). */
+  idle(direction: Direction = this.direction): this {
+    if (this.motion === 'idle' && this.direction === direction) return this;
     this.motion = 'idle';
+    this.direction = direction;
     return this.playAll();
   }
 

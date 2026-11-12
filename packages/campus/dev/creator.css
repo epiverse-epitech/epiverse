@@ -141,3 +141,61 @@ button[aria-pressed='true'],
   font: inherit;
   font-size: 16px; /* en dessous de 16 px, Safari iOS zoome sur le champ quand on le touche */
 }
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions > * {
+  flex: 1;
+  justify-content: center;
+}
+
+/* Cabine d'essayage : par-dessus le campus. La zone d'aperçu est transparente et laisse passer
+   les touchers ; le jeu y montre l'avatar en gros plan. */
+.dressing {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  color: #ffffff;
+  font: 15px system-ui, sans-serif;
+}
+
+.dressing__preview {
+  flex: 0 0 36%;
+}
+
+.dressing__panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0e131c;
+  pointer-events: auto;
+}
+
+.dressing__panel:focus {
+  outline: none; /* le panneau reçoit le focus à l'ouverture ; pas besoin de l'encadrer */
+}
+
+.dressing__title {
+  margin: 0;
+  padding: 16px 16px 0;
+  font-size: 17px;
+}
+
+@media (orientation: landscape) {
+  .dressing {
+    flex-direction: row;
+  }
+  .dressing__preview {
+    flex: 1 1 45%;
+  }
+  .dressing__panel {
+    flex: 1 1 55%;
+  }
+}

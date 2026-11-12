@@ -5,6 +5,9 @@
 export const DIRECTIONS = ['down', 'left', 'right', 'up'] as const;
 export type Direction = (typeof DIRECTIONS)[number];
 
+/** Ordre pour faire tourner l'avatar sur lui-même : face, gauche, dos, droite. */
+export const TURN_AROUND: readonly Direction[] = ['down', 'left', 'up', 'right'];
+
 /** Taille d'une image (frame) en pixels : un personnage tient sur une tuile de 32 px de large. */
 export const FRAME_WIDTH = 32;
 export const FRAME_HEIGHT = 48;

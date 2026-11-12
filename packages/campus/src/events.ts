@@ -5,6 +5,12 @@
 export const CAMERA_COMMAND = 'campus:camera-command';
 /** App → jeu : nouvelle apparence de l'avatar (AvatarLook). */
 export const SET_LOOK = 'campus:set-look';
+/** Jeu → app : l'avatar est arrivé à la porte d'un bâtiment (identifiant du bâtiment). */
+export const ENTER_BUILDING = 'campus:enter-building';
+/** App → jeu : la cabine d'essayage s'ouvre ; la caméra cadre l'avatar dans la zone donnée. */
+export const DRESSING_START = 'campus:dressing-start';
+/** App → jeu : la cabine d'essayage se ferme. */
+export const DRESSING_END = 'campus:dressing-end';
 /** Jeu → interface : l'état de la caméra a changé (voir CameraState). */
 export const CAMERA_STATE = 'campus:camera-state';
 

@@ -1,7 +1,7 @@
 // Boutons de caméra en HTML, posés par-dessus le canvas. De vrais <button> : nets à toute
 // densité d'écran, utilisables au clavier et annoncés par les lecteurs d'écran.
 import type Phaser from 'phaser';
-import { CAMERA_COMMAND, CAMERA_STATE, type CameraCommand, type CameraState } from '../events';
+import { CAMERA_COMMAND, CAMERA_STATE, DRESSING_END, DRESSING_START, type CameraCommand, type CameraState } from '../events';
 
 const BUTTON_STYLE: Partial<CSSStyleDeclaration> = {
   minWidth: '44px', // cible tactile minimale
@@ -57,10 +57,22 @@ export function createCameraButtons(root: HTMLElement, events: Phaser.Events.Eve
     recenter.hidden = state.mode === 'focus' && !state.overview;
   };
   events.on(CAMERA_STATE, onState);
+  // Pas de boutons de caméra dans la cabine d'essayage. (L'attribut hidden ne suffirait pas ici :
+  // le display: flex posé dans le style de la barre l'emporte sur lui.)
+  const hide = (): void => {
+    bar.style.display = 'none';
+  };
+  const show = (): void => {
+    bar.style.display = 'flex';
+  };
+  events.on(DRESSING_START, hide);
+  events.on(DRESSING_END, show);
 
   return {
     destroy() {
       events.off(CAMERA_STATE, onState);
+      events.off(DRESSING_START, hide);
+      events.off(DRESSING_END, show);
       bar.remove();
     },
   };

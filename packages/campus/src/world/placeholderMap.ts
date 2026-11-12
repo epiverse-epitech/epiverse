@@ -10,18 +10,44 @@ export const MAP_HEIGHT = MAP_ROWS * TILE;
 /** Point d'apparition de l'avatar : sur la place, sous la fontaine. */
 export const SPAWN = { x: 15 * TILE, y: 12 * TILE };
 
-/** Maisons des organisations, en tuiles. */
+/** Maisons, en tuiles. L'identifiant est ce que le module transmet à l'app quand on y entre. */
 const HOUSES = [
-  { label: 'École', x: 3, y: 3, w: 6, h: 4, roof: 0xb5523b },
-  { label: 'Asso', x: 21, y: 3, w: 5, h: 4, roof: 0x3b6fb5 },
-  { label: 'Entreprise', x: 3, y: 13, w: 7, h: 4, roof: 0x555b66 },
-  { label: 'BDE', x: 21, y: 13, w: 5, h: 4, roof: 0x7a3bb5 },
+  { id: 'ecole', label: 'École', x: 3, y: 3, w: 6, h: 4, roof: 0xb5523b },
+  { id: 'asso', label: 'Asso', x: 21, y: 3, w: 5, h: 4, roof: 0x3b6fb5 },
+  { id: 'entreprise', label: 'Entreprise', x: 3, y: 13, w: 7, h: 4, roof: 0x555b66 },
+  { id: 'bde', label: 'BDE', x: 21, y: 13, w: 5, h: 4, roof: 0x7a3bb5 },
+  { id: 'dressing-room', label: "Cabine\nd'essayage", x: 16, y: 13, w: 3, h: 3, roof: 0xd5689a },
 ];
+
+/** Un bâtiment dans lequel on peut entrer, en pixels du monde. */
+export interface Building {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Où l'avatar se place pour entrer : au sol, juste devant la porte. */
+  door: { x: number; y: number };
+}
+
+export const BUILDINGS: readonly Building[] = HOUSES.map((house) => ({
+  id: house.id,
+  x: house.x * TILE,
+  y: house.y * TILE,
+  width: house.w * TILE,
+  height: house.h * TILE,
+  door: { x: (house.x + house.w / 2) * TILE, y: (house.y + house.h) * TILE + 6 },
+}));
+
+/** Le bâtiment qui se trouve à ce point du monde, s'il y en a un (toute la façade compte). */
+export function buildingAt(x: number, y: number): Building | undefined {
+  return BUILDINGS.find((b) => x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height);
+}
 
 /** Arbres, en tuiles. Positions fixes : la carte est la même à chaque lancement. */
 const TREES: ReadonlyArray<readonly [number, number]> = [
   [1, 1], [11, 2], [12, 5], [18, 2], [27, 1], [28, 7], [1, 8], [6, 8],
-  [23, 8], [10, 15], [12, 17], [18, 16], [27, 18], [1, 18], [24, 11],
+  [23, 8], [10, 15], [12, 17], [20, 17], [27, 18], [1, 18], [24, 11],
 ];
 
 /**
@@ -83,8 +109,9 @@ function drawHouse(scene: Phaser.Scene, house: (typeof HOUSES)[number], textReso
   g.fillRect(x + w - 30, y + roofHeight + 14, 18, 14);
 
   // Texte : avec une résolution égale au zoom de la caméra, il reste net une fois grossi
+  const fontSize = house.w <= 3 ? '9px' : '12px'; // petite maison, petit texte
   scene.add
-    .text(x + w / 2, y + roofHeight / 2, house.label, { fontFamily: 'sans-serif', fontSize: '12px', color: '#ffffff' })
+    .text(x + w / 2, y + roofHeight / 2, house.label, { fontFamily: 'sans-serif', fontSize, color: '#ffffff', align: 'center' })
     .setOrigin(0.5)
     .setResolution(textResolution)
     .setDepth(y + h + 0.1);

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CAMERA_STATE, type CameraMode, type CameraState } from '../events';
+import { fitAvatarZoom, scrollToShow, type Rect } from './framing';
 
 /** Niveaux de zoom autorisés au repos. 2 est le maximum : on ne zoome jamais plus près. */
 export const ZOOM_LEVELS: readonly number[] = [0.5, 1, 2];
@@ -54,6 +55,8 @@ export class CameraController {
   private velocity = new Phaser.Math.Vector2();
   private wheel = 0;
   private lastState = '';
+  /** Gros plan sur l'avatar (cabine d'essayage) : zone de l'écran où le montrer, ou null. */
+  private framing: (() => Rect) | null = null;
 
   constructor(scene: Phaser.Scene, target: Phaser.GameObjects.Container, offsetY: number, mapWidth: number, mapHeight: number) {
     this.scene = scene;
@@ -80,6 +83,12 @@ export class CameraController {
 
   /** À appeler à chaque image, depuis update() de la scène. */
   update(delta: number): void {
+    if (this.framing) {
+      // La zone peut changer (rotation, panneau qui s'affiche) : on recadre à chaque image.
+      this.applyFraming(this.framing());
+      this.publishState();
+      return;
+    }
     this.applyInertia(delta);
     this.updateBounds();
     this.publishState();
@@ -99,6 +108,29 @@ export class CameraController {
     if (this.camera.zoom !== MAX_ZOOM) this.zoomToLevel(MAX_ZOOM);
   }
 
+  /**
+   * Gros plan : la caméra ne suit plus, grossit l'avatar autant que possible (jusqu'à ×4) et le
+   * centre dans la zone donnée, par exemple la partie de l'écran que laisse libre un panneau.
+   * Les gestes de caméra sont ignorés tant que le gros plan dure.
+   */
+  frame(area: () => Rect): void {
+    this.framing = area;
+    this.velocity.reset();
+    this.drag = null;
+    this.pinch = null;
+    this.camera.stopFollow();
+    this.camera.removeBounds(); // sinon les limites de la carte pourraient empêcher de centrer
+  }
+
+  /** Fin du gros plan : retour à la vue de jeu (suivi de l'avatar, zoom maximum). */
+  unframe(): void {
+    if (!this.framing) return;
+    this.framing = null;
+    this.mode = 'focus';
+    this.follow();
+    this.zoomToLevel(MAX_ZOOM);
+  }
+
   zoomIn(): void {
     this.zoomToLevel(this.nextLevel(1));
   }
@@ -115,6 +147,7 @@ export class CameraController {
   // --- Glisser un doigt ---
 
   dragStart(pointer: Phaser.Input.Pointer): void {
+    if (this.framing) return;
     this.goFree();
     // On attrape le point du monde sous l'endroit où le doigt s'est posé, pas sous sa position
     // actuelle : sinon la carte « sauterait » des 10 px du seuil de glissement.
@@ -128,6 +161,7 @@ export class CameraController {
   }
 
   dragMove(pointer: Phaser.Input.Pointer): void {
+    if (this.framing) return;
     if (!this.drag) return;
     this.keepUnder(this.drag.anchor, pointer.x, pointer.y, this.camera.zoom);
     // Vitesse du doigt, lissée : elle servira d'élan au relâchement
@@ -156,6 +190,7 @@ export class CameraController {
   // --- Deux doigts ---
 
   pinchStart(a: Phaser.Input.Pointer, b: Phaser.Input.Pointer): void {
+    if (this.framing) return;
     const mid = midpoint(a, b);
     this.velocity.reset();
     this.pinch = {
@@ -167,6 +202,7 @@ export class CameraController {
   }
 
   pinchMove(a: Phaser.Input.Pointer, b: Phaser.Input.Pointer): void {
+    if (this.framing) return;
     if (!this.pinch) return;
     const mid = midpoint(a, b);
     const distance = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y);
@@ -182,6 +218,7 @@ export class CameraController {
 
   /** Fin du pincement : on rejoint le niveau de zoom le plus proche, pour garder des pixels nets. */
   pinchEnd(): void {
+    if (this.framing) return;
     this.pinch = null;
     this.zoomToLevel(nearestLevel(this.camera.zoom));
   }
@@ -199,6 +236,7 @@ export class CameraController {
   }
 
   private onWheel(_pointer: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number): void {
+    if (this.framing) return;
     // Une molette donne de grands pas, un pavé tactile une multitude de petits : on cumule.
     this.wheel += dy;
     if (Math.abs(this.wheel) < WHEEL_STEP) return;
@@ -243,8 +281,21 @@ export class CameraController {
 
   /** Place la caméra pour que le point du monde « anchor » soit sous le point de l'écran donné. */
   private keepUnder(anchor: Phaser.Math.Vector2, screenX: number, screenY: number, zoom: number): void {
-    this.camera.scrollX = anchor.x - this.camera.width / 2 - (screenX - this.camera.width / 2) / zoom;
-    this.camera.scrollY = anchor.y - this.camera.height / 2 - (screenY - this.camera.height / 2) / zoom;
+    const scroll = scrollToShow(this.camera, anchor.x, anchor.y, screenX, screenY, zoom);
+    this.camera.scrollX = scroll.x;
+    this.camera.scrollY = scroll.y;
+  }
+
+  /** Gros plan : le milieu du corps de l'avatar au centre de la zone, au plus grand zoom entier possible. */
+  private applyFraming(area: Rect): void {
+    const zoom = fitAvatarZoom(area, MAX_ZOOM, 4);
+    this.camera.setZoom(zoom);
+    this.keepUnder(
+      new Phaser.Math.Vector2(this.target.x, this.target.y - this.offsetY),
+      area.x + area.width / 2,
+      area.y + area.height / 2,
+      zoom,
+    );
   }
 
   /**
@@ -257,7 +308,8 @@ export class CameraController {
     const padX = Math.max(0, (viewWidth - this.mapWidth) / 2);
     const padY = Math.max(0, (viewHeight - this.mapHeight) / 2);
     const bounds = this.camera.getBounds();
-    if (bounds.x !== -padX || bounds.y !== -padY) {
+    // useBounds est faux après un gros plan (removeBounds) : il faut alors les remettre
+    if (!this.camera.useBounds || bounds.x !== -padX || bounds.y !== -padY) {
       this.camera.setBounds(-padX, -padY, this.mapWidth + 2 * padX, this.mapHeight + 2 * padY);
     }
   }

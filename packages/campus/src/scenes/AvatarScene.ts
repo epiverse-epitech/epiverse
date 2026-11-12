@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { Avatar } from '../avatar/Avatar';
 import { createAllAvatarAnimations, preloadAvatarSheets } from '../avatar/assets';
-import { FRAME_HEIGHT, FRAME_WIDTH, type Direction } from '../avatar/layout';
+import { FRAME_HEIGHT, FRAME_WIDTH, TURN_AROUND, type Direction } from '../avatar/layout';
 import { DEFAULT_LOOK, type AvatarLook } from '../avatar/layers';
 import { CameraController, MAX_ZOOM } from '../camera/CameraController';
-import { CAMERA_COMMAND, SET_LOOK, type CameraCommand } from '../events';
+import type { Rect } from '../camera/framing';
+import { CAMERA_COMMAND, DRESSING_END, DRESSING_START, ENTER_BUILDING, SET_LOOK, type CameraCommand } from '../events';
 import { PointerGestures } from '../input/PointerGestures';
-import { MAP_HEIGHT, MAP_WIDTH, SPAWN, TILE, drawPlaceholderMap } from '../world/placeholderMap';
+import { MAP_HEIGHT, MAP_WIDTH, SPAWN, TILE, buildingAt, drawPlaceholderMap } from '../world/placeholderMap';
 
 /** Vitesse de marche, en pixels du monde par seconde (2,5 tuiles par seconde). */
 const SPEED = 80;
@@ -28,6 +29,8 @@ type OneFingerTarget = 'none' | 'avatar' | 'camera' | 'recenter';
  * - glisser : déplace la carte (mode libre) ; toucher : l'avatar y va.
  * Partout : toucher l'avatar le recentre ; deux doigts glissent et pincent ; boutons + / − et
  * Recentrer en HTML (voir ui/cameraButtons.ts) ; molette sur ordinateur.
+ * Toucher une maison : l'avatar va à sa porte, puis le module prévient l'app (ENTER_BUILDING).
+ * Cabine d'essayage : pendant que l'app affiche son panneau, gros plan sur l'avatar qui tourne.
  */
 export class AvatarScene extends Phaser.Scene {
   private avatar!: Avatar;
@@ -37,6 +40,10 @@ export class AvatarScene extends Phaser.Scene {
   /** Destination d'un toucher, ou null. */
   private target: Phaser.Math.Vector2 | null = null;
   private oneFinger: OneFingerTarget = 'none';
+  /** Bâtiment dans lequel l'avatar entrera en arrivant à destination, ou null. */
+  private pendingBuilding: string | null = null;
+  /** Cabine d'essayage ouverte : minuterie qui fait tourner l'avatar, ou null. */
+  private dressingTurn: Phaser.Time.TimerEvent | null = null;
   private readonly initialLook: AvatarLook;
 
   constructor(look: AvatarLook = DEFAULT_LOOK) {
@@ -83,11 +90,15 @@ export class AvatarScene extends Phaser.Scene {
     // Les boutons HTML parlent au jeu par son bus d'événements (game.events), partagé par tout le jeu.
     this.game.events.on(CAMERA_COMMAND, this.onCameraCommand, this);
     this.game.events.on(SET_LOOK, this.onSetLook, this);
+    this.game.events.on(DRESSING_START, this.startDressing, this);
+    this.game.events.on(DRESSING_END, this.endDressing, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.gestures.destroy();
       this.cameraController.destroy();
       this.game.events.off(CAMERA_COMMAND, this.onCameraCommand, this);
       this.game.events.off(SET_LOOK, this.onSetLook, this);
+      this.game.events.off(DRESSING_START, this.startDressing, this);
+      this.game.events.off(DRESSING_END, this.endDressing, this);
     });
 
     this.publishPosition();
@@ -99,6 +110,7 @@ export class AvatarScene extends Phaser.Scene {
    */
   override update(_time: number, delta: number): void {
     this.cameraController.update(delta);
+    if (this.dressingTurn) return; // dans la cabine, l'avatar ne se déplace pas
     const step = (SPEED * delta) / 1000;
     const held = this.oneFinger === 'avatar' ? this.gestures.heldPointer : null;
 
@@ -117,6 +129,10 @@ export class AvatarScene extends Phaser.Scene {
    * l'avatar part sans attendre.
    */
   private onPress(pointer: Phaser.Input.Pointer): void {
+    if (this.dressingTurn) {
+      this.oneFinger = 'none'; // cabine ouverte : le jeu ignore les gestes, c'est le panneau qui les reçoit
+      return;
+    }
     this.cameraController.stopInertia();
     const point = this.worldPoint(pointer);
     if (this.isOnAvatar(point.x, point.y)) {
@@ -145,7 +161,7 @@ export class AvatarScene extends Phaser.Scene {
   }
 
   private onTap(pointer: Phaser.Input.Pointer): void {
-    if (this.oneFinger !== 'recenter') this.goTo(pointer);
+    if (this.oneFinger === 'avatar' || this.oneFinger === 'camera') this.goTo(pointer);
     this.oneFinger = 'none';
   }
 
@@ -168,13 +184,48 @@ export class AvatarScene extends Phaser.Scene {
     this.oneFinger = 'none';
   }
 
-  /** L'avatar part vers le point du monde sous le pointeur. */
+  /**
+   * L'avatar part vers le point du monde sous le pointeur. Si c'est une maison, il va devant sa
+   * porte et entrera en arrivant : toute la façade compte, pour une cible facile à toucher.
+   */
   private goTo(pointer: Phaser.Input.Pointer): void {
     const point = this.worldPoint(pointer);
-    const x = Phaser.Math.Clamp(point.x, MARGIN, MAP_WIDTH - MARGIN);
-    const y = Phaser.Math.Clamp(point.y, MARGIN, MAP_HEIGHT - MARGIN);
+    const building = buildingAt(point.x, point.y);
+    this.pendingBuilding = building?.id ?? null;
+    const x = building ? building.door.x : Phaser.Math.Clamp(point.x, MARGIN, MAP_WIDTH - MARGIN);
+    const y = building ? building.door.y : Phaser.Math.Clamp(point.y, MARGIN, MAP_HEIGHT - MARGIN);
     this.target = new Phaser.Math.Vector2(x, y);
     this.marker.setPosition(x, y).setVisible(true);
+  }
+
+  /**
+   * L'app ouvre la cabine d'essayage : gros plan sur l'avatar dans la zone qu'elle laisse visible,
+   * et l'avatar tourne sur lui-même pour montrer sa tenue sous tous les angles.
+   */
+  private startDressing(area: () => Rect): void {
+    if (this.dressingTurn) return;
+    this.stop();
+    this.oneFinger = 'none';
+    this.cameraController.frame(area);
+    let turn = 0;
+    this.avatar.walk('down');
+    this.dressingTurn = this.time.addEvent({
+      delay: 1500,
+      loop: true,
+      callback: () => {
+        turn = (turn + 1) % TURN_AROUND.length;
+        this.avatar.walk(TURN_AROUND[turn] ?? 'down');
+      },
+    });
+  }
+
+  /** L'app ferme la cabine : l'avatar ressort face à nous, la caméra revient à la vue de jeu. */
+  private endDressing(): void {
+    if (!this.dressingTurn) return;
+    this.dressingTurn.remove();
+    this.dressingTurn = null;
+    this.avatar.idle('down');
+    this.cameraController.unframe();
   }
 
   /**
@@ -202,7 +253,12 @@ export class AvatarScene extends Phaser.Scene {
     const distance = Math.hypot(dx, dy);
     if (distance <= step) {
       this.avatar.setPosition(target.x, target.y);
+      const building = this.pendingBuilding;
       this.stop();
+      if (building) {
+        this.avatar.idle('up'); // face à la porte
+        this.game.events.emit(ENTER_BUILDING, building);
+      }
       return;
     }
     // Vecteur unitaire (dx / distance, dy / distance) × longueur du pas
@@ -220,6 +276,7 @@ export class AvatarScene extends Phaser.Scene {
 
   private stop(): void {
     this.target = null;
+    this.pendingBuilding = null;
     this.marker.setVisible(false);
     this.avatar.idle();
   }

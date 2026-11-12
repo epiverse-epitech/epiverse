@@ -21,7 +21,8 @@ Sur téléphone : même Wi-Fi que l'ordinateur, puis ouvrir l'adresse « Network
 
 Écrans du banc d'essai (menu sur la page d'accueil) :
 
-- `?ecran=campus` : carte, déplacements, caméra ;
+- `?ecran=campus` : carte, déplacements, caméra. Toucher une maison y fait aller l'avatar ; la
+  « Cabine d'essayage » ouvre l'interface de création par-dessus le campus (`dev/dressingRoom.ts`) ;
 - `?ecran=creation` : création d'avatar, interface HTML fournie par l'app (`dev/creatorHtml.ts`).
 
 L'interface de création est en HTML (dans l'app : React) et Phaser n'affiche que l'aperçu. Une
@@ -35,13 +36,16 @@ src/createCampusGame.ts  création et destruction du jeu
 src/avatar/              avatar en calques : disposition des feuilles, graphismes provisoires,
                          animations, conteneur Avatar, catalogue (variantes, couleurs, modèles)
 src/input/               gestes : toucher, maintien, deux doigts
-src/camera/              caméra : modes focus et libre, zoom par niveaux (×0,5, ×1, ×2 maximum)
+src/camera/              caméra : modes focus et libre, zoom par niveaux (×0,5, ×1, ×2 maximum),
+                         gros plan sur l'avatar (cabine d'essayage)
 src/ui/                  interface HTML par-dessus le jeu (boutons de caméra)
 src/events.ts            événements échangés entre l'interface HTML et le jeu
 src/world/               carte provisoire (chemins, fontaine, arbres, maisons)
 src/scenes/              scènes Phaser (campus, aperçu de création, compteur de debug)
 dev/main.ts              banc d'essai (joue le rôle de l'app) : choix de l'écran
-dev/creatorHtml.ts       interface de création en HTML, avec dev/creator.css
+dev/avatarForm.ts        formulaire HTML de l'avatar (catalogue → boutons et pastilles), avec dev/creator.css
+dev/creatorHtml.ts       écran de création (aperçu + formulaire)
+dev/dressingRoom.ts      cabine d'essayage (formulaire par-dessus le campus, gros plan sur l'avatar)
 ```
 
 ## Graphismes

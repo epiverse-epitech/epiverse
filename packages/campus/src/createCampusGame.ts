@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { DEFAULT_LOOK, type AvatarLook } from './avatar/layers';
-import { SET_LOOK } from './events';
+import type { Rect } from './camera/framing';
+import { DRESSING_END, DRESSING_START, ENTER_BUILDING, SET_LOOK } from './events';
 import { AvatarScene } from './scenes/AvatarScene';
 import { CreatorPreviewScene } from './scenes/CreatorPreviewScene';
 import { DebugOverlayScene } from './scenes/DebugOverlayScene';
@@ -16,12 +17,24 @@ export interface CampusGameOptions {
   screen?: 'campus' | 'creator';
   /** Apparence de départ de l'avatar. */
   look?: AvatarLook;
+  /**
+   * Campus : l'avatar est arrivé à la porte d'un bâtiment. Identifiants actuels : 'ecole', 'asso',
+   * 'entreprise', 'bde' et 'dressing-room' (cabine d'essayage). C'est l'app qui décide quoi afficher.
+   */
+  onEnterBuilding?: (buildingId: string) => void;
 }
 
 /** Ce que l'app reçoit pour piloter le jeu. */
 export interface CampusGame {
   /** Change l'apparence de l'avatar affiché (aperçu ou campus). */
   setLook(look: AvatarLook): void;
+  /**
+   * Campus : l'app ouvre sa cabine d'essayage. Le jeu fait un gros plan sur l'avatar, centré dans
+   * previewElement : un élément de l'app (transparent) qui marque la partie de l'écran à utiliser.
+   */
+  startDressing(previewElement: HTMLElement): void;
+  /** Campus : l'app ferme sa cabine d'essayage ; retour à la vue de jeu. */
+  endDressing(): void;
   destroy(): void;
 }
 
@@ -76,9 +89,26 @@ export function createCampusGame(parent: HTMLElement, options: CampusGameOptions
   // Interface HTML par-dessus le canvas, dans le même conteneur (campus seulement)
   const cameraButtons = options.screen === 'creator' ? null : createCameraButtons(root, game.events);
 
+  // Du jeu vers l'app : on traduit l'événement interne en callback, pour que l'app n'ait pas à
+  // connaître le bus d'événements de Phaser.
+  game.events.on(ENTER_BUILDING, (buildingId: string) => options.onEnterBuilding?.(buildingId));
+
   return {
     setLook(look) {
       game.events.emit(SET_LOOK, look);
+    },
+    startDressing(previewElement) {
+      // Position de l'élément par rapport au canvas, recalculée à chaque appel (rotation, défilement…).
+      // En mode RESIZE, 1 pixel CSS = 1 pixel du jeu : pas de conversion d'échelle à faire.
+      const area = (): Rect => {
+        const zone = previewElement.getBoundingClientRect();
+        const canvas = game.canvas.getBoundingClientRect();
+        return { x: zone.left - canvas.left, y: zone.top - canvas.top, width: zone.width, height: zone.height };
+      };
+      game.events.emit(DRESSING_START, area);
+    },
+    endDressing() {
+      game.events.emit(DRESSING_END);
     },
     destroy() {
       cameraButtons?.destroy();

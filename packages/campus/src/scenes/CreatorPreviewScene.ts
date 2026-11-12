@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import { Avatar } from '../avatar/Avatar';
 import { createAllAvatarAnimations, preloadAvatarSheets } from '../avatar/assets';
-import { FRAME_HEIGHT, FRAME_WIDTH, type Direction } from '../avatar/layout';
+import { FRAME_HEIGHT, TURN_AROUND } from '../avatar/layout';
 import type { AvatarLook } from '../avatar/layers';
+import { fitAvatarZoom, scrollToShow } from '../camera/framing';
 import { SET_LOOK } from '../events';
 
 export interface CreatorPreviewOptions {
@@ -11,8 +12,6 @@ export interface CreatorPreviewOptions {
 
 /** Hauteur du milieu du corps au-dessus des pieds. */
 const BODY_CENTER = FRAME_HEIGHT / 2 - 4;
-/** L'aperçu tourne dans ce sens : face, gauche, dos, droite. */
-const TURN: readonly Direction[] = ['down', 'left', 'up', 'right'];
 
 /**
  * Aperçu de l'écran de création : l'avatar en grand, qui marche sur place en changeant de
@@ -42,8 +41,8 @@ export class CreatorPreviewScene extends Phaser.Scene {
       delay: 1500,
       loop: true,
       callback: () => {
-        this.turn = (this.turn + 1) % TURN.length;
-        this.avatar.walk(TURN[this.turn] ?? 'down');
+        this.turn = (this.turn + 1) % TURN_AROUND.length;
+        this.avatar.walk(TURN_AROUND[this.turn] ?? 'down');
       },
     });
 
@@ -63,18 +62,11 @@ export class CreatorPreviewScene extends Phaser.Scene {
   /** Grossit l'avatar autant que possible (zoom entier) et le centre dans le canvas. */
   private layout(): void {
     const { width, height } = this.scale;
-    const area = { x: 0, y: 0, width, height };
-    const zoom = Phaser.Math.Clamp(
-      Math.floor(Math.min(area.width / (FRAME_WIDTH * 2), area.height / (FRAME_HEIGHT * 1.4))),
-      2,
-      8,
-    );
+    const zoom = fitAvatarZoom({ x: 0, y: 0, width, height }, 2, 8);
     const cam = this.cameras.main.setZoom(zoom);
-    // Le milieu du corps (0, -BODY_CENTER) doit tomber au centre de la zone d'aperçu.
-    // Même formule que dans CameraController : point du monde = scroll + w/2 + (écran - w/2) / zoom.
-    const cx = area.x + area.width / 2;
-    const cy = area.y + area.height / 2;
-    cam.scrollX = 0 - width / 2 - (cx - width / 2) / zoom;
-    cam.scrollY = -BODY_CENTER - height / 2 - (cy - height / 2) / zoom;
+    // Le milieu du corps (0, -BODY_CENTER) au centre du canvas
+    const scroll = scrollToShow(cam, 0, -BODY_CENTER, width / 2, height / 2, zoom);
+    cam.scrollX = scroll.x;
+    cam.scrollY = scroll.y;
   }
 }
