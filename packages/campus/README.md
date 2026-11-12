@@ -24,6 +24,15 @@ Sur téléphone : même Wi-Fi que l'ordinateur, puis ouvrir l'adresse « Network
 ```
 src/index.ts             API publique du module
 src/createCampusGame.ts  création et destruction du jeu
-src/scenes/              scènes Phaser
+src/avatar/              avatar en calques : disposition des feuilles, graphismes provisoires,
+                         animations, conteneur Avatar
+src/scenes/              scènes Phaser (scène de test de l'avatar, compteur de debug)
 dev/main.ts              banc d'essai (joue le rôle de l'app)
 ```
+
+## Graphismes
+
+Les graphismes actuels sont provisoires, dessinés par code (`src/avatar/placeholderArt.ts`), en
+niveaux de gris pour être recolorés par teinte. Un vrai pack (CC0 de préférence ; en CC-BY ou
+CC-BY-SA, noter l'attribution ici) remplacera les data URL par des fichiers PNG au même format :
+une ligne par direction (bas, gauche, droite, haut), 2 images de repos puis 4 de marche, en 32 × 48.

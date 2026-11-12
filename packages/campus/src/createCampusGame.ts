@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { EmptyScene } from './scenes/EmptyScene';
+import { AvatarScene } from './scenes/AvatarScene';
+import { DebugOverlayScene } from './scenes/DebugOverlayScene';
 
 export interface CampusGameOptions {
   /** Affiche les images par seconde, la taille du jeu et la densité de pixels. */
@@ -53,7 +54,8 @@ export function createCampusGame(parent: HTMLElement, options: CampusGameOptions
       // pas toucher à la page : c'est à l'app de donner une taille au parent.
       expandParent: false,
     },
-    scene: [new EmptyScene({ debug: options.debug ?? false })],
+    // Les scènes s'affichent dans l'ordre de la liste : le compteur passe par-dessus l'avatar.
+    scene: [new AvatarScene(), ...(options.debug ? [new DebugOverlayScene()] : [])],
   });
 
   return {
