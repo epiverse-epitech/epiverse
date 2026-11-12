@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Pas de user-scalable=no : on bloque le zoom seulement sur le jeu (touch-action), pas sur toute la page -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Campus EpiVerse — banc d'essai</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0e131c;
+        /* Empêche le « tirer pour rafraîchir » et le rebond de la page sur mobile */
+        overscroll-behavior: none;
+      }
+      /* dvh suit la barre d'adresse mobile qui apparaît et disparaît (100vh la dépasse) */
+      #app {
+        height: 100dvh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/dev/main.ts"></script>
+  </body>
+</html>

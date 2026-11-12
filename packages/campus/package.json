@@ -1,0 +1,23 @@
+{
+  "name": "@epiverse/campus",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Campus 2.5D d'EpiVerse : module Phaser indépendant de React, avec son banc d'essai Vite",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vite": "^8.3.8"
+  }
+}

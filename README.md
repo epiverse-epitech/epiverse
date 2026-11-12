@@ -5,6 +5,7 @@ Monorepo du projet EpiVerse (T-ESP-800).
 ```
 apps/api/          API NestJS + Prisma            Eckson
 apps/app/          App Expo (mobile et web)       Philimon, Julien
+packages/campus/   Campus 2.5D (module Phaser)    Julien
 docs/database/     schéma BDD et revues           Thomas, Lina, Belaid
 docs/ia/           KPI et données de l'IA         Thomas, Lina, Belaid
 data/fixtures/     données fictives (SQL + Mongo) Thomas, Lina, Belaid
