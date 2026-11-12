@@ -27,7 +27,10 @@ export class DebugOverlayScene extends Phaser.Scene {
     if (time - this.lastUpdate < 250) return;
     this.lastUpdate = time;
     const canvas = this.game.canvas;
+    // Écrite par la scène de l'avatar dans le registre partagé du jeu
+    const tile = this.registry.get('avatarTile') as { x: number; y: number } | undefined;
     this.info.setText([
+      tile ? `avatar : tuile ${tile.x}, ${tile.y}` : 'avatar : —',
       `${Math.round(this.game.loop.actualFps)} images/s`,
       `jeu : ${this.scale.width} × ${this.scale.height}`,
       `canvas : ${canvas.width} × ${canvas.height} px réels`,
