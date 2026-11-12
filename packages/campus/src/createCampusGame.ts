@@ -45,6 +45,8 @@ export function createCampusGame(parent: HTMLElement, options: CampusGameOptions
     // Pas de son pour l'instant : Phaser ne crée pas de contexte audio (le navigateur
     // l'aurait bloqué de toute façon tant que l'utilisateur n'a pas touché la page).
     audio: { noAudio: true },
+    // Deux doigts suivis en même temps (par défaut : un seul). Le deuxième sert à la caméra.
+    input: { activePointers: 2 },
     scale: {
       // RESIZE : le canvas prend toute la taille de son parent, 1 pixel du jeu = 1 pixel CSS
       mode: Phaser.Scale.RESIZE,

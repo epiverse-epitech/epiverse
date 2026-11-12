@@ -26,6 +26,7 @@ src/index.ts             API publique du module
 src/createCampusGame.ts  création et destruction du jeu
 src/avatar/              avatar en calques : disposition des feuilles, graphismes provisoires,
                          animations, conteneur Avatar
+src/input/               gestes : toucher, maintien, deuxième doigt
 src/world/               carte provisoire (chemins, fontaine, arbres, maisons)
 src/scenes/              scènes Phaser (scène de test de l'avatar, compteur de debug)
 dev/main.ts              banc d'essai (joue le rôle de l'app)
