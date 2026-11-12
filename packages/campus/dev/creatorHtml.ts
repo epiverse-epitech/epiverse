@@ -1,4 +1,4 @@
-// VERSION DE COMPARAISON : l'écran de création en HTML. Il joue le rôle de l'app : il construit
+// Écran de création d'avatar en HTML. Il joue le rôle de l'app : il construit
 // son interface à partir du catalogue exporté par le module, et pilote l'aperçu avec setLook().
 // Dans l'app Expo, ce seront des composants React Native, avec la même logique.
 import './creator.css';

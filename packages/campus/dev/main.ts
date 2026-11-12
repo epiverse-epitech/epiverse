@@ -1,8 +1,7 @@
 // Banc d'essai : joue le rôle de l'app Expo, qui montera le module de la même façon.
-// L'écran affiché dépend de l'adresse : ?ecran=campus, ?ecran=creation-html, ?ecran=creation-phaser.
+// L'écran affiché dépend de l'adresse : ?ecran=campus ou ?ecran=creation.
 import { createCampusGame } from '../src';
 import { mountHtmlCreator } from './creatorHtml';
-import { showToast } from './toast';
 
 const parent = document.getElementById('app');
 if (!parent) throw new Error('Élément #app introuvable dans index.html');
@@ -15,15 +14,7 @@ function mount(target: HTMLElement): () => void {
     const game = createCampusGame(target, { debug: true });
     return () => game.destroy();
   }
-  if (screen === 'creation-html') return mountHtmlCreator(target);
-  if (screen === 'creation-phaser') {
-    const game = createCampusGame(target, {
-      screen: 'creator',
-      creatorUi: 'phaser',
-      onValidate: () => showToast('Avatar validé (pas de nom : Phaser n’a pas de champ texte)'),
-    });
-    return () => game.destroy();
-  }
+  if (screen === 'creation') return mountHtmlCreator(target);
   return mountMenu(target);
 }
 
@@ -39,8 +30,7 @@ function mountMenu(target: HTMLElement): () => void {
   });
   menu.innerHTML = `
     <a href="?ecran=campus">Campus (carte et déplacements)</a>
-    <a href="?ecran=creation-html">Création d'avatar — interface HTML</a>
-    <a href="?ecran=creation-phaser">Création d'avatar — interface Phaser</a>
+    <a href="?ecran=creation">Création d'avatar</a>
   `;
   menu.querySelectorAll('a').forEach((link) => Object.assign(link.style, { color: '#9fd3f0', padding: '10px 0' }));
   target.append(menu);

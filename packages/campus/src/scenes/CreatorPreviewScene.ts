@@ -5,17 +5,8 @@ import { FRAME_HEIGHT, FRAME_WIDTH, type Direction } from '../avatar/layout';
 import type { AvatarLook } from '../avatar/layers';
 import { SET_LOOK } from '../events';
 
-export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export interface CreatorPreviewOptions {
   look: AvatarLook;
-  /** Partie de l'écran réservée à l'aperçu. Par défaut : tout le canvas. */
-  previewArea?: (width: number, height: number) => Rect;
 }
 
 /** Hauteur du milieu du corps au-dessus des pieds. */
@@ -69,10 +60,10 @@ export class CreatorPreviewScene extends Phaser.Scene {
     this.avatar.setLook(look);
   }
 
-  /** Grossit l'avatar autant que possible (zoom entier) et le centre dans la zone d'aperçu. */
+  /** Grossit l'avatar autant que possible (zoom entier) et le centre dans le canvas. */
   private layout(): void {
     const { width, height } = this.scale;
-    const area = this.options.previewArea?.(width, height) ?? { x: 0, y: 0, width, height };
+    const area = { x: 0, y: 0, width, height };
     const zoom = Phaser.Math.Clamp(
       Math.floor(Math.min(area.width / (FRAME_WIDTH * 2), area.height / (FRAME_HEIGHT * 1.4))),
       2,

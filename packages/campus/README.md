@@ -22,9 +22,10 @@ Sur téléphone : même Wi-Fi que l'ordinateur, puis ouvrir l'adresse « Network
 Écrans du banc d'essai (menu sur la page d'accueil) :
 
 - `?ecran=campus` : carte, déplacements, caméra ;
-- `?ecran=creation-html` : création d'avatar, interface HTML fournie par l'app (`dev/creatorHtml.ts`) ;
-- `?ecran=creation-phaser` : création d'avatar, interface dessinée dans Phaser (`src/ui-phaser/`),
-  version de comparaison.
+- `?ecran=creation` : création d'avatar, interface HTML fournie par l'app (`dev/creatorHtml.ts`).
+
+L'interface de création est en HTML (dans l'app : React) et Phaser n'affiche que l'aperçu. Une
+version dessinée dans Phaser a été essayée puis écartée : voir le commit 9d11156.
 
 ## Structure
 
@@ -39,9 +40,8 @@ src/ui/                  interface HTML par-dessus le jeu (boutons de caméra)
 src/events.ts            événements échangés entre l'interface HTML et le jeu
 src/world/               carte provisoire (chemins, fontaine, arbres, maisons)
 src/scenes/              scènes Phaser (campus, aperçu de création, compteur de debug)
-src/ui-phaser/           interface de création dessinée dans Phaser (comparaison)
 dev/main.ts              banc d'essai (joue le rôle de l'app) : choix de l'écran
-dev/creatorHtml.ts       interface de création en HTML (comparaison), avec dev/creator.css
+dev/creatorHtml.ts       interface de création en HTML, avec dev/creator.css
 ```
 
 ## Graphismes
