@@ -1,0 +1,143 @@
+/* Écran de création, version HTML. La mise en page portrait / paysage tient en quelques règles. */
+
+.creator {
+  display: flex;
+  flex-direction: column; /* portrait : aperçu en haut, réglages en dessous */
+  height: 100dvh;
+  background: #0e131c;
+  color: #ffffff;
+  font: 15px system-ui, sans-serif;
+}
+
+.creator__preview {
+  flex: 0 0 36%;
+  min-height: 0;
+}
+
+.creator__form {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto; /* défilement natif si le contenu dépasse */
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (orientation: landscape) {
+  .creator {
+    flex-direction: row; /* paysage : aperçu à gauche, réglages à droite */
+  }
+  .creator__preview {
+    flex: 1 1 45%;
+  }
+  .creator__form {
+    flex: 1 1 55%;
+  }
+}
+
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+legend,
+.field {
+  color: #9fb0c8;
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap; /* retour à la ligne automatique */
+  gap: 8px;
+}
+
+button,
+.chip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px; /* cible tactile minimale */
+  padding: 0 16px;
+  border: 2px solid transparent;
+  border-radius: 22px;
+  background: #1f2a3a;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover,
+.chip:hover span {
+  background: #2c3b52;
+}
+
+button[aria-pressed='true'],
+.chip input:checked + span {
+  border-color: #ffffff;
+}
+
+.primary {
+  justify-content: center;
+  background: #3a7bd5;
+}
+
+/* Les vrais boutons radio restent dans la page (clavier, lecteurs d'écran) mais invisibles */
+.chip,
+.swatch {
+  position: relative;
+}
+
+.chip input,
+.swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.swatch {
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  background: var(--color) content-box;
+  padding: 2px;
+}
+
+.swatch:has(input:checked) {
+  border-color: #ffffff;
+}
+
+/* Focus clavier bien visible */
+:focus-visible,
+.chip input:focus-visible + span,
+.swatch:has(input:focus-visible) {
+  outline: 3px solid #ffcc00;
+  outline-offset: 2px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field input {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #3a4a60;
+  border-radius: 8px;
+  background: #1b2333;
+  color: #ffffff;
+  font: inherit;
+  font-size: 16px; /* en dessous de 16 px, Safari iOS zoome sur le champ quand on le touche */
+}

@@ -86,16 +86,14 @@ const drawBody: Drawer = (pen, view, pose) => {
   }
 };
 
-const drawHoodie: Drawer = (pen, view, pose) => {
-  const { bob, stride } = pose;
-  const swing = Math.sign(stride);
+/** Pantalon et chaussures, communs aux deux tenues. */
+function drawTrousers(pen: Pen, view: View, pose: Pose): void {
+  const { stride } = pose;
   if (view === 'side') {
-    pen.block(14 - stride, 30, 3, 10, DARK); // pantalon
+    pen.block(14 - stride, 30, 3, 10, DARK);
     pen.block(15 + stride, 30, 3, 10, DARK);
     pen.rect(14 - stride, 40, 4, 3, SHOE); // chaussures, pointées vers l'avant
     pen.rect(15 + stride, 40, 4, 3, SHOE);
-    pen.block(11, 18 + bob, 10, 12); // sweat
-    pen.block(15 - swing, 19 + bob, 3, 6); // manche
     return;
   }
   for (const [x, leg] of [[12, 'left'], [17, 'right']] as const) {
@@ -103,11 +101,39 @@ const drawHoodie: Drawer = (pen, view, pose) => {
     pen.block(x, 30, 3, bottom - 33, DARK);
     pen.rect(x - 1, bottom - 3, 5, 3, SHOE);
   }
+}
+
+const drawHoodie: Drawer = (pen, view, pose) => {
+  const { bob, stride } = pose;
+  const swing = Math.sign(stride);
+  drawTrousers(pen, view, pose);
+  if (view === 'side') {
+    pen.block(11, 18 + bob, 10, 12); // sweat
+    pen.block(15 - swing, 19 + bob, 3, 6); // manche
+    return;
+  }
   pen.block(10, 18 + bob, 12, 12);
   pen.block(8, 19 + bob + swing, 3, 6);
   pen.block(21, 19 + bob - swing, 3, 6);
   if (view === 'front') pen.rect(13, 18 + bob, 6, 2, SHADE); // col
   else pen.block(12, 16 + bob, 8, 4); // capuche dans le dos
+};
+
+const drawTshirt: Drawer = (pen, view, pose) => {
+  const { bob, stride } = pose;
+  const swing = Math.sign(stride);
+  drawTrousers(pen, view, pose);
+  if (view === 'side') {
+    pen.block(12, 18 + bob, 8, 11); // t-shirt, près du corps
+    pen.rect(12, 22 + bob, 8, 2, SHADE); // bande
+    pen.block(15 - swing, 19 + bob, 3, 3); // manche courte
+    return;
+  }
+  pen.block(11, 18 + bob, 10, 11);
+  pen.rect(11, 22 + bob, 10, 2, SHADE); // bande sur la poitrine
+  pen.block(8, 19 + bob + swing, 3, 3); // manches courtes : on voit les bras
+  pen.block(21, 19 + bob - swing, 3, 3);
+  if (view === 'front') pen.rect(14, 18 + bob, 4, 1, SHADE); // encolure
 };
 
 const drawShortHair: Drawer = (pen, view, { bob }) => {
@@ -122,17 +148,32 @@ const drawShortHair: Drawer = (pen, view, { bob }) => {
   }
 };
 
+const drawLongHair: Drawer = (pen, view, { bob }) => {
+  if (view === 'front') {
+    pen.block(10, 5 + bob, 12, 5);
+    pen.block(9, 9 + bob, 3, 13); // mèches qui tombent sur les épaules
+    pen.block(20, 9 + bob, 3, 13);
+  } else if (view === 'back') {
+    pen.block(10, 5 + bob, 12, 17); // de la tête jusqu'aux épaules
+  } else {
+    pen.block(10, 5 + bob, 12, 5);
+    pen.block(10, 9 + bob, 6, 13); // côté nuque, jusqu'aux épaules
+  }
+};
+
 /** Variantes provisoires disponibles pour chaque calque. */
 export const PLACEHOLDER_VARIANTS: Record<LayerId, readonly string[]> = {
   body: ['base'],
-  outfit: ['hoodie'],
-  hair: ['short'],
+  outfit: ['hoodie', 'tshirt'],
+  hair: ['short', 'long'],
 };
 
 const DRAWERS: Record<string, Drawer> = {
   'body/base': drawBody,
   'outfit/hoodie': drawHoodie,
+  'outfit/tshirt': drawTshirt,
   'hair/short': drawShortHair,
+  'hair/long': drawLongHair,
 };
 
 function viewOf(direction: Direction): View {

@@ -19,20 +19,29 @@ npm run build      # types + build de production dans dist/
 Sur téléphone : même Wi-Fi que l'ordinateur, puis ouvrir l'adresse « Network » affichée par
 `npm run dev`.
 
+Écrans du banc d'essai (menu sur la page d'accueil) :
+
+- `?ecran=campus` : carte, déplacements, caméra ;
+- `?ecran=creation-html` : création d'avatar, interface HTML fournie par l'app (`dev/creatorHtml.ts`) ;
+- `?ecran=creation-phaser` : création d'avatar, interface dessinée dans Phaser (`src/ui-phaser/`),
+  version de comparaison.
+
 ## Structure
 
 ```
 src/index.ts             API publique du module
 src/createCampusGame.ts  création et destruction du jeu
 src/avatar/              avatar en calques : disposition des feuilles, graphismes provisoires,
-                         animations, conteneur Avatar
+                         animations, conteneur Avatar, catalogue (variantes, couleurs, modèles)
 src/input/               gestes : toucher, maintien, deux doigts
 src/camera/              caméra : modes focus et libre, zoom par niveaux (×0,5, ×1, ×2 maximum)
 src/ui/                  interface HTML par-dessus le jeu (boutons de caméra)
 src/events.ts            événements échangés entre l'interface HTML et le jeu
 src/world/               carte provisoire (chemins, fontaine, arbres, maisons)
-src/scenes/              scènes Phaser (scène de test de l'avatar, compteur de debug)
-dev/main.ts              banc d'essai (joue le rôle de l'app)
+src/scenes/              scènes Phaser (campus, aperçu de création, compteur de debug)
+src/ui-phaser/           interface de création dessinée dans Phaser (comparaison)
+dev/main.ts              banc d'essai (joue le rôle de l'app) : choix de l'écran
+dev/creatorHtml.ts       interface de création en HTML (comparaison), avec dev/creator.css
 ```
 
 ## Graphismes

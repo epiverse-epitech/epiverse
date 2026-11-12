@@ -3,6 +3,8 @@
 
 /** Interface → jeu : une commande de caméra (voir CameraCommand). */
 export const CAMERA_COMMAND = 'campus:camera-command';
+/** App → jeu : nouvelle apparence de l'avatar (AvatarLook). */
+export const SET_LOOK = 'campus:set-look';
 /** Jeu → interface : l'état de la caméra a changé (voir CameraState). */
 export const CAMERA_STATE = 'campus:camera-state';
 

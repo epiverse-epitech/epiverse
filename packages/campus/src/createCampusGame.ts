@@ -1,15 +1,35 @@
 import Phaser from 'phaser';
+import { DEFAULT_LOOK, type AvatarLook } from './avatar/layers';
+import { SET_LOOK } from './events';
 import { AvatarScene } from './scenes/AvatarScene';
+import { CreatorPreviewScene } from './scenes/CreatorPreviewScene';
 import { DebugOverlayScene } from './scenes/DebugOverlayScene';
 import { createCameraButtons } from './ui/cameraButtons';
+import { CreatorPanelScene } from './ui-phaser/CreatorPanelScene';
+import { creatorLayout } from './ui-phaser/creatorLayout';
 
 export interface CampusGameOptions {
   /** Affiche les images par seconde, la taille du jeu et la densité de pixels. */
   debug?: boolean;
+  /** Écran affiché : le campus (par défaut) ou l'aperçu de création d'avatar. */
+  screen?: 'campus' | 'creator';
+  /** Apparence de départ de l'avatar. */
+  look?: AvatarLook;
+  /**
+   * Écran de création : 'none' (par défaut) = seulement l'aperçu, l'app fournit l'interface ;
+   * 'phaser' = interface dessinée dans Phaser (version de comparaison).
+   */
+  creatorUi?: 'none' | 'phaser';
+  /** Interface Phaser : l'apparence a changé. */
+  onLookChange?: (look: AvatarLook) => void;
+  /** Interface Phaser : l'utilisateur a validé. */
+  onValidate?: (look: AvatarLook) => void;
 }
 
-/** Ce que l'app reçoit pour piloter le jeu. S'enrichira à chaque étape (apparence, callbacks…). */
+/** Ce que l'app reçoit pour piloter le jeu. */
 export interface CampusGame {
+  /** Change l'apparence de l'avatar affiché (aperçu ou campus). */
+  setLook(look: AvatarLook): void;
   destroy(): void;
 }
 
@@ -57,18 +77,35 @@ export function createCampusGame(parent: HTMLElement, options: CampusGameOptions
       // pas toucher à la page : c'est à l'app de donner une taille au parent.
       expandParent: false,
     },
-    // Les scènes s'affichent dans l'ordre de la liste : le compteur passe par-dessus l'avatar.
-    scene: [new AvatarScene(), ...(options.debug ? [new DebugOverlayScene()] : [])],
+    // Les scènes s'affichent dans l'ordre de la liste : le compteur passe par-dessus le reste.
+    scene: [...scenesFor(options), ...(options.debug ? [new DebugOverlayScene()] : [])],
   });
 
-  // Interface HTML par-dessus le canvas, dans le même conteneur
-  const cameraButtons = createCameraButtons(root, game.events);
+  // Interface HTML par-dessus le canvas, dans le même conteneur (campus seulement)
+  const cameraButtons = options.screen === 'creator' ? null : createCameraButtons(root, game.events);
 
   return {
+    setLook(look) {
+      game.events.emit(SET_LOOK, look);
+    },
     destroy() {
-      cameraButtons.destroy();
+      cameraButtons?.destroy();
       game.destroy(true); // true = retirer aussi le canvas de la page
       root.remove();
     },
   };
+}
+
+function scenesFor(options: CampusGameOptions): Phaser.Scene[] {
+  const look = options.look ?? DEFAULT_LOOK;
+  if (options.screen !== 'creator') return [new AvatarScene(look)];
+  if (options.creatorUi !== 'phaser') return [new CreatorPreviewScene({ look })];
+  return [
+    new CreatorPreviewScene({ look, previewArea: (width, height) => creatorLayout(width, height).preview }),
+    new CreatorPanelScene({
+      look,
+      onChange: (changed) => options.onLookChange?.(changed),
+      onValidate: (validated) => options.onValidate?.(validated),
+    }),
+  ];
 }

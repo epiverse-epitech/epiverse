@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
 import { Avatar } from '../avatar/Avatar';
-import { createAvatarAnimations } from '../avatar/animations';
+import { createAllAvatarAnimations, preloadAvatarSheets } from '../avatar/assets';
 import { FRAME_HEIGHT, FRAME_WIDTH, type Direction } from '../avatar/layout';
-import { DEFAULT_LOOK, LAYERS, textureKey } from '../avatar/layers';
-import { PLACEHOLDER_VARIANTS, placeholderSheet } from '../avatar/placeholderArt';
+import { DEFAULT_LOOK, type AvatarLook } from '../avatar/layers';
 import { CameraController, MAX_ZOOM } from '../camera/CameraController';
-import { CAMERA_COMMAND, type CameraCommand } from '../events';
+import { CAMERA_COMMAND, SET_LOOK, type CameraCommand } from '../events';
 import { PointerGestures } from '../input/PointerGestures';
 import { MAP_HEIGHT, MAP_WIDTH, SPAWN, TILE, drawPlaceholderMap } from '../world/placeholderMap';
 
@@ -38,35 +37,24 @@ export class AvatarScene extends Phaser.Scene {
   /** Destination d'un toucher, ou null. */
   private target: Phaser.Math.Vector2 | null = null;
   private oneFinger: OneFingerTarget = 'none';
+  private readonly initialLook: AvatarLook;
 
-  constructor() {
+  constructor(look: AvatarLook = DEFAULT_LOOK) {
     super('avatar');
+    this.initialLook = look;
   }
 
   // preload : on déclare ce qu'il faut charger ; Phaser charge tout, puis appelle create().
   preload(): void {
-    for (const layer of LAYERS) {
-      for (const variant of PLACEHOLDER_VARIANTS[layer]) {
-        const key = textureKey(layer, variant);
-        // Les textures sont rangées dans le gestionnaire du jeu : on ne recharge pas une clé existante.
-        if (this.textures.exists(key)) continue;
-        // Un vrai pack remplacera la data URL par un chemin de fichier, ex. 'assets/avatar/hair-short.png'.
-        this.load.spritesheet(key, placeholderSheet(layer, variant), {
-          frameWidth: FRAME_WIDTH,
-          frameHeight: FRAME_HEIGHT,
-        });
-      }
-    }
+    preloadAvatarSheets(this);
   }
 
   create(): void {
-    for (const layer of LAYERS) {
-      for (const variant of PLACEHOLDER_VARIANTS[layer]) createAvatarAnimations(this.anims, layer, variant);
-    }
+    createAllAvatarAnimations(this.anims);
 
     // Résolution des textes = zoom maximal : ils restent nets au plus près
     drawPlaceholderMap(this, MAX_ZOOM);
-    this.avatar = new Avatar(this, SPAWN.x, SPAWN.y, DEFAULT_LOOK);
+    this.avatar = new Avatar(this, SPAWN.x, SPAWN.y, this.initialLook);
     this.avatar.setDepth(this.avatar.y);
 
     // Repère de destination : un cercle au sol, au-dessus du décor plat
@@ -94,10 +82,12 @@ export class AvatarScene extends Phaser.Scene {
 
     // Les boutons HTML parlent au jeu par son bus d'événements (game.events), partagé par tout le jeu.
     this.game.events.on(CAMERA_COMMAND, this.onCameraCommand, this);
+    this.game.events.on(SET_LOOK, this.onSetLook, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.gestures.destroy();
       this.cameraController.destroy();
       this.game.events.off(CAMERA_COMMAND, this.onCameraCommand, this);
+      this.game.events.off(SET_LOOK, this.onSetLook, this);
     });
 
     this.publishPosition();
@@ -142,6 +132,10 @@ export class AvatarScene extends Phaser.Scene {
       this.target = null;
       this.marker.setVisible(false);
     }
+  }
+
+  private onSetLook(look: AvatarLook): void {
+    this.avatar.setLook(look);
   }
 
   private onCameraCommand(command: CameraCommand): void {
