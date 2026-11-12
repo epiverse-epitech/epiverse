@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { AvatarScene } from './scenes/AvatarScene';
 import { DebugOverlayScene } from './scenes/DebugOverlayScene';
+import { createCameraButtons } from './ui/cameraButtons';
 
 export interface CampusGameOptions {
   /** Affiche les images par seconde, la taille du jeu et la densité de pixels. */
@@ -60,8 +61,12 @@ export function createCampusGame(parent: HTMLElement, options: CampusGameOptions
     scene: [new AvatarScene(), ...(options.debug ? [new DebugOverlayScene()] : [])],
   });
 
+  // Interface HTML par-dessus le canvas, dans le même conteneur
+  const cameraButtons = createCameraButtons(root, game.events);
+
   return {
     destroy() {
+      cameraButtons.destroy();
       game.destroy(true); // true = retirer aussi le canvas de la page
       root.remove();
     },

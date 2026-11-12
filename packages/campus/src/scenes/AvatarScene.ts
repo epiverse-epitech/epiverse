@@ -4,36 +4,40 @@ import { createAvatarAnimations } from '../avatar/animations';
 import { FRAME_HEIGHT, FRAME_WIDTH, type Direction } from '../avatar/layout';
 import { DEFAULT_LOOK, LAYERS, textureKey } from '../avatar/layers';
 import { PLACEHOLDER_VARIANTS, placeholderSheet } from '../avatar/placeholderArt';
+import { CameraController, MAX_ZOOM } from '../camera/CameraController';
+import { CAMERA_COMMAND, type CameraCommand } from '../events';
 import { PointerGestures } from '../input/PointerGestures';
 import { MAP_HEIGHT, MAP_WIDTH, SPAWN, TILE, drawPlaceholderMap } from '../world/placeholderMap';
 
-/**
- * Grossissement de la caméra. Un entier : chaque pixel du dessin devient un carré net de 2 × 2.
- * Sur un téléphone, on voit ainsi environ 6 tuiles de large ; le réglage par taille d'écran viendra à l'étape 6.
- */
-const ZOOM = 2;
 /** Vitesse de marche, en pixels du monde par seconde (2,5 tuiles par seconde). */
 const SPEED = 80;
 /** Marge entre l'avatar et le bord de la carte. */
 const MARGIN = TILE;
 /** Hauteur du milieu du corps au-dessus des pieds : c'est ce point que la caméra vise. */
 const BODY_CENTER = FRAME_HEIGHT / 2 - 4;
+/** Taille minimale d'une cible tactile, en pixels d'écran. */
+const TOUCH_TARGET = 44;
+
+/** À qui revient le geste à un doigt en cours. Décidé quand le doigt se pose. */
+type OneFingerTarget = 'none' | 'avatar' | 'camera' | 'recenter';
 
 /**
- * Scène de test de l'avatar sur une carte provisoire. Avec un doigt (ou la souris) :
- * - toucher le sol : l'avatar y va ;
- * - maintenir le doigt : l'avatar marche vers lui et le suit, jusqu'à ce qu'on relâche ;
- * - toucher l'avatar : il s'arrête.
- * Un deuxième doigt annule le geste en cours (il servira à la caméra).
+ * Scène de test de l'avatar sur une carte provisoire.
+ * Un doigt (ou la souris), au zoom maximum (vue de jeu) :
+ * - toucher le sol : l'avatar y va ; maintenir : il marche vers le doigt et le suit.
+ * Un doigt, en vue d'ensemble (zoom inférieur) :
+ * - glisser : déplace la carte (mode libre) ; toucher : l'avatar y va.
+ * Partout : toucher l'avatar le recentre ; deux doigts glissent et pincent ; boutons + / − et
+ * Recentrer en HTML (voir ui/cameraButtons.ts) ; molette sur ordinateur.
  */
 export class AvatarScene extends Phaser.Scene {
   private avatar!: Avatar;
   private marker!: Phaser.GameObjects.Arc;
   private gestures!: PointerGestures;
+  private cameraController!: CameraController;
   /** Destination d'un toucher, ou null. */
   private target: Phaser.Math.Vector2 | null = null;
-  /** Le geste en cours a commencé sur l'avatar : on l'ignore jusqu'au relâchement. */
-  private pressOnAvatar = false;
+  private oneFinger: OneFingerTarget = 'none';
 
   constructor() {
     super('avatar');
@@ -60,27 +64,41 @@ export class AvatarScene extends Phaser.Scene {
       for (const variant of PLACEHOLDER_VARIANTS[layer]) createAvatarAnimations(this.anims, layer, variant);
     }
 
-    drawPlaceholderMap(this, ZOOM);
+    // Résolution des textes = zoom maximal : ils restent nets au plus près
+    drawPlaceholderMap(this, MAX_ZOOM);
     this.avatar = new Avatar(this, SPAWN.x, SPAWN.y, DEFAULT_LOOK);
     this.avatar.setDepth(this.avatar.y);
 
     // Repère de destination : un cercle au sol, au-dessus du décor plat
     this.marker = this.add.circle(0, 0, 6).setStrokeStyle(2, 0xffffff).setDepth(1).setVisible(false);
 
-    // La caméra grossit le monde et suit l'avatar. setBounds l'empêche de montrer au-delà de la carte.
-    this.cameras.main
-      .setZoom(ZOOM)
-      .setBounds(0, 0, MAP_WIDTH, MAP_HEIGHT)
-      .startFollow(this.avatar, true)
-      .setFollowOffset(0, BODY_CENTER);
+    // La caméra suit l'avatar (mode focus) ; deux doigts la déplacent (mode libre).
+    this.cameraController = new CameraController(this, this.avatar, BODY_CENTER, MAP_WIDTH, MAP_HEIGHT);
 
     this.gestures = new PointerGestures(this.input, {
       onPress: (pointer) => this.onPress(pointer),
       onTap: (pointer) => this.onTap(pointer),
-      onHoldEnd: () => this.onRelease(),
-      onCancel: () => this.onRelease(),
+      onHoldEnd: (pointer) => this.onHoldEnd(pointer),
+      onDragStart: (pointer) => {
+        if (this.oneFinger === 'camera') this.cameraController.dragStart(pointer);
+      },
+      onDragMove: (pointer) => {
+        if (this.oneFinger === 'camera') this.cameraController.dragMove(pointer);
+      },
+      onDragEnd: (pointer) => this.onDragEnd(pointer),
+      onCancel: () => this.onCancel(),
+      onPinchStart: (a, b) => this.cameraController.pinchStart(a, b),
+      onPinchMove: (a, b) => this.cameraController.pinchMove(a, b),
+      onPinchEnd: () => this.cameraController.pinchEnd(),
     });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.gestures.destroy());
+
+    // Les boutons HTML parlent au jeu par son bus d'événements (game.events), partagé par tout le jeu.
+    this.game.events.on(CAMERA_COMMAND, this.onCameraCommand, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.gestures.destroy();
+      this.cameraController.destroy();
+      this.game.events.off(CAMERA_COMMAND, this.onCameraCommand, this);
+    });
 
     this.publishPosition();
   }
@@ -90,8 +108,9 @@ export class AvatarScene extends Phaser.Scene {
    * On avance de « vitesse × temps écoulé » : la vitesse reste la même à 30, 60 ou 120 images/s.
    */
   override update(_time: number, delta: number): void {
+    this.cameraController.update(delta);
     const step = (SPEED * delta) / 1000;
-    const held = this.pressOnAvatar ? null : this.gestures.heldPointer;
+    const held = this.oneFinger === 'avatar' ? this.gestures.heldPointer : null;
 
     if (held) this.steerTowards(held, step);
     else if (this.target) this.moveToTarget(this.target, step);
@@ -102,28 +121,66 @@ export class AvatarScene extends Phaser.Scene {
     this.publishPosition();
   }
 
+  /**
+   * Un doigt se pose : on décide tout de suite à qui revient le geste. Au zoom maximum, le doigt
+   * pilote l'avatar ; en vue d'ensemble, il déplace la carte. Ainsi aucun geste n'est ambigu, et
+   * l'avatar part sans attendre.
+   */
   private onPress(pointer: Phaser.Input.Pointer): void {
+    this.cameraController.stopInertia();
     const point = this.worldPoint(pointer);
-    this.pressOnAvatar = this.isOnAvatar(point.x, point.y);
-    // Dans les deux cas, on oublie la destination précédente : le nouveau geste la remplace.
-    this.target = null;
-    this.marker.setVisible(false);
-    if (this.pressOnAvatar) this.avatar.idle();
+    if (this.isOnAvatar(point.x, point.y)) {
+      this.oneFinger = 'recenter';
+      this.stop();
+      this.cameraController.recenter(); // toucher son avatar revient à la vue de jeu
+    } else if (this.cameraController.isOverview) {
+      // L'avatar continue vers sa destination pendant qu'on fait glisser la carte
+      this.oneFinger = 'camera';
+    } else {
+      this.oneFinger = 'avatar';
+      // Le nouveau geste remplace la destination précédente
+      this.target = null;
+      this.marker.setVisible(false);
+    }
+  }
+
+  private onCameraCommand(command: CameraCommand): void {
+    if (command === 'zoom-in') this.cameraController.zoomIn();
+    else if (command === 'zoom-out') this.cameraController.zoomOut();
+    else this.cameraController.recenter();
   }
 
   private onTap(pointer: Phaser.Input.Pointer): void {
-    if (this.pressOnAvatar) return; // toucher l'avatar : il est déjà arrêté
+    if (this.oneFinger !== 'recenter') this.goTo(pointer);
+    this.oneFinger = 'none';
+  }
+
+  private onHoldEnd(pointer: Phaser.Input.Pointer): void {
+    if (this.oneFinger === 'avatar') this.stop(); // fin du maintien : l'avatar s'arrête où il est
+    else if (this.oneFinger === 'camera') this.goTo(pointer); // appui long sans glisser : on y va
+    this.oneFinger = 'none';
+  }
+
+  private onDragEnd(pointer: Phaser.Input.Pointer): void {
+    if (this.oneFinger === 'avatar') this.stop();
+    else if (this.oneFinger === 'camera') this.cameraController.dragEnd(pointer);
+    this.oneFinger = 'none';
+  }
+
+  /** Un deuxième doigt s'est posé : le geste à un doigt s'arrête, la caméra prend le relais. */
+  private onCancel(): void {
+    if (this.oneFinger === 'avatar') this.stop();
+    else if (this.oneFinger === 'camera') this.cameraController.cancelDrag();
+    this.oneFinger = 'none';
+  }
+
+  /** L'avatar part vers le point du monde sous le pointeur. */
+  private goTo(pointer: Phaser.Input.Pointer): void {
     const point = this.worldPoint(pointer);
     const x = Phaser.Math.Clamp(point.x, MARGIN, MAP_WIDTH - MARGIN);
     const y = Phaser.Math.Clamp(point.y, MARGIN, MAP_HEIGHT - MARGIN);
     this.target = new Phaser.Math.Vector2(x, y);
     this.marker.setPosition(x, y).setVisible(true);
-  }
-
-  /** Fin d'un maintien, ou deuxième doigt : l'avatar s'arrête où il est. */
-  private onRelease(): void {
-    this.pressOnAvatar = false;
-    this.stop();
   }
 
   /**
@@ -178,11 +235,15 @@ export class AvatarScene extends Phaser.Scene {
     return this.cameras.main.getWorldPoint(pointer.x, pointer.y);
   }
 
-  /** Le point (en coordonnées du monde) est-il sur l'avatar ? */
+  /**
+   * Le point (en coordonnées du monde) est-il sur l'avatar ? La zone de toucher fait au moins
+   * 44 px d'écran de côté : quand on dézoome, l'avatar rapetisse à l'écran, pas sa zone de toucher.
+   */
   private isOnAvatar(x: number, y: number): boolean {
+    const minHalf = TOUCH_TARGET / 2 / this.cameras.main.zoom;
     return (
-      Math.abs(x - this.avatar.x) < FRAME_WIDTH / 2 &&
-      Math.abs(y - (this.avatar.y - BODY_CENTER)) < FRAME_HEIGHT / 2
+      Math.abs(x - this.avatar.x) < Math.max(FRAME_WIDTH / 2, minHalf) &&
+      Math.abs(y - (this.avatar.y - BODY_CENTER)) < Math.max(FRAME_HEIGHT / 2, minHalf)
     );
   }
 

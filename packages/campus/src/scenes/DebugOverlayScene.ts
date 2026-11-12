@@ -29,8 +29,10 @@ export class DebugOverlayScene extends Phaser.Scene {
     const canvas = this.game.canvas;
     // Écrite par la scène de l'avatar dans le registre partagé du jeu
     const tile = this.registry.get('avatarTile') as { x: number; y: number } | undefined;
+    const camera = this.registry.get('camera') as { mode: string; zoom: number } | undefined;
     this.info.setText([
       tile ? `avatar : tuile ${tile.x}, ${tile.y}` : 'avatar : —',
+      camera ? `caméra : ${camera.mode === 'free' ? 'libre' : 'focus'} ×${camera.zoom.toFixed(2)}` : 'caméra : —',
       `${Math.round(this.game.loop.actualFps)} images/s`,
       `jeu : ${this.scale.width} × ${this.scale.height}`,
       `canvas : ${canvas.width} × ${canvas.height} px réels`,
