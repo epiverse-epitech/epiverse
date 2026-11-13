@@ -18,6 +18,12 @@
 | Répartition du travail | [Équipe et RACI](equipe.md) |
 | Résultats vérifiables | [Registre de preuves](preuves.md) |
 
+## Dossiers de référence actuels
+- [Produit, périmètre et vision](produit-et-perimetre.md) · [Architecture](architecture.md) · [PBS/WBS](PBS-WBS.md) · [Exigences testables](exigences-MVP.md)
+- [Qualité et tests](qualite-et-tests.md) · [Data/IA](strategie-data-IA.md) · [Campus 2.5D](strategie-campus-2.5D.md)
+- [Budget et moyens](budget-et-moyens.md) · [Communication](marketing-et-communication.md) · [Correspondance avec les 19 documents historiques](index-documents.md)
+- [Reste à faire en heures](reste-a-faire.md) · [CSV exportable](backlog-initial.csv) · [Migration des anciennes issues](migration-issues.md)
+
 ## Légende des états
 - **Prouvé** : résultat vérifié avec lien vers code, PR, CI ou démonstration.
 - **En cours** : travail visible, mais pas encore livré ou validé.
