@@ -20,3 +20,12 @@
 5. FU2 : rédiger le PV avec les faits réellement constatés.
 
 **Précision de transcription :** le planning affiche « Julian » dans la réunion du 16/09 ; l'orthographe et l'identité du membre doivent être rapprochées de l'OBS/RACI avant validation.
+
+## Comptes rendus reliés à la chronologie
+
+- [16/09 — Meeting](CRAv-2026-09-16-meeting.md)
+- [24/09 — Sprint 01](CRAv-2026-09-24-sprint01.md)
+- [02/10 — Point équipe 2D](CRAv-2026-10-02-equipe-2d.md)
+- [09/10 — FU1](FU1-2026-10-09.md)
+- [09/10 — Sprint Review](CRAv-2026-10-09-sprint-review.md)
+- [13/11 — FU2](FU2-2026-11-13.md), préparation à compléter après la séance
