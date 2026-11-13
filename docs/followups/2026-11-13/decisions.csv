@@ -1,0 +1,6 @@
+id,date_source,decision,justification,source,preuve
+DEC-001,2026-06-29,Direction produit et coordination séparées,Gouvernance,DOC-002 DOC-004,Documenté
+DEC-002,2026-06-29,TypeScript React NestJS PostgreSQL Prisma Docker GitHub Actions,Architecture,DOC-014,Documenté
+DEC-003,2026-06-29,MVP limité avant IA/XR,Scope maîtrisé,DOC-010 DOC-017,Documenté
+DEC-004,2026-11-13,Proposition de suivi FU1 FU2,Traçabilité,Ce pack,À valider
+DEC-005,2026-11-13,Mesures simulées étiquetées,Fiabilité reporting,Ce pack,À valider
