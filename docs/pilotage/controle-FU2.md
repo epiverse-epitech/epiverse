@@ -1,5 +1,7 @@
 # Checklist FU2 — toutes les demandes du pédagogue
 
+**[INDEX COMPLET DE REMISE ET PREUVES EN LIENS DIRECTS](REMISE-PEDAGOGUE-FU2.md)** — source de référence pour les dix points du pédagogue. Les 12 issues du milestone FU2 sont encore ouvertes et les 19 fermetures du milestone Archives sont des doublons, non des réalisations.
+
 **Date de référence : 13/11/2026.** Ce tableau est un **dossier de préparation**. Les résultats de la séance FU2 ne seront ajoutés qu'après la réunion.
 
 | Demande | Situation documentée | Où montrer la preuve |
