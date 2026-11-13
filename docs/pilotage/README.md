@@ -46,3 +46,12 @@
 
 ## Attention
 Ce référentiel est préparé dans [la PR #147](https://github.com/epiverse-epitech/epiverse/pull/147), **non fusionnée**. Les nouvelles issues sont visibles immédiatement, mais les documents ne seront sur `develop` qu'après revue et fusion.
+
+## Corrections pédagogiques du 13/11/2026
+
+- [Résumé projet et README racine](../../README.md) : réseau social avec monde Habbo/VRChat, état réel de développement
+- [Chronologie des réunions et sprints](CHRONOLOGIE-REVUES-2026.md) : 16/09, 24/09, 02/10, 09/10, sans déduire des réunions non prouvées
+- [Protocole des KPI produit](PROTOCOLE-MESURES.md) : réactivité, accessibilité, performances, contexte FPS et méthode de mesure
+- [DoD avec heures initiales, heures réelles, ETC, risques](DoD.md)
+- [Dépôt Tech Epitech officiel](DEPOT-TECH-EPITECH.md) : procédure de synchronisation, preuves encore manquantes
+- [Tableau des dix demandes pédagogiques](REMISE-PEDAGOGUE-FU2.md)
