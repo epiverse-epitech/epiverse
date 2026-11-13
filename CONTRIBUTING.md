@@ -1,15 +1,24 @@
-# Contribuer à EpiVerse
+# Contribuer à EpiVerse — règles simples
 
-- main : versions validées ; develop : intégration ; changements via une branche et une PR.
-- Noms de branches : feature/EPI-N-sujet, fix/sujet, docs/sujet.
-- Jamais de push direct sur main ou develop et jamais de force-push sur les branches partagées.
-- Chaque PR décrit l'exigence, la portée, les risques, les tests et les migrations éventuelles.
-- Une revue indépendante ; deux relecteurs pour la sécurité, les droits, les données ou la plateforme (DOC-013).
-- Ne jamais fusionner une CI rouge ni déclarer un déploiement réussi lorsqu'il est skipped.
-- Ne pas introduire de secrets réels ni de données personnelles dans les commits.
-- Migrer d'abord en environnement isolé ; vérifier le rollback et les incompatibilités de schéma.
+La source officielle est **GitHub** (code, travail, décisions, preuves). **Teams** sert à échanger et organiser les réunions. Jira et Notion ne sont plus les outils du projet.
 
-## Vérification locale API
+## Pour chaque tâche
+1. Ouvrir une [issue](https://github.com/epiverse-epitech/epiverse/issues) et lire l'objectif, le responsable, l'estimation en **heures**, les dépendances et le risque.
+2. Partir de `develop` dans une branche `feature/numero-sujet`, `fix/sujet` ou `docs/sujet`.
+3. Faire le travail, ajouter les tests et vérifier que la fonctionnalité peut être montrée.
+4. Ouvrir une **PR vers develop**, relier l'issue, demander une revue à une autre personne.
+5. Corriger les retours, faire passer la CI, fusionner.
+6. Dans l'issue, renseigner **heures réellement passées**, **reste réestimé**, risques et preuves ; vérifier la [DoD](docs/pilotage/DoD.md).
+
+## Règles obligatoires
+- Pas de push direct sur `main` ou `develop`, pas de force-push sur des branches partagées.
+- Au moins une relecture indépendante. Pour auth, droits, sécurité, données, déploiement : deux avis selon criticité.
+- Ne jamais traiter un job **skipped** comme une exécution de test réussie.
+- Aucune donnée personnelle réelle ni secret dans Git, encore plus depuis le passage en **dépôt public**.
+- Si le déploiement, une migration ou un script peut supprimer des données : tester en isolation et préparer un retour arrière.
+- **Philimon** est lead frontend ; **Thomas** lead Data/IA ; **Soumia** design ; **Ousmane** DevOps ; **Estelle** cheffe de projet.
+
+## Vérifier l'API localement
 ```bash
 docker compose up -d postgres redis
 cd apps/api
@@ -21,6 +30,11 @@ npm run build
 npm audit --omit=dev --audit-level=high
 ```
 
-Les règles GitHub de `main` et `develop` doivent rendre ces contrôles obligatoires
-(PR, CI verte, revue CODEOWNER, sans force-push ni suppression). Si elles ne sont
-pas actives, aucune fusion ni déploiement ne doit être considéré comme approuvé.
+Les contrôles de protection GitHub doivent être vérifiés dans les paramètres du dépôt. Le fichier CODEOWNERS seul ne bloque pas un merge.
+
+## Où trouver les informations
+- [Guide de suivi](docs/pilotage/README.md)
+- [Équipe et responsabilités](docs/pilotage/equipe.md)
+- [Quality gates / DoD](docs/pilotage/DoD.md)
+- [Planning et jalons](docs/pilotage/jalons.md)
+- [Registre des risques](docs/pilotage/risques.md)
