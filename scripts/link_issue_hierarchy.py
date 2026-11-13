@@ -22,7 +22,7 @@ def get(method,path,data=None,allow_fail=False):
 def listall(path):
     all=[]
     for page in range(1,6):
-        items=get("GET",path+("?per_page=100&page="+str(page)))
+        items=get("GET",path+(("&" if "?" in path else "?")+"per_page=100&page="+str(page)))
         if not isinstance(items,list):break
         all.extend(items)
         if len(items)<100:break
