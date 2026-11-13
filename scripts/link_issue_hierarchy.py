@@ -53,6 +53,16 @@ def main():
     completed=0;errors=[]
     for parent,x in todo:
         old_parent=current.get(x["number"])
+        # Une tâche déjà enfant de son exigence métier est correctement reliée.
+        # Ne pas la déplacer vers l'epic générique sous prétexte qu'elle a un autre parent.
+        if old_parent is None:
+            observed=get("GET",f"/repos/{REPO}/issues/{x['number']}/parent",allow_fail=True)
+            if isinstance(observed,dict) and observed.get("number"):
+                old_parent=observed["number"]
+                current[x["number"]]=old_parent
+                if old_parent not in existing:
+                    print("PRESERVE",x["number"],"parent métier",old_parent,flush=True)
+                    continue
         if old_parent==parent:continue
         if completed>=LIMIT:break
         if len(existing[parent])>=100:
