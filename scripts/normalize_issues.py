@@ -15,7 +15,7 @@ HEAD={"Authorization":"Bearer "+TOKEN,"Accept":"application/vnd.github+json","X-
 BASE="https://github.com/"+REPO+"/issues/"
 OWNERS={"estelle":"estellegiroud","eckson":"Eckson-Glitho","philimon":"prusom",
         "thomas":"thomas-pradeau","julien":"Juliendev200","soumia":"miso882",
-        "ousmane":"bayeousmane1","lina":"LambdaIotaNuAlpha","belaid":"Eckson-Glitho"  # Référent de suivi GitHub; Belaid reste réalisateur}
+        "ousmane":"bayeousmane1","lina":"LambdaIotaNuAlpha","belaid":"Eckson-Glitho"}  # Référent GitHub, Belaid reste réalisateur
 MILESTONES={
  "FU2":("FU2 — 13 novembre 2026","2026-11-13T13:00:00Z"),
  "S9":("S9 — Première intégration / FU3","2026-12-18T13:00:00Z"),
