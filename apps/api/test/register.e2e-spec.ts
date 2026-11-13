@@ -3,11 +3,16 @@ import { ConfigService } from '@nestjs/config';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { Mailer } from '../src/mail/mailer';
 import { PasswordService } from '../src/security/password.service';
 import { createTestApp } from './support/create-test-app';
+import { FakeMailer } from './support/fake-mailer';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 // Every account created here uses this domain, so cleanup never touches other data.
 const TEST_DOMAIN = '@register.e2e.test';
+// Same answer whether the address was free or not, so it reveals no account.
+const ANSWER = { message: 'Check your email to continue' };
 
 const validBody = {
   email: `ada${TEST_DOMAIN}`,
@@ -23,15 +28,30 @@ const validBody = {
 describe('Account registration (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
+  let mailer: FakeMailer;
+  // Each test uses its own client address, so counters never leak between tests.
+  let ip: string;
+  let nextIp = 1;
 
   beforeAll(async () => {
-    // High enough that the functional tests below never hit the limit.
-    app = await createTestApp(100);
+    // The address limit is high; the limit per email and address is 3.
+    app = await createTestApp(100, {
+      LOGIN_FAILURE_MAX: 3,
+      TRUST_PROXY_HOPS: 1,
+    });
     prisma = app.get(PrismaService);
+    mailer = app.get(Mailer) as FakeMailer;
     validBody.cguVersion = app.get(ConfigService).get<string>('CGU_VERSION')!;
   });
 
+  beforeEach(() => {
+    ip = `10.3.0.${nextIp++}`;
+  });
+
   afterEach(async () => {
+    // Leaves time for an email still on its way, so it cannot reach the next test.
+    await sleep(30);
+    mailer.sent.length = 0;
     await prisma.users.deleteMany({
       where: { email: { endsWith: TEST_DOMAIN, mode: 'insensitive' } },
     });
@@ -41,8 +61,17 @@ describe('Account registration (e2e)', () => {
     await app.close();
   });
 
-  const register = (body: object) =>
-    request(app.getHttpServer()).post('/api/auth/register').send(body);
+  const register = (body: object, from = ip) =>
+    request(app.getHttpServer())
+      .post('/api/auth/register')
+      .set('X-Forwarded-For', from)
+      .send(body);
+
+  // Waits until the given number of emails reached the address.
+  const emailsTo = async (email: string, count: number) => {
+    await mailer.waitFor(email, count);
+    return mailer.sent.filter((m) => m.to === email);
+  };
 
   const accountCount = () =>
     prisma.users.count({
@@ -65,20 +94,14 @@ describe('Account registration (e2e)', () => {
     expect(await accountCount()).toBe(0);
   });
 
-  it('creates the account with a hashed password and returns only public fields', async () => {
-    const response = await register(validBody).expect(201);
+  it('creates the account with a hashed password, and answers without any account data', async () => {
+    const response = await register(validBody).expect(202);
 
-    expect(response.body).toEqual({
-      id: expect.any(String),
-      email: validBody.email,
-      firstName: 'Ada',
-      lastName: 'Lovelace',
-    });
+    expect(response.body).toEqual(ANSWER);
 
     const account = await prisma.users.findFirstOrThrow({
       where: { email: validBody.email },
     });
-    expect(account.public_id).toBe(response.body.id);
     expect(account.password_hash).not.toBe(validBody.password);
     expect(
       await new PasswordService().verify(
@@ -110,10 +133,10 @@ describe('Account registration (e2e)', () => {
 
   it('records the acceptance of the current terms of use, with version and date', async () => {
     const before = Date.now();
-    const response = await register(validBody).expect(201);
+    await register(validBody).expect(202);
 
     const acceptances = await prisma.user_cgu_acceptance.findMany({
-      where: { users: { public_id: response.body.id } },
+      where: { users: { email: validBody.email } },
     });
     expect(acceptances).toHaveLength(1);
     expect(acceptances[0].version).toBe(
@@ -125,34 +148,65 @@ describe('Account registration (e2e)', () => {
   });
 
   it('stores the email in lowercase', async () => {
-    const response = await register({
+    await register({
       ...validBody,
       email: `Ada${TEST_DOMAIN.toUpperCase()}`,
-    }).expect(201);
+    }).expect(202);
 
-    expect(response.body.email).toBe(validBody.email);
     expect(await accountCount()).toBe(1);
     await prisma.users.findFirstOrThrow({ where: { email: validBody.email } });
   });
 
-  it('refuses an email already used, whatever its case, and keeps the first account', async () => {
-    await register(validBody).expect(201);
+  it('gives the same answer when the email is already used, whatever its case, and keeps the first account', async () => {
+    const first = await register(validBody).expect(202);
 
-    const response = await register({
+    const second = await register({
       ...validBody,
       email: validBody.email.toUpperCase(),
       firstName: 'Grace',
-    }).expect(409);
+    }).expect(202);
 
-    expect(response.body.message).toBe(
-      'An account already exists with this email',
-    );
-    expect(JSON.stringify(response.body)).not.toContain('Ada');
+    expect(second.body).toEqual(first.body);
     expect(await accountCount()).toBe(1);
     const account = await prisma.users.findFirstOrThrow({
       where: { email: validBody.email },
     });
     expect(account.first_name).toBe('Ada');
+  });
+
+  it('tells the owner of the address, by email and without any link, that someone tried to register', async () => {
+    await register(validBody).expect(202);
+    await register({ ...validBody, firstName: 'Grace' }).expect(202);
+
+    const emails = await emailsTo(validBody.email, 2);
+    const notice = emails.find((m) => !m.text.includes('#token='));
+    expect(notice?.subject).toContain('compte');
+    expect(notice?.text).not.toContain('Grace');
+  });
+
+  it('sends nothing to the address of a closed account', async () => {
+    await register(validBody).expect(202);
+    await mailer.waitFor(validBody.email);
+    await prisma.users.updateMany({
+      where: { email: validBody.email },
+      data: { is_active: false },
+    });
+
+    await register(validBody).expect(202);
+    await sleep(50);
+
+    expect(mailer.countFor(validBody.email)).toBe(1);
+  });
+
+  it('limits repeated registrations of one email from one address, whatever the outcome', async () => {
+    for (let i = 0; i < 3; i++) {
+      await register(validBody).expect(202);
+    }
+
+    const response = await register(validBody).expect(429);
+
+    expect(Number(response.headers['retry-after'])).toBeGreaterThan(0);
+    await register(validBody, '10.4.0.1').expect(202);
   });
 
   describe('Account registration rate limit (e2e)', () => {
