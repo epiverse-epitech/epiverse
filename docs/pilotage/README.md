@@ -55,3 +55,18 @@ Ce référentiel est préparé dans [la PR #147](https://github.com/epiverse-epi
 - [DoD avec heures initiales, heures réelles, ETC, risques](DoD.md)
 - [Dépôt Tech Epitech officiel](DEPOT-TECH-EPITECH.md) : procédure de synchronisation, preuves encore manquantes
 - [Tableau des dix demandes pédagogiques](REMISE-PEDAGOGUE-FU2.md)
+
+## Dossier de remise — liens directs du pédagogue
+
+**[Index des dix points](REMISE-PEDAGOGUE-FU2.md)**
+
+1. **CRAv** : [16/09](CRAv-2026-09-16-meeting.md), [24/09](CRAv-2026-09-24-sprint01.md), [02/10 équipe 2D](CRAv-2026-10-02-equipe-2d.md), [FU1 09/10](FU1-2026-10-09.md), [Sprint Review 09/10](CRAv-2026-10-09-sprint-review.md), [FU2](FU2-2026-11-13.md). Les CRAv sans PV original sont des reconstitutions signalées, pas des réunions certifiées.
+2. **Reste chiffré** : [85 tâches, initial / rétro-estimé / ETC](reste-a-faire.md) et [CSV](backlog-IA.csv).
+3. **KPI graphique** : [trois mesures PR fusionnées + diagramme](KPI-TENDANCE-PR.md), [mesures produit à réaliser](PROTOCOLE-MESURES.md).
+4. **SMART FU1** : [matrice de clôture motivée et limites](SMART-FU1-MATRICE-VALIDATION.md).
+5. **Risques** : [registre et mouvements](risques.md).
+6. **Écarts** : [Delta Log avec commit](../../reporting/Delta-Log.md) et [registre](ecarts.md).
+7. **Décisions** : [journal](decisions.md) et [ADR](../adr/).
+8. **Code review** : [PR #39 approuvée](https://github.com/epiverse-epitech/epiverse/pull/39), [PR de remise #147 en revue](https://github.com/epiverse-epitech/epiverse/pull/147).
+9. **CI** : [workflows existants](../../.github/workflows/ci.yml), [tests 05/11](https://github.com/epiverse-epitech/epiverse/actions/runs/42124966749), [06/11](https://github.com/epiverse-epitech/epiverse/actions/runs/42202615403).
+10. **Dépôt Epitech** : [procédure et preuves attendues](DEPOT-TECH-EPITECH.md) ; synchronisation **confiée à un autre membre**, non réalisée dans cette PR.
