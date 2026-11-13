@@ -32,3 +32,11 @@ Le chiffrage de cadrage atteint **1 212 h** et la capacité des membres n'a pas 
 - Vérifier les commits sur le dépôt Tech demandé.
 - Faire approuver la PR de documentation et ré-estimer le travail par pôle.
 - Faire acter les nouveaux SMART et consigner les remarques de la réunion.
+
+## Ajouts pour présentation immédiate
+
+- [CRAv complémentaires par réunion de planning](CHRONOLOGIE-REVUES-2026.md) ; les séances sans PV sont identifiées.
+- [Graphique réel de tendance KPI](KPI-TENDANCE-PR.md) : 2 → 14 → 15 PR fusionnées.
+- [Matrice SMART FU1 avec raisons et preuves](SMART-FU1-MATRICE-VALIDATION.md) ; acceptation finale reste à confirmer.
+- [Protocole KPI produit](PROTOCOLE-MESURES.md) : réactivité, accessibilité, performances du campus.
+- [Dépôt Tech délégué](DEPOT-TECH-EPITECH.md) : preuve de push non recueillie.
