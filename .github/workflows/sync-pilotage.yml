@@ -1,0 +1,28 @@
+name: EpiVerse — Synchronisation des jalons
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths:
+      - 'scripts/sync_pilotage.py'
+      - '.github/workflows/sync-pilotage.yml'
+      - 'docs/pilotage/jalons.md'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync-milestones:
+    name: Créer les jalons et relier les issues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Vérifier la syntaxe du script
+        run: python3 -m py_compile scripts/sync_pilotage.py
+      - name: Appliquer la configuration GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/sync_pilotage.py
