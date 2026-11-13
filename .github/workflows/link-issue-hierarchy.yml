@@ -1,5 +1,5 @@
 name: EpiVerse — Relier exigences et tâches aux epics
-# Synchronisation contrôlée de la hiérarchie native, avec préservation des liens valides
+# Synchronisation contrôlée : conserver les tâches déjà parentes de leur exigence
 on:
   push:
     branches: [docs/pilotage-fu2-reconstruction-2026-11-13]
