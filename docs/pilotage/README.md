@@ -1,41 +1,40 @@
-# Pilotage EpiVerse — point d'entrée
+# EpiVerse — tableau de bord et guide de pilotage
 
-**Source officielle : GitHub.** Teams sert aux échanges et réunions. Les décisions et preuves sont consignées ici. Jira est abandonné ; Notion est obsolète.
+**Pour travailler : GitHub (source officielle) et Teams (réunions).** Jira supprimé, Notion obsolète.
 
-## Accès rapide
-| Besoin | Où |
+## Accès en un clic
+
+| Besoin | Ouvrir |
 |---|---|
-| Travaux à faire, responsables et heures | [Issues](https://github.com/epiverse-epitech/epiverse/issues) — nouveaux tickets portant `[S9]`, `[FU2]`, `[S10]` |
-| Revue des travaux | [Pull requests](https://github.com/epiverse-epitech/epiverse/pulls) |
-| Tests automatiques | [Actions](https://github.com/epiverse-epitech/epiverse/actions) |
-| Historique et corrections pédagogiques | [CRAv FU1](FU1-2026-10-09.md) · [Préparation FU2](FU2-2026-11-13.md) |
-| Objectifs SMART FU1 | [Clôture](SMART-FU1.md) |
-| Indicateurs | [KPI et mesures](KPI.md) |
-| Planning | [Jalons](jalons.md) |
-| Risques | [Registre](risques.md) |
-| Écarts | [Journal d'écarts](ecarts.md) |
-| Décisions | [Journal de décisions](decisions.md) |
-| Répartition du travail | [Équipe et RACI](equipe.md) |
-| Résultats vérifiables | [Registre de preuves](preuves.md) |
+| Ce que le produit **doit faire** | [54 exigences historiques ouvertes](https://github.com/epiverse-epitech/epiverse/issues?q=is%3Aissue+is%3Aopen+label%3Atype%3Aexigence) |
+| Qui fait quoi et combien d'heures | [85 tâches](https://github.com/epiverse-epitech/epiverse/issues?q=is%3Aissue+is%3Aopen+label%3Atype%3Atache) |
+| Consolidation des heures | [1 212 h de cadrage : détail](reste-a-faire.md) |
+| Bilan FU2 et retour FU1 | [Checklist FU2](controle-FU2.md) · [FU1](FU1-2026-10-09.md) · [Préparation FU2](FU2-2026-11-13.md) |
+| KPI avec deux mesures | [KPI](KPI.md) |
+| Objectifs SMART du FU1 | [Clôture à confirmer](SMART-FU1.md) |
+| Risques et incidents | [Registre](risques.md) |
+| Décisions et changements | [Décisions](decisions.md) · [Écarts](ecarts.md) |
+| Équipe, tâches, jalons | [Rôles](equipe.md) · [PBS/WBS](PBS-WBS.md) · [Calendrier](jalons.md) |
+| Prouver le code | [PR](https://github.com/epiverse-epitech/epiverse/pulls) · [Actions](https://github.com/epiverse-epitech/epiverse/actions) · [Preuves](preuves.md) |
+| Où cliquer dans GitHub | [Guide des onglets](onglets-github.md) · [Mode d'emploi](mode-emploi.md) |
 
-## Dossiers de référence actuels
-- [Produit, périmètre et vision](produit-et-perimetre.md) · [Architecture](architecture.md) · [PBS/WBS](PBS-WBS.md) · [Exigences testables](exigences-MVP.md)
-- [Qualité et tests](qualite-et-tests.md) · [Data/IA](strategie-data-IA.md) · [Campus 2.5D](strategie-campus-2.5D.md)
-- [Budget et moyens](budget-et-moyens.md) · [Communication](marketing-et-communication.md) · [Correspondance avec les 19 documents historiques](index-documents.md)
-- [Reste à faire en heures](reste-a-faire.md) · [CSV exportable](backlog-initial.csv) · [Migration des anciennes issues](migration-issues.md)
+## Produit, conception et qualité
+- [Périmètre préproduction 05/02/2027](produit-et-perimetre.md)
+- [Architecture réelle](architecture.md) · [54 exigences et tickets](exigences-MVP.md)
+- [Campus social 2.5D](strategie-campus-2.5D.md) · [Data/IA](strategie-data-IA.md)
+- [Qualité et tests](qualite-et-tests.md) · [Definition of Done](DoD.md)
+- [Budget](budget-et-moyens.md) · [Communication](marketing-et-communication.md)
+- [Correspondance des 19 DOC historiques](index-documents.md) · [Anciennes issues et nouvelles tâches](migration-issues.md)
 
-## Légende des états
-- **Prouvé** : résultat vérifié avec lien vers code, PR, CI ou démonstration.
-- **En cours** : travail visible, mais pas encore livré ou validé.
-- **Prévu** : tâche à réaliser, avec estimation en heures.
-- **À vérifier** : donnée manquante, jamais remplacée par un chiffre inventé.
+## Dossiers exigés par BUILD
+- [Décisions techniques ADR](../adr/) — pourquoi nous avons choisi les outils et l'architecture.
+- [Reporting](../../reporting/) — Delta Log, KPI, roadmap, rétrospective et preuves.
 
-## Réunion de suivi
-1. Estelle met à jour les heures restantes, les risques et les décisions avant la revue.
-2. Chaque lead ajoute ses PR, tests, captures et blocages dans les issues.
-3. Le CRAv est daté et relié aux preuves.
-4. Les objectifs SMART sont clos avec un verdict justifié.
-5. Une tâche n'est terminée qu'après contrôle de la [DoD](DoD.md).
+## Quatre règles pour l'équipe
+1. **Une tâche = un responsable, une estimation en heures, un reste réestimé et un risque.** Chaque membre renseigne ses heures réellement effectuées.
+2. **Une exigence n'est pas une seconde tâche** : elle décrit les critères d'acceptation et pointe vers la tâche qui porte les heures.
+3. **Une PR ouverte n'est pas du code livré** : revue indépendante, CI, intégration et démo avant de déclarer « terminé ».
+4. **Un CRAv décrit uniquement une revue réellement tenue** : FU1 reconstitué de manière explicite ; FU2 finalisé après la réunion.
 
-## Limite importante
-Ce dossier est initialement proposé dans une PR ; son contenu n'est officiel sur `develop` qu'après validation et fusion. L'historique Git et les PR précédentes restent inchangés.
+## Attention
+Ce référentiel est préparé dans [la PR #147](https://github.com/epiverse-epitech/epiverse/pull/147), **non fusionnée**. Les nouvelles issues sont visibles immédiatement, mais les documents ne seront sur `develop` qu'après revue et fusion.
