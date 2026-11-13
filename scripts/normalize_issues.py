@@ -49,6 +49,7 @@ def listing(path):
     return arr
 def category(issue):
     n=issue["number"]
+    if "type:epic" in {l["name"] for l in issue.get("labels",[])}:return "epic"
     if n<=101 and issue["state"]=="open":return "exigence"
     if n<=101:return "archive"
     return "tache"
@@ -132,7 +133,7 @@ def phase_from_body(issue,phase):
     if issue["number"]==139:return "FU3"
     return phase
 def native_type(kind,issue):
-    if kind=="exigence":return "Feature"
+    if kind in ("exigence","epic"):return "Feature"
     if kind=="archive":return "Task"
     if issue["number"] in (131,132,141,142,152,178):return "Bug" if "corriger" in issue["title"].lower() else "Task"
     return "Task"
@@ -151,7 +152,7 @@ def block(issue,kind,prio,phase,owner,teamname,h):
         cost+=f"- **ETC — reste à faire estimé :** {remain:g} h.\n" if h else ""
         proof=(f"- **Preuve de progression :** {note}.\n" if note else "- **Preuve de progression :** non établie tant qu'une PR/test n'est pas liée.\n")
     else:
-        cost="- **Heures :** portées par les tâches de réalisation liées, pas comptées deux fois.\n"
+        cost="- **Heures :** regroupement ou réception non chiffré séparément ; la charge est portée par les tâches de réalisation liées.\n"
         proof="- **Preuve de réception :** tests, PR et validation exigés pour clore.\n" if kind=="exigence" else "- **Archive :** aucun développement n'est considéré terminé du seul fait de la fermeture.\n"
     status=("Archivée : doublon historique, suivi transféré" if kind=="archive" else
             ("En revue (documents en PR #147)" if issue["number"] in (104,105,107,108,109,137,180,186) else
@@ -175,6 +176,8 @@ def main():
     print("REPO",REPO,"DRY_RUN",DRY,flush=True)
     issues=[x for x in listing(f"/repos/{REPO}/issues?state=all") if "pull_request" not in x]
     issues.sort(key=lambda x:x["number"])
+    nums={int(n) for n in os.getenv("ISSUE_NUMBERS","").split(",") if n.strip().isdigit()}
+    if nums:issues=[x for x in issues if x["number"] in nums]
     issues=issues[:MAX]
     milestones={}
     if not DRY:
@@ -197,7 +200,7 @@ def main():
         number=item["number"]; kind=category(item); labelset={l["name"] for l in item.get("labels",[])}
         p=priority(item,kind); t=team(item); phase=phase_from_body(item,get_phase(item,kind)); owner=responsible(item,kind,t); h=hours(item,kind,t)
         opt={"P0":"Urgent" if number in (103,110,119,141,142,154,155) else "High","P1":"Medium","P2":"Low"}[p]
-        status=("archive" if kind=="archive" else "en-revue" if number in (104,105,107,108,109,115,137,180,186) else
+        status=("archive" if kind=="archive" else "en-cours" if kind=="epic" and issue["number"]==189 else "en-revue" if number in (104,105,107,108,109,115,137,180,186) else
                 "en-cours" if number in (116,117,121,123,148) else "a-faire")
         chosen={x for x in labelset if not x.startswith(("prio:","phase:","etat:","pole:","type:"))}
         chosen.update({f"prio:{p}",f"phase:{phase}",f"pole:{t}",f"etat:{status}",f"type:{kind}"})
