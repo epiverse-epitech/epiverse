@@ -121,7 +121,7 @@ def hours(issue,kind,teamname):
     spent,note=proof.get(issue["number"],(None,None))
     if spent is not None:
         spent=min(spent,total)
-        remaining=max(1.0,round((total-spent)*2)/2) if issue["state"]=="open" else 0
+        remaining=max(0.5,round((total-spent)*2)/2) if issue["state"]=="open" else 0
     else:
         remaining=total
     return before,total,spent,remaining,note
