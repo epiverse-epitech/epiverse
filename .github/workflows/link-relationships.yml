@@ -1,0 +1,31 @@
+name: EpiVerse — Lier exigences, tâches et archives
+
+on:
+  push:
+    branches:
+      - docs/pilotage-fu2-reconstruction-2026-11-13
+    paths:
+      - 'scripts/link_issue_relationships.py'
+      - '.github/workflows/link-relationships.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: epiverse-link-relationships
+  cancel-in-progress: false
+
+jobs:
+  relationships:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m py_compile scripts/link_issue_relationships.py
+      - name: Appliquer les relations parent / sous-issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: python3 scripts/link_issue_relationships.py

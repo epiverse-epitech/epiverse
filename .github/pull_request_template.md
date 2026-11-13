@@ -1,26 +1,39 @@
-## Ticket
+## Issue liée
 
-<!-- Lien vers le ticket (Notion ou GitHub Projects) et identifiant de l'exigence, ex. EVT-01 -->
+Closes #...  
+**Responsable :**  
+**Pôle :**  
+**Exigence / parcours :**  
 
-## Ce qui change
+## Ce qui change (en 2 à 3 phrases)
 
-<!-- Deux ou trois phrases : quoi, pourquoi -->
+<!-- Fonctionnement livré et raison du changement -->
 
-## Preuves
+## Temps et risque
 
-<!-- Capture, lien staging, résultat de test : ce qui montre que ça marche -->
+- **Estimation initiale :** ... h
+- **Réel déclaré :** ... h
+- **Reste réestimé :** ... h
+- **Risque principal / action :**
 
-## Checklist (DoD — DOC-008, checklist PR de DOC-013)
+## Vérification effectuée
 
-- [ ] PR-01 Ticket lié et périmètre compris
-- [ ] PR-02 Critères d'acceptation vérifiés
-- [ ] PR-03 Code lisible et limité au besoin
-- [ ] PR-04 Tests unitaires ou adaptés ajoutés
-- [ ] PR-05 Test d'intégration ou E2E si parcours critique
-- [ ] PR-06 Aucun secret dans le code ; données personnelles protégées
-- [ ] PR-07 Accessibilité vérifiée si l'interface change
-- [ ] PR-08 Documentation à jour (README, Swagger, `.env.example`)
-- [ ] PR-09 CI verte : build, lint, types, tests
-- [ ] PR-10 Revue obtenue (deux relecteurs si accès, sécurité, données ou changement transversal)
-- [ ] PR-11 Commentaires bloquants résolus
-- [ ] PR-12 DoD de la fonctionnalité mise à jour
+<!-- Commandes, résultats, scénarios avec données fictives, capture ou lien de démo -->
+
+## Checklist DoD
+
+- [ ] Issue, critères et dépendances clairement reliés
+- [ ] Heures estimées, réellement passées et restantes mises à jour dans l'issue
+- [ ] Risques et écarts documentés
+- [ ] Code lisible, pas de secret, pas de donnée personnelle réelle
+- [ ] Tests unitaires ajoutés et réussis si applicable
+- [ ] Tests d'intégration / E2E si parcours critique
+- [ ] Frontend : vérification web + mobile, erreurs, clavier et accessibilité
+- [ ] Campus : scène/matériel/mesure FPS documentés si impact performance
+- [ ] Base : migration testée et rollback disponible si applicable
+- [ ] Documentation source et README mis à jour si nécessaire
+- [ ] **CI verte** pour les jobs attendus, aucun skipped essentiel ignoré
+- [ ] **Revue indépendante** obtenue ; avis renforcé sur auth, droits, sécurité et infra
+- [ ] Preuve de validation fonctionnelle jointe (capture, URL, résultat de test)
+
+Détails : [DoD](../docs/pilotage/DoD.md) — [Plan qualité](../docs/pilotage/qualite-et-tests.md).

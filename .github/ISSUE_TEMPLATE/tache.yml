@@ -1,0 +1,54 @@
+name: "Tâche EpiVerse"
+description: "Travail concret à réaliser et à vérifier"
+title: "[P1][DOMAINE] Résultat à obtenir"
+body:
+  - type: markdown
+    attributes:
+      value: "Un ticket = un résultat vérifiable. Assigner un responsable dans GitHub après création."
+  - type: textarea
+    id: objectif
+    attributes:
+      label: "Objectif simple"
+      description: "Qu'est-ce qui doit fonctionner ou être livré ?"
+      placeholder: "L'utilisateur peut..."
+    validations:
+      required: true
+  - type: textarea
+    id: criteres
+    attributes:
+      label: "Critères de validation"
+      description: "Quelles étapes prouvent que c'est fini ?"
+      placeholder: "- [ ] Critère 1\n- [ ] Critère 2"
+    validations:
+      required: true
+  - type: input
+    id: estime
+    attributes:
+      label: "Heures prévues"
+      placeholder: "8 h (estimation)"
+    validations:
+      required: true
+  - type: input
+    id: reel
+    attributes:
+      label: "Heures réellement effectuées"
+      placeholder: "Non renseigné jusqu'au relevé du membre"
+  - type: input
+    id: restant
+    attributes:
+      label: "Heures restantes réestimées"
+      placeholder: "8 h"
+    validations:
+      required: true
+  - type: textarea
+    id: dependances
+    attributes:
+      label: "Dépendances et personnes à consulter"
+  - type: textarea
+    id: risques
+    attributes:
+      label: "Risques, problèmes et solution"
+  - type: textarea
+    id: preuves
+    attributes:
+      label: "Preuves (PR, commit, CI, test, démo)"

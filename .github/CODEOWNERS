@@ -1,6 +1,6 @@
-# EpiVerse — propriétaires vérifiés avec droits write.
-# Ce fichier ne suffit pas à imposer une revue : les règles GitHub de main et
-# develop doivent exiger une PR, les contrôles CI et l'approbation CODEOWNER.
+# EpiVerse — revue par domaine. Assignees de renfort à confirmer avant ajout.
+# CODEOWNERS demande la bonne expertise ; les règles de protection et les PR
+# déterminent si une approbation est effectivement obligatoire.
 *                           @estellegiroud @bayeousmane1
 /.github/                   @estellegiroud @bayeousmane1
 /infra/                     @bayeousmane1 @estellegiroud
@@ -8,7 +8,9 @@
 /apps/api/                  @Eckson-Glitho @estellegiroud
 /apps/api/prisma/           @Eckson-Glitho @thomas-pradeau
 /apps/api/src/security/     @Eckson-Glitho @estellegiroud
-/apps/app/                  @prusom @miso882
+/apps/app/                  @prusom @estellegiroud
+/packages/campus/           @thomas-pradeau @estellegiroud
 /data/                      @thomas-pradeau
 /docs/database/             @thomas-pradeau @Eckson-Glitho
 /docs/ia/                   @thomas-pradeau
+/docs/pilotage/             @estellegiroud @bayeousmane1

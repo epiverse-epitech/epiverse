@@ -1,0 +1,41 @@
+name: EpiVerse — Mettre à jour le suivi des issues
+
+# Lancement volontaire uniquement. Évite de réécrire les issues
+# de toute l'équipe à chaque commit documentaire.
+on:
+  workflow_dispatch:
+    inputs:
+      issue_numbers:
+        description: 'Numéros séparés par des virgules (vide = toutes les issues)'
+        required: false
+        type: string
+        default: ''
+      dry_run:
+        description: 'Vérifier sans modifier les issues'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: epiverse-normalize-issues
+  cancel-in-progress: false
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier la syntaxe
+        run: python3 -m py_compile scripts/normalize_issues.py
+      - name: Exécuter en mode vérification ou publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+          ISSUE_NUMBERS: ${{ inputs.issue_numbers }}
+        run: python3 scripts/normalize_issues.py

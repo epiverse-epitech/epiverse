@@ -1,0 +1,28 @@
+name: EpiVerse — Project et priorité native
+
+on:
+  push:
+    branches:
+      - docs/pilotage-fu2-reconstruction-2026-11-13
+    paths:
+      - 'scripts/sync_project.py'
+      - '.github/workflows/sync-project.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m py_compile scripts/sync_project.py
+      - name: Créer/synchroniser le Project et les champs de priorité
+        env:
+          GH_PLANNING_TOKEN: ${{ secrets.EPIVERSE_PLANNING_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GH_ORG: epiverse-epitech
+        run: python3 scripts/sync_project.py
