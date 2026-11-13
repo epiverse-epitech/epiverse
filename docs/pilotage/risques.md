@@ -30,3 +30,11 @@
 
 ## Rituel
 Chaque revue : signaler risques **nouveaux, survenus, atténués et clos**, noter propriétaire, probabilité/impact et preuve. Un risque survenu devient incident/écart avec issue corrective, pas une ligne supprimée.
+
+## Risque additionnel de l'audit GitHub — 13/11/2026
+
+| ID | Risque ou problème | P×I | État | Responsable | Action et preuve de clôture |
+|---|---|---:|---|---|---|
+| R18 | Deux orientations frontend **Expo/React Native Web** (issue #113) vs **React/Vite** ([PR #194](https://github.com/epiverse-epitech/epiverse/pull/194)) sans ADR d'intégration | **4×4=16** | **Nouveau / ouvert** | Philimon + Estelle | Arbitrer le code cible, documenter ADR et valider un build web + mobile approprié avant fusion |
+
+Les risques R07 et R17 documentaires restent **en atténuation** : [la PR de consolidation #147](https://github.com/epiverse-epitech/epiverse/pull/147) a demandé une revue indépendante, mais son ouverture et sa CI ne constituent pas une validation finale de périmètre.
