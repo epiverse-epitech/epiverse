@@ -32,3 +32,9 @@ Le monde et les médias peuvent être prototypés en parallèle ; la sécurité 
 - Une cible inscrite au calendrier n'est jamais considérée atteinte sans démonstration/test.
 - Les estimations restent provisoires tant que les membres n'ont pas communiqué leurs disponibilités et le temps déjà passé.
 - Si le jalon devient irréaliste, **réviser explicitement le périmètre avec le pédagogue**, pas modifier silencieusement le statut des tâches.
+
+## Audit des milestones **natifs** — 13/11/2026
+
+L'index de remise [détaille les 6 milestones et les 163 issues](REMISE-PEDAGOGUE-FU2.md). **FU2 : 12 ouvertes, 0 fermée** ; **S9/FU3 : 108 ouvertes**, **FU3 : 1 ouverte**, **S10 : 11 ouvertes**, **Futur : 11 ouvertes**, **Archives : 1 ouverte, 19 doublons fermés**. Les anciennes PR fusionnées doivent être montrées séparément comme preuves de code intégré ; ne pas inventer d'issues « Done ».
+
+Le suivi du **FU1 09/10/2026** figure dans le calendrier et le CRAv, mais **aucun milestone natif FU1** n'a été relevé : le recréer de façon historique avec son vrai périmètre après validation du relevé, sans requalifier les doublons archivés en réalisations. Suivi dans [#105](https://github.com/epiverse-epitech/epiverse/issues/105).
