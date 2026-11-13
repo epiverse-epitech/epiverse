@@ -1,0 +1,5 @@
+id,objectif_reconstruit,preuve,etat_indicatif,action
+SMART-FU1-01,PBS WBS exigences,Documents disponibles,Partiel à confirmer,Acceptation officielle
+SMART-FU1-02,Gouvernance planning risques,Documents disponibles,Partiel à confirmer,PV FU1
+SMART-FU1-03,UX/UI et charte,Rapport disponible Figma non référencé,Partiel à confirmer,Relier Figma
+SMART-FU1-04,Code tests CI,Preuves à vérifier dans GitHub,Non démontré par le pack,PR CI et run
