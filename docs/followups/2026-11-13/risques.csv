@@ -1,0 +1,6 @@
+id,risque,probabilite,impact,etat,action,owner,statut_source
+R-01,Périmètre MVP trop vaste,5,5,Ouvert,Réduire verticales MVP,Estelle / Soumia,DOC-012
+R-03,Absence de code vérifiable dans baseline historique,5,4,À réévaluer selon GitHub,Faire audit PR et tests,Baye / leads,DOC-012
+R-09,Retard CI / staging,4,4,À réévaluer selon GitHub,Vérifier runs et staging,Baye,DOC-012
+R-14,Non conformité RGPD,3,5,À contrôler,Registre et gate pilote,Estelle,DOC-012
+R-20,Follow-up sans preuves,4,4,Nouveau risque hypothétique,PV issues PR SHA,Soumia,Simulation
