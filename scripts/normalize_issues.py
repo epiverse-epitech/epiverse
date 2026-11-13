@@ -219,12 +219,19 @@ def main():
             req("PATCH",f"/repos/{REPO}/issues/{number}",payload)
             SUCCESS.append(number)
         except Exception as e:
-            # Preserve all other accessible fields if native Type or org fields require other privileges.
+            # Differentiate unsupported org Priority from unsupported native Type.
             try:
-                payload.pop("issue_field_values",None);payload.pop("type",None)
-                req("PATCH",f"/repos/{REPO}/issues/{number}",payload)
-                SUCCESS.append(number);WARN.append(f"#{number}: native Type/Priority not set: {e}")
-            except Exception as ee: FAIL.append(f"#{number}: {ee}")
+                if "issue_field_values" in payload:
+                    payload.pop("issue_field_values",None)
+                    req("PATCH",f"/repos/{REPO}/issues/{number}",payload)
+                    SUCCESS.append(number);WARN.append(f"#{number}: org Priority unavailable: {e}")
+                else:raise e
+            except Exception as ee:
+                try:
+                    payload.pop("type",None)
+                    req("PATCH",f"/repos/{REPO}/issues/{number}",payload)
+                    SUCCESS.append(number);WARN.append(f"#{number}: native Type unavailable: {ee}")
+                except Exception as eee: FAIL.append(f"#{number}: {eee}")
         if idx%10==0:print("PROGRESS",idx+1,"/",len(issues),"ok",len(SUCCESS),"fail",len(FAIL),flush=True)
         time.sleep(0.55)
     print("SUMMARY",json.dumps({"total":len(issues),"updated":len(SUCCESS),"failed":FAIL,"warnings":WARN[:15],"native_priority_field":bool(priofield),"milestones":milestones},ensure_ascii=False),flush=True)
