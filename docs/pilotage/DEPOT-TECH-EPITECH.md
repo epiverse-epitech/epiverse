@@ -29,3 +29,7 @@ git ls-remote epitech refs/heads/develop refs/heads/main
 ```
 
 **Important :** ces commandes ne sont **pas** la preuve d'une exécution. Un run `skipped` n'est pas un push réussi. Le travail documentaire de la [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) n'atteindra `develop` et le miroir qu'après revue et fusion.
+
+## Répartition effective du travail au 13 novembre 2026
+
+La cheffe de projet a indiqué qu'**une autre personne s'occupe du push sur le dépôt Epitech**. La présente PR ne réalise donc pas cette opération. Le responsable du push doit verser l'URL exacte, la branche, le SHA et le run dans [#103](https://github.com/epiverse-epitech/epiverse/issues/103), puis la tâche pourra être vérifiée indépendamment.
