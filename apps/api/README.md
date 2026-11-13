@@ -297,6 +297,25 @@ Clients are identified by IP address, so the API must know how many proxies stan
 - The address limit still applies to login and registration: more than `AUTH_RATE_LIMIT_MAX` (30) students logging in or registering within one minute from the school Wi-Fi would be blocked, whatever their own count. It is set high on purpose: guessing one account is already capped by the account limit, so the address limit only slows down trying many accounts from one address. Raise it if a larger group connects at once. An attacker with many addresses is not stopped by it.
 - Counters live in the memory of each API process: a restart resets them and several instances do not share them. Redis will be needed before running more than one instance.
 
+## Security controls
+
+Each security requirement of the DoD (DOC-008) and of the security register (`docs/security/controle-securite.md`) maps to the tests that prove it (EPI-223). They run in the CI with every other test.
+
+| Requirement | What is checked | Tests |
+|---|---|---|
+| NFR-SEC-001 Passwords never in clear | Argon2id hash, salted, never returned; no password, token, email or hash in the logs of the account flows, even when the mail server fails | `src/security/password.service.spec.ts`, `test/register.e2e-spec.ts`, `test/password-reset.e2e-spec.ts`, `test/no-secrets-in-logs.e2e-spec.ts` |
+| NFR-SEC-002 Access checked by the API | 401 without a valid session (missing, unknown, revoked, expired, closed account); 403 until the current terms of use are accepted; unknown fields refused (`role: 'admin'`); one-time links refused when unknown, expired, used, replaced or of another type | `test/me.e2e-spec.ts`, `test/logout.e2e-spec.ts`, `test/cgu-acceptance.e2e-spec.ts`, `test/student-path.e2e-spec.ts`, `test/validation.e2e-spec.ts`, `test/email-verification.e2e-spec.ts`, `test/password-reset.e2e-spec.ts`, `test/account-tokens.e2e-spec.ts` |
+| NFR-SEC-003 Repeated attempts limited | 429 with `Retry-After` per address and per account and address, students behind one address not blocked together, forged addresses ignored, unknown emails counted alike | `test/rate-limit.e2e-spec.ts`, `test/login-rate-limit.e2e-spec.ts`, `test/register.e2e-spec.ts`, `test/password-reset.e2e-spec.ts`, `test/email-verification.e2e-spec.ts` |
+| FR-AUTH-002 / FR-AUTH-004 Generic answers | Same 401 for an unknown email, a wrong password or a closed account; same 202 for any forgotten-password request | `test/login.e2e-spec.ts`, `test/password-reset.e2e-spec.ts` |
+| NFR-OBS-001 Logs without sensitive data | 5xx answers and logs without internal details; account flows as for NFR-SEC-001 | `test/errors.e2e-spec.ts`, `test/no-secrets-in-logs.e2e-spec.ts` |
+| API-05 Swagger in production and HTTP headers | Swagger off in production unless enabled; `helmet` headers (`nosniff`, frame, referrer and content security policies, no `X-Powered-By`) on every answer, errors included, while the docs stay usable | `test/api-docs.e2e-spec.ts`, `test/security-headers.e2e-spec.ts` |
+
+### Known limits
+
+- Session tokens are random and stored as a hash, but nothing tests MFA or a list of compromised passwords: neither exists yet (issue #18).
+- NFR-SEC-004 (secrets out of Git) is checked by Gitleaks in the CI, not by these tests.
+- Role checks (FR-ROLE-001) will add their own negative tests with the role routes.
+
 ## Testing approach
 
 The API is developed test-first (TDD): a failing test describes the behaviour, then the code makes it pass, then it is cleaned up.
