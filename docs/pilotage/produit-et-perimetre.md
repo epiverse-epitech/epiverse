@@ -1,27 +1,34 @@
-# Le produit EpiVerse et le périmètre retenu
+# EpiVerse — produit et périmètre au 13 novembre 2026
 
-## Résumé en langage simple
-EpiVerse est un réseau social étudiant accessible sur ordinateur et téléphone. Il aide à créer un profil, découvrir des événements et y participer. Un monde virtuel **2.5D**, inspiré des interactions d'Habbo et de VRChat, propose un avatar et une carte de campus. L'objectif académique est d'en livrer une partie **réellement fonctionnelle et testée**, sans prétendre que toutes les idées sont terminées.
+## Présentation courte
+EpiVerse est une plateforme sociale pour étudiants de plusieurs établissements. Elle réunit profils et projets, événements, ressources, mentorat et recrutement dans une application utilisable depuis un navigateur ordinateur ou mobile. Elle comprend aussi un **campus virtuel isométrique 2.5D**, avec avatars et espaces aménageables, présence multijoueur et échanges texte, audio/vidéo de proximité. Les recruteurs et mentors extérieurs disposent de droits limités.
 
-## Trois périmètres distincts
-| Niveau | Ce qu'on veut | Décision |
+**Objectif pédagogique :** préproduction fonctionnelle et testée pour la soutenance du **5 février 2027**. Ce délai est un objectif, **pas** une preuve que tout sera réalisé.
+
+## Parcours de préproduction retenus
+| Parcours | Ce qu'un utilisateur doit pouvoir faire | Conditions |
 |---|---|---|
-| **MVP de démonstration** | Web/mobile Expo, connexion et profil, événements et inscription, socle API, sécurité, CI et tests | **P0**, chemin critique |
-| **POC campus 2.5D** | Avatar personnalisable simple, carte, déplacements, interface alternative accessible | **P0/P1** selon intégration ; un prototype **n'est pas** encore du multijoueur |
-| **Évolutions** | Associations, ressources, mentorat, carrières, notifications, IA, social étendu, 3D/XR et autres modules | **Hors engagement MVP**, prioriser pour après la démo |
+| Étudiant | Compte vérifié, profil, compétences et projets, confidentialité | Campus/établissement et droits contrôlés |
+| Vie de campus | Voir/créer événements, s'inscrire, associations et ressources, demandes de mentorat | Gestion des contenus et signalements |
+| Recrutement | Recruteur externe validé manuellement, offres, candidatures privées, CV/message, états et entretiens vidéo | Visibilité choisie par l'étudiant, permissions strictes |
+| Monde virtuel | Avatar, lieux et chambre personnalisables, présence avec plusieurs utilisateurs, salons, texte et audio/vidéo de proximité | Accès et modération, limitations réseau, mobile, accessibilité |
 
-## Parcours principal à démontrer
-1. L'étudiant ouvre EpiVerse sur le web ou sur mobile.
-2. Il crée un compte et accepte les conditions, puis se connecte.
-3. Il complète un profil de base, avec contrôle de confidentialité.
-4. Il consulte les événements et peut s'inscrire ou se désinscrire.
-5. Il ouvre la scène campus 2.5D dans le navigateur et déplace un avatar.
-6. Les erreurs, permissions et retours utilisateur sont testés.
+## Règles transversales indispensables
+- Accessible sur navigateurs desktop et mobile ; application native/stores **non obligatoire** à la soutenance.
+- La cible de charge est **50 utilisateurs simultanés au total** dans le pilote/test de préproduction, pas 50 par salle.
+- Le monde n'est pas un simple plan 2D statique, mais le POC actuel n'est **pas encore** un monde multijoueur livré.
+- Prévoir une interface alternative accessible aux interactions spatiales.
+- Pas d'ouverture publique ni de pilotes avec vraies données avant conformité et sécurité minimales.
 
-## Limites explicites
-- Les **36 modules** sont la vision, **pas** 36 fonctionnalités garanties en février 2027.
-- Les avatars visibles ne prouvent pas le multijoueur, la messagerie ou la modération.
-- L'IA de recommandation s'appuie d'abord sur des règles et données synthétiques ; pas d'entraînement personnalisé avant collecte légitime et volume utile.
-- Une application web rendue dans Expo ne démontre pas seule l'usage mobile natif ; tester sur appareil.
+## Hors engagement de la préproduction de février
+Les autres domaines de la vision à 36 modules (finance, logement, santé, DAO, XR/VR, stockage illimité, etc.), les stores mobiles, les imports libres de modèles 3D et un moteur IA avancé entraîné sur données réelles. Ils restent visibles dans la roadmap mais **ne doivent pas être déclarés terminés**.
 
-Décision de périmètre approuvée par Estelle dans la reconstruction du 13/11 ; arbitrer tout ajout contre délai, qualité et risque.
+## Développement constaté
+- `develop` : socle API NestJS/Prisma, Docker, Mongo/Redis, tests backend et CI.
+- `apps/app` : pas d'application intégrée vérifiée, uniquement README sur `develop`.
+- Campus : POC Phaser/avatars dans une branche distincte.
+- Plusieurs PR backend et sécurité restent ouvertes.
+
+**Risque majeur :** charge prévisionnelle et dépendances. La capacité et les heures disponibles de chacun doivent être vérifiées avant de garantir le périmètre de février.
+
+Sources : compte rendu consolidé du 04/11/2026, consignes ESP/BUILD, décisions d'équipe du 13/11 et dépôt GitHub.
