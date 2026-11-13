@@ -2,6 +2,10 @@
 
 **Pour travailler : GitHub (source officielle) et Teams (réunions).** Jira supprimé, Notion obsolète.
 
+## Remise au pédagogue — point d’entrée unique
+
+**[Ouvrir la grille de contrôle des 10 exigences et les preuves FU2](REMISE-PEDAGOGUE-FU2.md)** : état réel des milestones, 12 issues FU2 encore ouvertes, 19 archives (non livrées), PR fusionnées, CRAv, KPI, SMART, écarts avec SHA, CI et dépôt Tech. Les documents de la **PR #147** restent en attente de revue et de fusion.
+
 ## Accès en un clic
 
 | Besoin | Ouvrir |
