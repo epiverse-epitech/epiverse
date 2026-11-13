@@ -1,5 +1,9 @@
 # Reporting EPITECH / BUILD — EpiVerse
 
+**[Export des 163 issues et champs natifs](inventaire-issues-2026-11-13.csv)** — snapshot pour vérifier assignees, type, labels, jalons et temps de travail.
+
+**[Historique des 30 PR et du code réellement intégré](../docs/pilotage/historique-livrables.md)** — distinguer fait/en branche/futur.
+
 Le jury peut retrouver les traces de décisions, écarts, KPI, roadmap et rétrospective ici. Le code réel est dans `apps/`, `infra/` et les branches/PR GitHub.
 
 | Document | Utilité |
