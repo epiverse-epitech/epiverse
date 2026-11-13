@@ -1,4 +1,5 @@
 name: EpiVerse — Relier exigences et tâches aux epics
+# Test de l'API parent/sous-issue après correction de la pagination
 on:
   push:
     branches: [docs/pilotage-fu2-reconstruction-2026-11-13]
