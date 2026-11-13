@@ -30,4 +30,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           DRY_RUN: 'false'
+          ISSUE_NUMBERS: '189,190,191'
         run: python3 scripts/normalize_issues.py
