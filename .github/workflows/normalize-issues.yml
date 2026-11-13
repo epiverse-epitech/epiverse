@@ -1,0 +1,33 @@
+name: EpiVerse — Synchroniser le suivi de toutes les issues
+
+on:
+  push:
+    branches:
+      - docs/pilotage-fu2-reconstruction-2026-11-13
+    paths:
+      - 'scripts/normalize_issues.py'
+      - '.github/workflows/normalize-issues.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: epiverse-normalize-issues
+  cancel-in-progress: false
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntaxe du script
+        run: python3 -m py_compile scripts/normalize_issues.py
+      - name: Normaliser les issues, jalons et champs permis
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DRY_RUN: 'false'
+        run: python3 scripts/normalize_issues.py
