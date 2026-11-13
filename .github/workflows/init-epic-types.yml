@@ -1,4 +1,5 @@
 name: EpiVerse — Initialiser les types des 3 epics
+# Reprise après correction du script Python
 on:
   push:
     branches:
