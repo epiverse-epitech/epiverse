@@ -1,33 +1,35 @@
-# Mode d'emploi de GitHub et Teams — rapide
+# GitHub + Teams — mode d'emploi en 1 minute
 
-## S'organiser au quotidien
-- **GitHub Issues** : une tâche = un résultat testable ; un responsable ; heures initiales, réelles, restantes ; risque ; date ; dépendance ; preuve.
-- **GitHub Pull Requests** : apporter le changement, faire relire, passer les tests, fusionner.
-- **GitHub Actions** : voir les tests automatiques ; ne pas confondre succès et tests ignorés.
-- **GitHub Project** (à configurer dans l'interface) : tableau de bord par statut, responsable et priorité.
-- **Teams** : discuter, faire les points, partager la démo. Reporter la décision finale sur GitHub.
-- **docs/pilotage** : comptes rendus, suivi, risques, décisions, écarts, KPI, jalons.
+**Deux types d'issues**, pour ne pas mélanger les besoins et le travail :
 
-## Statuts attendus
-1. **Backlog** : tâche identifiée.
-2. **Prête** : contexte, responsable, acceptation et estimation clairs.
-3. **En cours** : développement/documentation engagé.
-4. **Bloquée** : raison et responsable du déblocage connus.
-5. **En revue** : PR soumise, tests et avis attendus.
-6. **À valider** : tests OK, validation produit attendue.
-7. **Terminée** : DoD satisfaite avec preuve.
+| Type | Question | Que mettre à jour ? |
+|---|---|---|
+| **Exigence** (`type:exigence`) | Qu'est-ce qui doit marcher ? | Critères, démo, tests, validations, liens vers tâches |
+| **Tâche** (`type:tache`) | Qui fait quoi, quand et en combien d'heures ? | Responsable, heures prévues, **réelles**, ETC restant, risque, PR/CI |
 
-## Titres et priorités
-- `[P0][FU2] Prouver le dépôt Tech` : indispensable à la revue.
-- `[P0][APP] Créer le squelette Expo` : indispensable au chemin MVP.
-- `[P1][CAMPUS] Ajouter le déplacement tactile` : amélioration MVP.
-- `[P2][IA] Tester la recommandation` : après fondations.
+En complément :
+- **Code** : source + README + documents `docs/pilotage`.
+- **Pull requests** : revue indépendante et fusion après tests.
+- **Actions** : vérifier la réussite **effective** des unitaires/E2E (et pas seulement `success` global).
+- **Teams** : échanges, réunions, puis report des décisions dans le journal GitHub.
+- **Projects** : tableau d'équipe à créer/paramétrer dans l'interface ; les labels permettent déjà de filtrer sans Project.
 
-## Rituel hebdomadaire
-- Chaque membre : mettre à jour **heures faites / restantes**, blocages et liens PR.
-- Lead : relire et vérifier les dépendances.
-- Estelle : décisions, KPI, risques, CRAv, reste à faire.
-- Le jour du follow-up : ouvrir la page FU et les preuves, pas 15 outils différents.
+## Statuts des tâches
+**À faire → Prête → En cours → Bloquée (si problème) → En revue → À valider → Terminée.**
 
-## Conservation des anciennes issues
-Fermer les tickets anciens avec le motif « backlog remplacé le 13/11/2026 ». Ne jamais supprimer les commits, branches ou PR. Les numéros historiques restent consultables dans GitHub.
+Ne jamais marquer une tâche « terminée » sans preuve de sa DoD.
+
+## Chiffrage
+- **Prévu** : estimation de départ.
+- **Réel** : heures effectivement déclarées.
+- **ETC / reste** : nouvelle estimation de ce qu'il reste.
+- **Prévision totale = réel + ETC** ; écart = prévision totale − prévu.
+
+## Chaque semaine
+1. Chaque membre met à jour les heures et blocages.
+2. Les leads font le point sur les PR et dépendances.
+3. Estelle actualise CRAv, KPI, jalons, SMART, décisions et risques.
+4. La tâche peut être fermée si la preuve est là ; l'exigence reste ouverte jusqu'à validation métier.
+
+## Tickets d'origine
+**54 exigences ont été rouvertes**, 19 doublons archivés avec leurs remplaçants. **85 tâches** suivent le travail. Aucun commit, branche ni PR supprimés. Voir [correspondance](migration-issues.md).
