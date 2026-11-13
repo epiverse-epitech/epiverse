@@ -139,7 +139,11 @@ export class PasswordResetService {
         "Si vous n'avez rien demandé, ignorez ce message : votre mot de passe ne change pas.",
       ].join('\n'),
     });
-    await this.tokens.cancelOthers(user.id, 'password_reset', token);
+    await this.tokens
+      .cancelOlder(user.id, 'password_reset', token)
+      .catch(() => {
+        this.logger.error('Older reset links could not be cancelled');
+      });
   }
 
   private async sendNotice(email: string): Promise<void> {

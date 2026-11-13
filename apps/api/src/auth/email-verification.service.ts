@@ -106,6 +106,10 @@ export class EmailVerificationService {
         "Si vous n'avez pas créé de compte, ignorez ce message.",
       ].join('\n'),
     });
-    await this.tokens.cancelOthers(userId, 'email_verification', token);
+    await this.tokens
+      .cancelOlder(userId, 'email_verification', token)
+      .catch(() => {
+        this.logger.error('Older verification links could not be cancelled');
+      });
   }
 }

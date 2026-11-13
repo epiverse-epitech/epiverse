@@ -9,7 +9,7 @@ import { generateSessionToken, hashSessionToken } from './session-token';
 export class AccountTokens {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Creates a token. The previous ones still work until cancelOthers is
+  // Creates a token. The previous ones still work until cancelOlder is
   // called, once the new link has really been sent.
   async issue(
     userId: number,
@@ -28,21 +28,24 @@ export class AccountTokens {
     return token;
   }
 
-  // Cancels every other unused token of this type, so that only the latest
+  // Cancels the older unused tokens of this type, so that only the latest
   // link sent works. Called after sending: if the email fails, the user keeps
-  // a link that works.
-  async cancelOthers(
+  // a link that works. Only older ones: when two sends finish in the wrong
+  // order, the newest link must survive.
+  async cancelOlder(
     userId: number,
     type: auth_token_type,
     keptToken: string,
   ): Promise<void> {
+    const kept = await this.prisma.auth_token.findUnique({
+      where: { token_hash: hashSessionToken(keptToken) },
+      select: { id: true },
+    });
+    if (!kept) {
+      return;
+    }
     await this.prisma.auth_token.updateMany({
-      where: {
-        user_id: userId,
-        type,
-        used_at: null,
-        token_hash: { not: hashSessionToken(keptToken) },
-      },
+      where: { user_id: userId, type, used_at: null, id: { lt: kept.id } },
       data: { used_at: new Date() },
     });
   }
