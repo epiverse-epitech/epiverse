@@ -51,3 +51,7 @@ Voir [reste à faire par issue](reste-a-faire.md), [risques](risques.md), [preuv
 - Pour sécurité/auth/accès/données/déploiement : revue du lead + Estelle ou Ousmane selon domaine.
 - Un pipeline vert n'implique pas automatiquement que le métier fonctionne.
 - Si bug critique, restauration/sécurité non maîtrisée ou tests essentiels ignorés : ne pas fusionner.
+
+## Modèle de saisie par issue
+
+Les valeurs **heures réelles** et **risques résiduels** sont à saisir dans l'issue par le propriétaire avant acceptation ; voir la fiche complète ci-dessus. Les chiffres globaux du [reste à faire](reste-a-faire.md) sont des estimations et ne remplacent pas les pointages.
