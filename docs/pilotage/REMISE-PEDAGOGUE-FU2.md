@@ -57,3 +57,12 @@ Les **15 PR fusionnées** constatées sur l'historique de code jusqu'au 05/11 so
 - Les documents FU2 rédigés avant la séance ne sont pas une réunion tenue ; aucun participant ou avis pédagogique n'est inventé.
 - Une PR ouverte prouve un travail soumis à revue, pas un code validé. Une CI `success` peut masquer des jobs `skipped` ; inspecter les jobs pertinents.
 - [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) est le support canonique de la remise documentaire ; **le pack #195 est une reconstruction redondante non destinée à fusionner**.
+
+## Complément explicite aux remarques du pédagogue (13/11)
+
+- **README et résumé :** [README racine](../../README.md) réécrit avec la finalité « réseau social de campus, Habbo/VRChat », l'expérience attendue, l'état prouvé et les limites.
+- **KPI de réactivité, accessibilité et performance globale :** [définitions](KPI.md) et [protocole de mesure reproductible](PROTOCOLE-MESURES.md). **Aucune mesure produit réelle n'a été fabriquée** ; seuls les KPI de gestion ont des points historiques vérifiés.
+- **60 FPS :** cible contextualisée avec machine, rafraîchissement, scène, avatars, résolution, durée, FPS p5 et frame-time p95. Pas de validation sans relevé.
+- **DoD :** [fiche opérationnelle](DoD.md) intégrant estimation initiale, réel déclaré, ETC, EAC, écart, risques et preuve de clôture.
+- **Revues tenues :** [chronologie source du planning](CHRONOLOGIE-REVUES-2026.md) et [CRAv](CRAv-modele.md), avec doublon 2D possible.
+- **Dépôt Tech exact :** [T-ESP-901-LYN-9-1-T-ESP-901-15 — procédure](DEPOT-TECH-EPITECH.md). **Pas de push attesté** faute d'accès au dépôt scolaire dans la connexion actuelle.
