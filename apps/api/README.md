@@ -236,6 +236,7 @@ A forgotten password is replaced through a link sent by email (EPI-60, FR-AUTH-0
 - The account lookup and the email happen after the response, so neither the content nor the timing reveals which accounts exist.
 - The token, the password and the sessions change in one transaction.
 - A reset lifts the login limit for this account from this address, so the owner can sign in at once.
+- A reset also confirms the email address (`email_verified_at`), since the link proved access to the mailbox; an earlier date is kept.
 
 ### Known limits
 

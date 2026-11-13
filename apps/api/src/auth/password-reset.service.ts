@@ -73,6 +73,11 @@ export class PasswordResetService {
       if (count !== 1) {
         return null;
       }
+      // The link reached the mailbox, so the address is confirmed too.
+      await tx.users.updateMany({
+        where: { id: userId, email_verified_at: null },
+        data: { email_verified_at: new Date() },
+      });
       // Whoever got into the account is signed out too.
       await tx.user_session.updateMany({
         where: { user_id: userId, revoked_at: null },

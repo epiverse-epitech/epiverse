@@ -209,6 +209,30 @@ describe('Password reset (e2e)', () => {
       await login(NEW_PASSWORD).expect(200);
     });
 
+    it('confirms the email address, since the link proved access to the mailbox', async () => {
+      await reset(await requestToken()).expect(204);
+
+      const user = await prisma.users.findUniqueOrThrow({
+        where: { id: userId },
+      });
+      expect(user.email_verified_at).toBeInstanceOf(Date);
+    });
+
+    it('keeps the first verification date of an address already confirmed', async () => {
+      const verifiedAt = new Date('2026-01-01T00:00:00Z');
+      await prisma.users.update({
+        where: { id: userId },
+        data: { email_verified_at: verifiedAt },
+      });
+
+      await reset(await requestToken()).expect(204);
+
+      const user = await prisma.users.findUniqueOrThrow({
+        where: { id: userId },
+      });
+      expect(user.email_verified_at).toEqual(verifiedAt);
+    });
+
     it('stores the new password as a hash', async () => {
       await reset(await requestToken()).expect(204);
 
