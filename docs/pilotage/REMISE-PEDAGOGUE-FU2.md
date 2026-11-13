@@ -66,3 +66,10 @@ Les **15 PR fusionnées** constatées sur l'historique de code jusqu'au 05/11 so
 - **DoD :** [fiche opérationnelle](DoD.md) intégrant estimation initiale, réel déclaré, ETC, EAC, écart, risques et preuve de clôture.
 - **Revues tenues :** [chronologie source du planning](CHRONOLOGIE-REVUES-2026.md) et [CRAv](CRAv-modele.md), avec doublon 2D possible.
 - **Dépôt Tech exact :** [T-ESP-901-LYN-9-1-T-ESP-901-15 — procédure](DEPOT-TECH-EPITECH.md). **Pas de push attesté** faute d'accès au dépôt scolaire dans la connexion actuelle.
+
+## Pièces additionnelles de remise — commit du 13/11
+
+- **CRAv de chaque ligne de réunion du planning :** [meeting 16/09](CRAv-2026-09-16-meeting.md) · [Sprint 01 24/09](CRAv-2026-09-24-sprint01.md) · [équipe 2D 02/10](CRAv-2026-10-02-equipe-2d.md) · [FU1](FU1-2026-10-09.md) · [Sprint Review 09/10](CRAv-2026-10-09-sprint-review.md) · [FU2](FU2-2026-11-13.md). Sources, incertitudes et absences de PV sont explicites.
+- **Graphique de KPI daté :** [tendance PR fusionnées, 3 relevés](KPI-TENDANCE-PR.md) — indicateur gestion, pas % terminé.
+- **Matrice complète d'analyse des SMART documentaires et six corrections pédagogiques :** [SMART FU1 — vérification](SMART-FU1-MATRICE-VALIDATION.md). Les SMART officiellement convenus au FU1 ne peuvent pas être garantis sans les notes originales.
+- **Dépôt Tech :** le push sur `T-ESP-901-LYN-9-1-T-ESP-901-15` **est confié à une autre personne** par la cheffe de projet. Ce dossier n'en déclare pas l'exécution et ne l'utilise pas comme critère pour fusionner la correction *documentaire*.
