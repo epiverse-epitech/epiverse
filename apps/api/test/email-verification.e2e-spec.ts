@@ -24,13 +24,8 @@ describe('Email verification (e2e)', () => {
   let currentCgu: string;
 
   beforeAll(async () => {
-    // Email requests are limited to 3 per account here. One trusted proxy
-    // lets each registration come from its own address, so the limit on
-    // registrations never mixes tests.
-    app = await createTestApp(100, {
-      LOGIN_FAILURE_MAX: 3,
-      TRUST_PROXY_HOPS: 1,
-    });
+    // Email requests are limited to 3 per account here.
+    app = await createTestApp(100, { LOGIN_FAILURE_MAX: 3 });
     prisma = app.get(PrismaService);
     mailer = app.get(Mailer) as FakeMailer;
     currentCgu = app.get(ConfigService).get<string>('CGU_VERSION')!;
@@ -49,14 +44,9 @@ describe('Email verification (e2e)', () => {
     await app.close();
   });
 
-  let nextIp = 1;
   const register = (email: string) =>
     request(app.getHttpServer())
       .post('/api/auth/register')
-      .set(
-        'X-Forwarded-For',
-        `10.5.${Math.floor(nextIp / 250)}.${nextIp++ % 250}`,
-      )
       .send({
         email,
         password: 'Lovelace1815Analytical',
@@ -64,7 +54,7 @@ describe('Email verification (e2e)', () => {
         lastName: 'Lovelace',
         cguVersion: currentCgu,
       })
-      .expect(202);
+      .expect(201);
 
   const verify = (token: string) =>
     request(app.getHttpServer()).post('/api/auth/email/verify').send({ token });

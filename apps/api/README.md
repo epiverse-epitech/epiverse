@@ -157,16 +157,16 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 
 | Response | When |
 |---|---|
-| 202 `Check your email to continue` | Account created, or the address is already used. The answer is the same, so registration reveals no account: the new account gets a confirmation link, the owner of an existing one gets a notice by email (nothing if that account is closed). |
+| 201 with `{ id, email, firstName, lastName }` | Account created. `id` is the public UUID, never the internal numeric id. |
 | 400 | Invalid or unknown field. No account is created. |
-| 429 with `Retry-After` | Too many attempts from the address (`@AuthRateLimit()`), or too many registrations of one email from one address (`LOGIN_FAILURE_MAX` per `LOGIN_FAILURE_WINDOW_MINUTES`), whatever their outcome. |
+| 409 `An account already exists with this email` | The email is taken, whatever its letter case. Nothing about the existing account is returned. |
+| 429 | Too many attempts (`@AuthRateLimit()`). |
 
 - The unique index on `lower(email)` decides between duplicates, so two simultaneous requests cannot create two accounts.
-- The password is hashed in both cases and emails leave after the response, so the response time does not reveal which addresses are used either.
-- The client gets no account data: after registering, it logs in and reads `GET /api/auth/me`.
 
 ### Known limits
 
+- The 409 tells whether an email is registered (account enumeration). Accepted for now and slowed down by the rate limit. Sending an email to the existing owner instead would remove it, once email delivery exists (EPI-53).
 - `GET /api/auth/cgu` returns `{ version }`, the current terms of use version (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` are deployed together; existing accounts then accept the new version through `POST /api/auth/cgu/accept` (see Sessions).
 
 ## Sessions

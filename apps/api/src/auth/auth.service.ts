@@ -1,13 +1,13 @@
 import {
   BadRequestException,
-  Inject,
+  ConflictException,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordService } from '../security/password.service';
+import { AccountDto } from './dto/account.dto';
 import { CguDto } from './dto/cgu.dto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -18,18 +18,13 @@ import { generateSessionToken, hashSessionToken } from './session-token';
 import { isOpenAccount } from './account-state';
 import { EmailVerificationService } from './email-verification.service';
 import {
-  EMAIL_REQUEST_ATTEMPTS,
   LoginAttempts,
   loginAttemptKey,
-  TooManyAttemptsException,
   TooManyLoginFailuresException,
 } from '../security/login-attempts';
-import { Mailer } from '../mail/mailer';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
-
   // Verified when the email is unknown, so that both failures take the same
   // time and the response time does not reveal which emails have an account.
   private readonly unknownUserHash: Promise<string>;
@@ -40,9 +35,6 @@ export class AuthService {
     private readonly config: ConfigService<EnvironmentVariables, true>,
     private readonly loginAttempts: LoginAttempts,
     private readonly emailVerification: EmailVerificationService,
-    private readonly mailer: Mailer,
-    @Inject(EMAIL_REQUEST_ATTEMPTS)
-    private readonly emailRequests: LoginAttempts,
   ) {
     this.unknownUserHash = passwords.hash('unknown-user-placeholder');
   }
@@ -73,27 +65,11 @@ export class AuthService {
     });
   }
 
-  // The answer is the same whether the address was free or already used, so
-  // registration reveals no account. The outcome goes by email: a link to
-  // confirm the new account, or a notice to the owner of the existing one.
-  async register(dto: RegisterDto, clientIp: string): Promise<void> {
+  async register(dto: RegisterDto): Promise<AccountDto> {
     // The terms may have changed while the user was reading them: only the
     // current version can be accepted.
     const cguVersion = this.checkCurrentCgu(dto.cguVersion);
 
-    // Counted whatever the outcome, so a 429 reveals nothing either, and
-    // nobody can flood an address with notices.
-    const retryAfterSeconds = this.emailRequests.start(
-      `register\n${clientIp}\n${dto.email}`,
-    );
-    if (retryAfterSeconds > 0) {
-      throw new TooManyAttemptsException(
-        'Too many emails requested, try again later',
-        retryAfterSeconds,
-      );
-    }
-
-    // Hashed in both cases, so the response time is the same.
     const passwordHash = await this.passwords.hash(dto.password);
 
     try {
@@ -109,10 +85,24 @@ export class AuthService {
             create: { version: cguVersion },
           },
         },
-        select: { id: true, email: true },
+        // Only public columns are read back, so the hash never leaves the database.
+        select: {
+          id: true,
+          public_id: true,
+          email: true,
+          first_name: true,
+          last_name: true,
+        },
       });
 
       this.emailVerification.sendInBackground(account.id, account.email);
+
+      return {
+        id: account.public_id,
+        email: account.email,
+        firstName: account.first_name,
+        lastName: account.last_name,
+      };
     } catch (error) {
       // The unique index on lower(email) is the real guard: checking before
       // inserting would let two simultaneous requests both pass.
@@ -120,37 +110,12 @@ export class AuthService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
-        this.noticeExistingAccount(dto.email).catch(() => {
-          this.logger.error('A registration notice could not be sent');
-        });
-        return;
+        throw new ConflictException(
+          'An account already exists with this email',
+        );
       }
       throw error;
     }
-  }
-
-  // Tells the owner of an address already in use. Nothing chosen by the person
-  // who tried to register goes into the text.
-  private async noticeExistingAccount(email: string): Promise<void> {
-    const owner = await this.prisma.users.findFirst({
-      where: { email, is_active: true, deleted_at: null },
-      select: { id: true },
-    });
-    if (!owner) {
-      return;
-    }
-    await this.mailer.send({
-      to: email,
-      subject: 'Un compte EpiVerse existe déjà avec cette adresse',
-      text: [
-        'Bonjour,',
-        '',
-        "Quelqu'un vient d'essayer de créer un compte EpiVerse avec votre adresse e-mail, qui en a déjà un.",
-        '',
-        "Si c'était vous, connectez-vous avec votre mot de passe, ou utilisez « Mot de passe oublié » sur la page de connexion.",
-        "Si ce n'était pas vous, vous pouvez ignorer ce message : votre compte n'a pas changé.",
-      ].join('\n'),
-    });
   }
 
   // clientIp is the address seen through the trusted proxies (TRUST_PROXY_HOPS).

@@ -12,6 +12,7 @@ import {
   ApiAcceptedResponse,
   ApiBearerAuth,
   ApiBadRequestResponse,
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
@@ -40,7 +41,7 @@ import { CurrentAccountDto } from './dto/current-account.dto';
 import { AuthService } from './auth.service';
 import { AccountDto } from './dto/account.dto';
 import { CguDto } from './dto/cgu.dto';
-import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
+import { RegisterDto } from './dto/register.dto';
 import { AuthRateLimit } from '../security/auth-rate-limit.decorator';
 import { LoginDto } from './dto/login.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
@@ -63,22 +64,9 @@ export class AuthController {
 
   @AuthRateLimit()
   @Post('register')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @ApiAcceptedResponse({
-    type: RegisterResponseDto,
-    description:
-      'Same answer whether the address was free or already used; the outcome goes by email.',
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid or unknown field, or outdated terms of use version.',
-  })
-  @ApiTooManyRequestsResponse({ description: 'Too many attempts.' })
-  async register(
-    @Body() body: RegisterDto,
-    @Ip() clientIp: string,
-  ): Promise<RegisterResponseDto> {
-    await this.auth.register(body, clientIp);
-    return { message: 'Check your email to continue' };
+  @ApiCreatedResponse({ type: AccountDto, description: 'Account created.' })
+  register(@Body() body: RegisterDto): Promise<AccountDto> {
+    return this.auth.register(body);
   }
 
   @AuthRateLimit()

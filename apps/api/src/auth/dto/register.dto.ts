@@ -47,9 +47,3 @@ export class RegisterDto {
   @MaxLength(20)
   cguVersion!: string;
 }
-
-// The answer is the same whether the address was free or already used.
-export class RegisterResponseDto {
-  @ApiProperty({ example: 'Check your email to continue' })
-  message!: string;
-}
