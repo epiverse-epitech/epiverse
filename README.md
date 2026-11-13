@@ -4,6 +4,25 @@
 
 **Objectif académique : une préproduction démontrable et testée le 5 février 2027.** Ce n'est pas une version déjà terminée.
 
+## Résumé du projet — présentation pédagogique (50 mots)
+
+EpiVerse est un réseau social étudiant avec campus virtuel 2.5D, inspiré d'Habbo et de VRChat. Les utilisateurs disposent de profils et avatars, découvrent événements, associations, ressources et opportunités de carrière, rencontrent mentors et étudiants, puis interagissent dans des espaces virtuels. Web et mobile sont visés ; le multijoueur reste à développer.
+
+## Expérience attendue et critères de démonstration
+
+Le **cœur du produit** associe une plateforme de services étudiants et un **monde social interactif**, plutôt qu'une simple carte de navigation. La version cible doit permettre :
+
+1. **Identité** : créer un compte, gérer son profil et les droits d'accès, choisir/personnaliser un avatar ;
+2. **Vie étudiante** : découvrir un événement, s'y inscrire, rejoindre une association, consulter des ressources et contacter un mentor ;
+3. **Carrière** : consulter des offres, candidater et échanger avec les acteurs autorisés ;
+4. **Campus social 2.5D** : se déplacer, voir d'autres avatars en temps réel, rejoindre des espaces et utiliser des interactions textuelles ; audio/vidéo sous conditions de sécurité, de performance et de capacité.
+
+**Ce qui est acquis** : fondations API, base de données, Docker, tests CI backend et premier POC Phaser en branche. **Ce qui reste à prouver** : application intégrée, multijoueur, performances du campus, accessibilité, déploiement, dépôt Tech Epitech. Des maquettes n'équivalent pas à une fonction implémentée.
+
+**Attention technique — 13/11/2026 :** la [PR #194](https://github.com/epiverse-epitech/epiverse/pull/194) propose un front React/Vite, tandis que [#113](https://github.com/epiverse-epitech/epiverse/issues/113) prévoit Expo/React Native Web. La décision finale de compatibilité web/mobile doit être formalisée, non supposée.
+
+**Dossier pédagogique direct :** [contrôle des dix exigences FU2](docs/pilotage/REMISE-PEDAGOGUE-FU2.md) · [protocole KPI produit](docs/pilotage/PROTOCOLE-MESURES.md) · [Definition of Done](docs/pilotage/DoD.md) · [code review indépendante #39](https://github.com/epiverse-epitech/epiverse/pull/39) · [CI backend](https://github.com/epiverse-epitech/epiverse/actions/runs/42202615403).
+
 ## Comprendre en 30 secondes
 
 | Question | Réponse |
