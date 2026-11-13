@@ -12,7 +12,7 @@
 | **Priority** (champ d'organisation) | **Non complété en natif** à ce jour : la connexion ne récupère pas l'identifiant du champ d'organisation. | En attendant, le label `prio:P0/P1/P2` est la source fiable. Pour renseigner Priority nativement, utiliser les paramètres du champ de l'organisation ou une connexion disposant de la permission `Issue Fields`. |
 | **Projects** | Tableau GitHub Project V2 **non encore créé** depuis cette connexion. | Créer le Project commun dans l'interface de l'organisation, puis ajouter les issues. |
 | **Milestone** | Six jalons créés et associés, dont FU2, S9/FU3, FU3, S10, Futur et Archives. | Ne pas confondre date du jalon et promesse de livraison. |
-| **Relationships** | Parent/sous-issue native en cours de synchronisation. | #189 préproduction → #192 exigences et #193 tâches ; #190 futur ; #191 archives. |
+| **Relationships** | Hiérarchie parent/sous-issue native **vérifiée**, avec conservation des liens tâches → exigences déjà existants. | #189 préproduction → #192 exigences et #193 tâches ; #190 futur ; #191 archives. |
 | **Development** | Ne peut montrer de PR que lorsqu'une PR existe et est réellement reliée. | Ne **pas inventer** de PR pour une tâche future. Références fiables : #45 pour inscription, #147 pour documents. |
 | **Notifications** | Préférence **personnelle** du compte GitHub, pas un champ de pilotage. | Chaque utilisateur règle ses notifications ; aucune valeur d'équipe à renseigner. |
 
@@ -29,6 +29,11 @@
 - **Tâche** : responsable unique, priorité, estimation, réalisé **déclaré ou reconstitué et identifié**, ETC, risque, preuve.
 - **Epic** : regroupement sans heures additionnelles.
 - **Archive** : ancien ticket fermé en doublon, avec historique consultable. Pas une réalisation achevée.
+
+## Audit de complétude des métadonnées
+Le 13/11 : **163 issues contrôlées, 163 avec responsable, labels, Type et Milestone natifs**. Les relations se répartissent sous #189 (préproduction), #190 (futur), #191 (archives), #192 (exigences) et #193 (tâches non déjà rattachées à une exigence). Les 3 regroupements racines n'ont pas de parent, ce qui est volontaire.
+
+[Inventaire CSV des 163 issues](../../reporting/inventaire-issues-2026-11-13.csv).
 
 ## Chiffres de travail
 - **85 tâches** de réalisation ; **54 exigences** historiques actives ; **19 archives**.
