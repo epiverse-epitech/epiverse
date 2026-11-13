@@ -21,3 +21,13 @@ Une friction = ce qui était demandé, la réalité constatée, le document ou s
 - Les états sont ouverts jusqu'au contrôle du résultat.
 - Ne pas remplacer l'absence d'essai réel par une phrase disant « corrigé ».
 - Le dossier `/reporting` reprend ce journal dans le format attendu par BUILD.
+
+## Écarts complémentaires détectés pendant l'audit du 13/11
+
+| Écart | Observation et impact | Correction versionnée (documentation source) | État actuel |
+|---|---|---|---|
+| E12 | L'application cible était décrite comme Expo/React Native Web ; la nouvelle [PR #194](https://github.com/epiverse-epitech/epiverse/pull/194) prépare **React/Vite**. Le choix n'est pas harmonisé. | [FU2, clarification et renvoi vers #113 — commit f3fff91](https://github.com/epiverse-epitech/epiverse/commit/f3fff91bf26125d8d723dce90d7af93ed517e539) | **Écart d'architecture ouvert** jusqu'à ADR et validation des clients web/mobile. La correction ne concerne que le reporting |
+| E13 | Le pack simulé de 34 tâches en [PR #195](https://github.com/epiverse-epitech/epiverse/pull/195) créait une seconde source de suivi alors que 163 issues sont déjà structurées. | [Index de remise unique — commit 8004ca9](https://github.com/epiverse-epitech/epiverse/commit/8004ca9616de341c8aa048b8817cbe1e278ad5da) ; [PR #195 fermée sans fusion](https://github.com/epiverse-epitech/epiverse/pull/195) | **Doublon documentaire neutralisé** ; relecture et fusion de #147 encore nécessaires |
+| E14 | FU1 est présent au calendrier et en CRAv, mais absent des **milestones natifs** du dépôt. Les 19 issues closes appartiennent aux **archives**, non à des fonctionnalités terminées. | [Jalons corrigés — commit 1094fbf](https://github.com/epiverse-epitech/epiverse/commit/1094fbf4fc115eaadd4e499eb37a80140b977b14) | **À finaliser :** milestone historique FU1 à créer/associer via GitHub, sans fausse clôture ; suivi [#105](https://github.com/epiverse-epitech/epiverse/issues/105) |
+
+**Attention** : les liens de commits ci-dessus modifient réellement la **documentation** ; ils ne sont pas des tests d'intégration ou des correctifs de l'application.
