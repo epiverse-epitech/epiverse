@@ -1,4 +1,4 @@
-name: EpiVerse — Initialiser les types des 3 epics
+name: EpiVerse — Initialiser les types des nouveaux regroupements
 # Reprise après correction du script Python
 on:
   push:
@@ -23,6 +23,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          ISSUE_NUMBERS: '189,190,191'
+          ISSUE_NUMBERS: '192,193'
           DRY_RUN: 'false'
         run: python3 scripts/normalize_issues.py
