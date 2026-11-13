@@ -18,3 +18,5 @@
 3. Point 2D du 02/10 : déterminer si une ou deux séances.
 4. FU1 et Sprint Review du 09/10 : récupérer PV et **liste originale** des SMART, ne pas la remplacer par les propositions reconstruites.
 5. FU2 : rédiger le PV avec les faits réellement constatés.
+
+**Précision de transcription :** le planning affiche « Julian » dans la réunion du 16/09 ; l'orthographe et l'identité du membre doivent être rapprochées de l'OBS/RACI avant validation.
