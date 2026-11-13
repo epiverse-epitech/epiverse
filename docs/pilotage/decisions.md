@@ -27,3 +27,12 @@ Une décision peut être **actée** même si son application technique reste à 
 - URL Figma de référence, versions approuvées et appareils de test.
 - Hébergement, architecture RTC, budget, domaine, staging et coût des médias.
 - Objectifs SMART réellement actés au FU1 ; date du document de référence à retrouver.
+
+## Changements de méthode **actés dans GitHub** lors de la remise
+
+| Date | Fait vérifiable | Portée |
+|---|---|---|
+| 13/11/2026 | [PR #195 fermée sans fusion](https://github.com/epiverse-epitech/epiverse/pull/195) pour doublon de suivi | Une seule PR documentaire de référence, la #147 ; historique conservé |
+| 13/11/2026 | [Index pédagogique consolidé dans #147](REMISE-PEDAGOGUE-FU2.md) | Les dix exigences et preuves sont regroupées, sans déclarer de faux achèvements |
+
+**Décision produit non prise :** le choix Expo/React Native Web contre React/Vite reste à arbitrer avec les responsables ; ce document ne constitue pas cette validation.
