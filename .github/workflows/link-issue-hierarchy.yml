@@ -1,5 +1,5 @@
 name: EpiVerse — Relier exigences et tâches aux epics
-# Test de l'API parent/sous-issue après correction de la pagination
+# Synchronisation contrôlée de la hiérarchie native, avec préservation des liens valides
 on:
   push:
     branches: [docs/pilotage-fu2-reconstruction-2026-11-13]
@@ -22,6 +22,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          MAX_LINKS: '3'
+          MAX_LINKS: '250'
           DRY_RUN: 'false'
         run: python3 scripts/link_issue_hierarchy.py
