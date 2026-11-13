@@ -1,24 +1,33 @@
-# Campus virtuel 2.5D — périmètre et preuve
+# Monde social isométrique 2.5D — stratégie de livraison
 
-**Référence de code actuelle :** branche [`feature/EPI-459-avatar-poc`](https://github.com/epiverse-epitech/epiverse/tree/feature/EPI-459-avatar-poc/packages/campus).
+**Vision :** un vrai campus social inspiré des interactions d'Habbo/Gather/VRChat, pas uniquement une carte à visiter. Il faut distinguer le POC déjà poussé, l'intégration et le multijoueur réel.
 
-## Ce qui existe dans la branche
-- Module Phaser (cartes/scènes, caméra, événements).
-- Avatar en calques, catalogue d'apparences et animations provisoires.
-- Banc de test Vite avec création d'avatar et cabine d'essayage.
-- Commandes annoncées : `npm install`, `npm run dev`, `npm run typecheck`, `npm run build`.
+## État observé
+La branche [`feature/EPI-459-avatar-poc`](https://github.com/epiverse-epitech/epiverse/tree/feature/EPI-459-avatar-poc/packages/campus) contient un module Phaser (carte, caméra, avatar, personnalisation et banc Vite). Ce code n'était **pas intégré dans develop** lors du dernier contrôle. L'existence du POC n'atteste pas de la présence, du chat ou de la vidéo.
 
-Ce code **n'est pas intégré dans `develop` au 13/11** et le banc de test n'atteste pas d'un jeu multijoueur.
+## Livrables attendus et tickets
+| Fonction | Responsable | Tickets |
+|---|---|---|
+| POC Phaser testable / intégration web | Julien | #121, #122 |
+| Synchronisation des salons avec contrôle d'accès | Eckson | #148, #172 |
+| Avatars de plusieurs utilisateurs visibles | Julien | #149 |
+| Apparence avatar et sauvegarde | Thomas + Julien | #123 |
+| Chambre/maison visitable et aménageable | Thomas + Julien | #150, #173 |
+| Interactions et texte | Lina + Eckson | #151, #166 |
+| Audio de proximité | Julien + Ousmane | #169, #171 |
+| Vidéo de proximité | Julien + Ousmane | #170, #171 |
+| Sécurité, blocage et modération | Estelle + Belaid | #152, #178 |
+| Mesure FPS, latence et test de deux clients | Julien + Ousmane | #124, #153, #181 |
 
-## Prototype à livrer
-- Un avatar change d'apparence et se déplace au clic/tactile/clavier.
-- Une carte avec quelques lieux et retour vers les services EpiVerse.
-- Un mode alternatif (liste de lieux/liens) pour l'accessibilité.
-- Intégration dans la version **web** Expo ; étude spécifique WebView pour mobile natif.
-- Pas de multijoueur / chat temps réel avant architecture de sessions, modération et sécurité.
+## Tests indispensables
+- Deux étudiants sur **deux navigateurs différents** se voient et peuvent se déplacer dans le même salon.
+- Connexion/déconnexion/reconnexion et entrée refusée dans un salon privé testées.
+- Micro/caméra **désactivés par défaut** ; permissions explicites ; les refus n'empêchent pas le reste du campus de fonctionner.
+- Cible d'essai : **50 utilisateurs simultanés au total**, avec mesure de charge et du coût.
+- Compatibilité navigateurs desktop/mobile, déplacement tactile, sortie et liste alternative accessible.
 
-## Mesure FPS
-Sur **60 secondes**, noter appareil, OS, navigateur, résolution, nombre d'avatars et scène. Enregistrer FPS médian et **p5** (5e percentile). Cibles provisoires : mobile ≥ 30 FPS p5, desktop ≥ 60 FPS p5, **uniquement** dans les conditions enregistrées.
+## FPS utilisables
+Mesurer une scène **définie**, résolution, appareil/OS, navigateur, nombre d'avatars, réseau, médias actifs et **60 secondes**. Relever FPS médian et FPS p5, avec deux mesures comparables. Les cibles 30 FPS mobile / 60 FPS desktop sont indicatives et doivent être confrontées à ces conditions.
 
-## Risques
-Poids des assets, compatibilité mobile, accessibilité clavier/lecteur d'écran, droits des images, charge serveur si présence synchronisée. Les prévenir avant d'envisager du 3D/XR.
+## Ne pas confondre
+Avatar seul ≠ multijoueur ; flux RTC local ≠ audio de proximité ; POC Vite ≠ intégration Expo ; CI verte ≠ performance réelle sur téléphone.
