@@ -54,3 +54,7 @@ Résolution, modèle de téléphone / CPU-GPU, navigateur/version, scène, nombr
 
 ### Pourquoi plusieurs KPI ?
 Les KPI de management suivent l'organisation ; les KPI techniques suivent qualité, réactivité, accessibilité et performance globale. Les deux catégories sont nécessaires pour répondre au retour pédagogique.
+
+## Protocole de collecte et de comparaison
+
+[PROTOCOLE-MESURES.md](PROTOCOLE-MESURES.md) définit scénarios, appareils, outils, p95, p5, WCAG, deux relevés comparables et la contextualisation du FPS. Les cibles du présent document ne sont pas des résultats mesurés.
