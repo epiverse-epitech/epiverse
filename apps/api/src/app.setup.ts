@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 import { AllExceptionsFilter } from './common/all-exceptions.filter';
 import { ErrorResponseDto } from './common/error-response.dto';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +8,10 @@ import { EnvironmentVariables } from './config/env.validation';
 
 export function configureApp(app: INestApplication): void {
   trustConfiguredProxies(app);
+  // Security headers set by the API itself (API-05), so that they are there
+  // even without Caddy in front. Caddy may override some of them.
+  // Same-site and not same-origin: the web app may live on another subdomain.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-site' } }));
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(
