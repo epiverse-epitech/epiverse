@@ -1,0 +1,35 @@
+id_local,tache,wp,owner_indicatif,initial_h,reste_h,etat_pack,milestone_propose,preuve_attendue
+EPI-001,Cadrage et business case,WP10,Estelle,12,0,Documenté,FU1,DOC-001
+EPI-002,Gouvernance et RACI,WP10,Estelle / Soumia,10,0,Documenté,FU1,DOC-002 + DOC-004
+EPI-003,PBS complet,WP10,Estelle,12,0,Documenté,FU1,DOC-005
+EPI-004,WBS WP1 à WP10,WP10,Soumia,14,0,Documenté,FU1,DOC-006
+EPI-005,Exigences testables,WP10,Estelle,18,4,Documenté à valider,FU1,DOC-007
+EPI-006,Definition of Done,WP8,Baye / Estelle,10,0,Documenté,FU1,DOC-008
+EPI-007,Planning et jalons,WP10,Soumia,12,4,À actualiser,FU1,DOC-010
+EPI-008,Registre risques,WP7,Estelle,10,4,À actualiser,FU1,DOC-012
+EPI-009,Architecture cible,WP2,Eckson,18,5,Non implémenté selon baseline,FU1,DOC-014
+EPI-010,Rapport UX/UI,WP5,Soumia,30,5,Documenté,FU1,uiux_report.pdf
+EPI-011,Plan qualité,WP8,Baye,12,4,Non démontré selon baseline,FU1,DOC-013
+EPI-012,Sécurité RGPD,WP7,Estelle,14,6,Non déployé selon baseline,FU1,DOC-015
+EPI-013,Marque et communication,WP10,Estelle / Soumia,10,0,Documenté,FU1,DOC-011
+EPI-014,Stratégie Data IA,WP6,Belaid / Lina / Thomas,14,6,À valider,FU1,DOC-016
+EPI-015,Campus virtuel,WP9,Hugo,14,6,POC non prouvé selon baseline,FU1,DOC-017
+EPI-016,Backlog GitHub,WP10,Soumia,10,10,À rapprocher des issues existantes,FU2,GitHub
+EPI-017,Monorepo conventions,WP1,Baye,12,12,À réévaluer face au dépôt existant,FU2,PR
+EPI-018,Pipeline CI,WP1,Baye,8,8,À réévaluer face à la CI existante,FU2,Run GitHub Actions
+EPI-019,Tests unitaires,WP8,Baye,8,8,À réévaluer face aux tests existants,FU2,Run tests
+EPI-020,Review croisée,WP8,Baye / leads,5,5,À vérifier,FU2,Review PR
+EPI-021,Auth RBAC NestJS,WP2,Eckson,38,38,À réévaluer face aux issues existantes,MVP-S9,PR tests
+EPI-022,PostgreSQL Prisma migrations,WP2,Eckson,24,24,À réévaluer face au dépôt,MVP-S9,PR migration
+EPI-023,Web React design system,WP3,Philimon,42,42,À réévaluer face au dépôt,MVP-S9,PR capture
+EPI-024,Événements inscriptions,WP2,Eckson / Philimon,36,36,À réévaluer,MVP-S9,Tests E2E
+EPI-025,Associations ressources,WP2,Eckson / Philimon,40,40,À réévaluer,MVP-S9,Tests E2E
+EPI-026,Notifications administration,WP2,Eckson / Philimon,34,34,À réévaluer,MVP-S9,Tests E2E
+EPI-027,Mobile prioritaire,WP4,Patrick,32,32,À réévaluer,MVP-S9,PR tests
+EPI-028,Staging Docker logs,WP1,Baye,24,24,À réévaluer,MVP-S9,URL logs
+EPI-029,Sécurité RGPD pilote,WP7,Estelle / Baye,24,24,À faire selon baseline,PILOTE-S10,Rapport
+EPI-030,Campus virtuel 2D POC,WP9,Hugo,34,34,À faire selon baseline,EXT-S10,Démo
+EPI-031,Tests utilisateurs,WP5,Soumia,20,20,À faire selon baseline,PILOTE-S10,Résultats
+EPI-032,CRAv et preuves FU,WP10,Soumia,8,8,À rapprocher,FU2,CRAv
+EPI-033,SMART originaux FU1,WP10,Soumia / Estelle,6,6,À confirmer,FU2,PV
+EPI-034,Dépôt Tech école,WP1,Baye,3,3,Non démontré,FU2,URL SHA
