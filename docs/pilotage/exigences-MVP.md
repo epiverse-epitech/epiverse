@@ -1,34 +1,51 @@
-# Exigences testables et tickets associés
+# Matrice des exigences actives et de leur réalisation
 
-État au 13/11 : cette page décrit **ce qu'il faut vérifier**, pas les fonctions déjà livrées. Les ID issus de DOC-007 sont conservés quand ils correspondent.
+**Périmètre visé :** préproduction du **5 février 2027** avec parcours étudiants, événements, ressources/mentorat, recrutement et monde social 2.5D. Il s'agit d'un **objectif à démontrer**, pas d'un état acquis.
 
-| ID ou groupe | Attendu simple | Preuve attendue | Nouvelle issue |
-|---|---|---|---|
-| FR-AUTH-001 à 004 | Inscription, connexion, session et sortie | Tests auth négatifs + UI | [#115](https://github.com/epiverse-epitech/epiverse/issues/115), [#116](https://github.com/epiverse-epitech/epiverse/issues/116) |
-| FR-PRO-001 à 004 | Profil modifiable, confidentialité, export/suppression selon périmètre | Test CRUD, contrôle des droits | [#118](https://github.com/epiverse-epitech/epiverse/issues/118), [#132](https://github.com/epiverse-epitech/epiverse/issues/132) |
-| FR-ROLE-001 à 003 | Actions limitées selon les rôles | Tests d'accès interdit | [#131](https://github.com/epiverse-epitech/epiverse/issues/131) |
-| FR-EVT-001 à 004 | Créer, voir, filtrer, rejoindre/quitter un événement, avertir | Tests API et démo UI | [#125](https://github.com/epiverse-epitech/epiverse/issues/125), [#126](https://github.com/epiverse-epitech/epiverse/issues/126), [#127](https://github.com/epiverse-epitech/epiverse/issues/127) |
-| FR-C2D-001 à 003 | Carte, avatar, déplacements et accès alternatif | Démo Phaser, mobile/web, écran de secours | [#121](https://github.com/epiverse-epitech/epiverse/issues/121), [#122](https://github.com/epiverse-epitech/epiverse/issues/122) |
-| NFR-SEC-001 | Sécurité des comptes et droits | Revue sécurité, tests négatifs | [#131](https://github.com/epiverse-epitech/epiverse/issues/131), [#141](https://github.com/epiverse-epitech/epiverse/issues/141), [#142](https://github.com/epiverse-epitech/epiverse/issues/142) |
-| NFR-PRIV-001 | Données minimisées et protégées | Registre, tests de suppression, scans | [#132](https://github.com/epiverse-epitech/epiverse/issues/132), [#144](https://github.com/epiverse-epitech/epiverse/issues/144) |
-| NFR-PERF-001 | Réactivité API quantifiée | p95, taux erreurs, charge définie | [#134](https://github.com/epiverse-epitech/epiverse/issues/134) |
-| NFR-ACC-001 / NFR-C2D-002 | Navigation accessible | Clavier, lecteur d'écran, axe-core | [#133](https://github.com/epiverse-epitech/epiverse/issues/133) |
-| NFR-COMP-001 | Web et mobile réellement testés | Matrice appareils et versions | [#113](https://github.com/epiverse-epitech/epiverse/issues/113), [#146](https://github.com/epiverse-epitech/epiverse/issues/146) |
-| NFR-SCL-001 | Dégradation progressive sous charge | Tests et limites documentées | [#134](https://github.com/epiverse-epitech/epiverse/issues/134) |
-| NFR-BACK-001 | Sauvegarde et restauration | Test de reprise | [#135](https://github.com/epiverse-epitech/epiverse/issues/135) |
-| NFR-MNT-001 / NFR-OBS-001 | Maintenabilité et observabilité | CI, revue de code et logs | [#110](https://github.com/epiverse-epitech/epiverse/issues/110), [#119](https://github.com/epiverse-epitech/epiverse/issues/119) |
+Le projet conserve ses exigences d'origine, corrigées individuellement sur GitHub :
+- **54 issues `type:exigence` ouvertes**, avec responsables, tests attendus et liens de réalisation.
+- **19 tickets techniques ou de pilotage `type:archive` fermés comme doublons**, avec leurs remplaçants.
+- Les travaux sont suivis dans les issues `type:tache`, avec heures prévues/réelles/restantes et risques. Les heures ne sont pas additionnées deux fois.
 
-## Exigences différées mais conservées
-- **Associations** FR-ASSO-001 à 003
-- **Ressources** FR-RES-001 à 003
-- **Recherche** FR-SRC-001 à 002
-- **Notifications** FR-NOT-001 à 003
-- **Mentorat** FR-MEN-001 à 003
-- **Carrières** FR-CAR-001 à 003
-- **Administration/modération avancée** FR-ADM-001 à 003 et FR-MOD-001 à 003
-- **IA** AI-001 à 006 du backlog historique
+## Parcours métier
+| Références historiques | Résultat attendu | Réalisation suivie |
+|---|---|---|
+| #47–#50 | Profil, compétences, projets, confidentialité et droits | #118, #156, #132 |
+| #51–#54 | Fiches associations, activités, adhésions, gestionnaires | #157, #158, #177 |
+| #55–#58 | Événements, recherche, réservation et rappels | #125–#127, #174–#175 |
+| #59–#61 | Publier, découvrir, consulter une ressource autorisée | #159, #160 |
+| #62 et #69 | Recherche globale avec filtrage par permissions | #176 |
+| #63–#65 | Mentor, recherche, demande et réponse | #161, #162 |
+| #66–#68 | Profil talent, recruteur, offres, candidatures privées | #156, #163–#168 |
+| #70–#71 | Centre et préférences des notifications | #174, #175 |
+| #72 | Push natif optionnel après lancement web | #187 (futur) |
+| #73–#78 | Administration et modération avec audit et permissions | #177, #178, #152 |
+| #79–#85 | Campus isométrique, multijoueur, alternative accessible et FPS | #121–#124, #148–#153, #169–#173 |
 
-Tous ces groupes sont conservés dans [l'issue de roadmap #145](https://github.com/epiverse-epitech/epiverse/issues/145) ; ils ne doivent pas rester en doublon dans les tâches actives du MVP.
+## Contrôles transversaux
+| Références | Vérification | Réalisation |
+|---|---|---|
+| #92 | Réactivité API p95, erreurs, conditions reproductibles | #134 |
+| #93, #83 | Accessibilité WCAG 2.2 AA et alternative monde | #133, #122 |
+| #94, #50 | RGPD, consentements, suppression et visibilité | #132, #144 |
+| #95 | DoD, CI, documentation et code review | #110, #146, #179 |
+| #96 | Navigateurs et systèmes réellement testés | #113, #146 |
+| #97 | 50 utilisateurs simultanés au total et dégradation | #181 |
+| #99 | Design Figma, parcours et composants | #114, #138 |
+| #100 | Démonstration de bout en bout en staging | #120, #146 |
+| #101 | Pilote campus fermé après préproduction | #140, #181 (future) |
 
-## Règle
-Chaque exigence est **acceptée** seulement avec résultat de test, capture/démo et lien PR ; une issue « fermée » sans preuve n'est pas une fonctionnalité livrée.
+## Contrôles ajoutés après le cadrage historique
+- Compte recruteur externe soumis à **validation manuelle** avant publication #163.
+- Candidature avec CV/message, statuts privés, entretiens et visio dédiée #164–#168.
+- Salon social, accès invité, synchronisation de présence et médias de proximité #148, #149, #169–#172.
+- Chambre, espaces et images personnalisables avec contrôles d'accès #150, #173.
+- Aucune des exigences ici ne signifie à elle seule une fonctionnalité déjà réalisée.
+
+## Hors engagement février
+- IA avancée #86–#91 et #130 : préparation autorisée, entraînement sur vraies données non promis.
+- Stores et push natifs #72/#187, fonctionnalités sensibles des 36 modules #98/#145.
+- Pilote réel avec vrais étudiants #101 : aucune institution partenaire/autorisation n'est attestée.
+
+## Comment déclarer « réalisé »
+Le ticket d'exigence se ferme uniquement lorsque ses tickets de réalisation ont la **DoD**, des tests/démos reliés, et la validation d'Estelle. Une PR ouverte, une maquette ou une CI verte backend ne suffisent pas.
