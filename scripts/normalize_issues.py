@@ -15,7 +15,7 @@ HEAD={"Authorization":"Bearer "+TOKEN,"Accept":"application/vnd.github+json","X-
 BASE="https://github.com/"+REPO+"/issues/"
 OWNERS={"estelle":"estellegiroud","eckson":"Eckson-Glitho","philimon":"prusom",
         "thomas":"thomas-pradeau","julien":"Juliendev200","soumia":"miso882",
-        "ousmane":"bayeousmane1","lina":"LambdaIotaNuAlpha","belaid":"Eckson-Glitho"}
+        "ousmane":"bayeousmane1","lina":"LambdaIotaNuAlpha","belaid":"Eckson-Glitho"  # Référent de suivi GitHub; Belaid reste réalisateur}
 MILESTONES={
  "FU2":("FU2 — 13 novembre 2026","2026-11-13T13:00:00Z"),
  "S9":("S9 — Première intégration / FU3","2026-12-18T13:00:00Z"),
@@ -164,7 +164,7 @@ def block(issue,kind,prio,phase,owner,teamname,h):
     return (f"<!-- EPIVERSE-SUIVI-START -->\n"
         f"## Suivi opérationnel — 13/11/2026\n\n"
         f"**Catégorie :** {kind.capitalize()} · **Priorité :** {prio} · **Phase :** {phase} · **Équipe :** {teamname}  \n"
-        f"**Responsable GitHub :** @{owner} · **État vérifiable :** {status}.\n\n"
+        f"**Référent GitHub de suivi :** @{owner} · **État vérifiable :** {status}.\n\n"
         f"### Effort (estimations, pas de pointage)\n{cost}\n"
         f"### Traçabilité et acceptation\n"
         f"- **Liens :** {relation}.\n"
@@ -200,7 +200,7 @@ def main():
         number=item["number"]; kind=category(item); labelset={l["name"] for l in item.get("labels",[])}
         p=priority(item,kind); t=team(item); phase=phase_from_body(item,get_phase(item,kind)); owner=responsible(item,kind,t); h=hours(item,kind,t)
         opt={"P0":"Urgent" if number in (103,110,119,141,142,154,155) else "High","P1":"Medium","P2":"Low"}[p]
-        status=("archive" if kind=="archive" else "en-cours" if kind=="epic" and issue["number"]==189 else "en-revue" if number in (104,105,107,108,109,115,137,180,186) else
+        status=("archive" if kind=="archive" else "en-cours" if kind=="epic" and number==189 else "en-revue" if number in (104,105,107,108,109,115,137,180,186) else
                 "en-cours" if number in (116,117,121,123,148) else "a-faire")
         chosen={x for x in labelset if not x.startswith(("prio:","phase:","etat:","pole:","type:"))}
         chosen.update({f"prio:{p}",f"phase:{phase}",f"pole:{t}",f"etat:{status}",f"type:{kind}"})
