@@ -1,13 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from '../src/app.module';
-import { configureApp } from '../src/app.setup';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { PasswordService } from '../src/security/password.service';
-import { ConfigService } from '@nestjs/config';
-import { validateEnv } from '../src/config/env.validation';
+import { createTestApp } from './support/create-test-app';
 
 // Every account created here uses this domain, so cleanup never touches other data.
 const TEST_DOMAIN = '@register.e2e.test';
@@ -23,36 +20,13 @@ const validBody = {
   cguVersion: '',
 };
 
-// Builds the app with the real configuration, except the stricter limit on
-// credential routes, which each test group sets for itself.
-async function createApp(
-  authRateLimitMax: number,
-): Promise<INestApplication<App>> {
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-  })
-    .overrideProvider(ConfigService)
-    .useValue(
-      new ConfigService({
-        ...validateEnv(process.env),
-        AUTH_RATE_LIMIT_MAX: authRateLimitMax,
-      }),
-    )
-    .compile();
-
-  const app: INestApplication<App> = moduleRef.createNestApplication();
-  configureApp(app);
-  await app.init();
-  return app;
-}
-
 describe('Account registration (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
 
   beforeAll(async () => {
     // High enough that the functional tests below never hit the limit.
-    app = await createApp(100);
+    app = await createTestApp(100);
     prisma = app.get(PrismaService);
     validBody.cguVersion = app.get(ConfigService).get<string>('CGU_VERSION')!;
   });
@@ -190,7 +164,7 @@ describe('Account registration (e2e)', () => {
     };
 
     beforeAll(async () => {
-      app = await createApp(2);
+      app = await createTestApp(2);
       prisma = app.get(PrismaService);
     });
 

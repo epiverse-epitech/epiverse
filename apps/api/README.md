@@ -66,8 +66,11 @@ Variables are read from the process environment and, in local development, from 
 | `DATABASE_URL` | Yes | — | PostgreSQL connection URL (`postgresql://` or `postgres://`) |
 | `RATE_LIMIT_TTL_SECONDS` | No | `60` | Length of the rate limit window. Integer of at least 1 |
 | `RATE_LIMIT_MAX` | No | `100` | Requests allowed per window on a route. Integer of at least 1 |
-| `AUTH_RATE_LIMIT_MAX` | No | `5` | Same, on routes marked `@AuthRateLimit()`. Integer of at least 1 |
+| `AUTH_RATE_LIMIT_MAX` | No | `30` | Same, on routes marked `@AuthRateLimit()`. Integer of at least 1 |
+| `LOGIN_FAILURE_MAX` | No | `5` | Failed logins allowed per account and client address within the window below. Integer of at least 1 |
+| `LOGIN_FAILURE_WINDOW_MINUTES` | No | `15` | Length of that window, in minutes. Integer of at least 1 |
 | `TRUST_PROXY_HOPS` | No | `0` | Number of reverse proxies in front of the API. Integer of at least 0 |
+| `SESSION_TTL_HOURS` | No | `168` | Lifetime of a session after login, in hours (7 days). Integer of at least 1 |
 | `CGU_VERSION` | No | `1.0` | Version of the terms of use accepted at registration. 1 to 20 characters |
 
 The rules live in `src/config/env.validation.ts`. A new variable is added there, with its tests, in the same change as the code that first uses it (`REDIS_URL` will come with Redis).
@@ -156,7 +159,38 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 ### Known limits
 
 - The 409 tells whether an email is registered (account enumeration). Accepted for now and slowed down by the rate limit. Sending an email to the existing owner instead would remove it, once email delivery exists (EPI-53).
-- `GET /api/auth/cgu` returns `{ version }`, the current terms of use version (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` are deployed together. Asking existing users to accept a new version comes with sessions (EPI-490).
+- `GET /api/auth/cgu` returns `{ version }`, the current terms of use version (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` are deployed together; existing accounts then accept the new version through `POST /api/auth/cgu/accept` (see Sessions).
+
+## Sessions
+
+`POST /api/auth/login` opens a session (EPI-57). The client then sends the token on every protected request as `Authorization: Bearer <token>`.
+
+| Route | Response | When |
+|---|---|---|
+| `POST /api/auth/login` | 200 with `{ token, expiresAt }` | Right email and password, account active and not deleted. |
+| | 400 | Invalid or unknown field. |
+| | 401 `Invalid email or password` | Unknown email, wrong password, deactivated or deleted account: always the same answer. |
+| | 429 with `Retry-After` | Too many requests from the address (`@AuthRateLimit()`), or too many failed logins for this account from this address (see Rate limiting). |
+| `GET /api/auth/me` | 200 with `{ id, email, firstName, lastName, cguAccepted }` | Valid session. `cguAccepted` is false when the current terms of use are not accepted yet. |
+| `POST /api/auth/cgu/accept` with `{ version }` | 204 | Records the acceptance of the current terms of use (version and date). Accepting again keeps the first date. |
+| | 400 `The terms of use have changed: accept the current version` | `version` is not the current one. |
+| `POST /api/auth/logout` | 204 | The session is revoked. The other sessions of the account stay open. |
+| Every protected route | 401 `Authentication required` | Missing, malformed, unknown, revoked or expired token, or account deactivated or deleted since login: always the same answer. |
+
+- The token is 32 random bytes (base64url). The API returns it once and stores only its SHA-256 hash in `user_session`, so a database leak does not give working tokens.
+- Every request checks the session in the database, so a logout or a deactivated account takes effect at once.
+- A session lasts `SESSION_TTL_HOURS` (7 days by default) and is not extended by use.
+- A logout keeps the row with `revoked_at` set, so the session history stays readable.
+- An unknown email is checked against a dummy Argon2 hash, so both failures take the same time and the response time does not reveal which emails have an account.
+- A route is protected with `@UseGuards(SessionGuard)`; `@CurrentAccount()` reads the account, `@CurrentSessionId()` the session and `@CurrentUserId()` the internal account id (never returned to the client).
+- When the terms of use change (`CGU_VERSION`), an account that has not accepted the new version gets 403 `The current terms of use must be accepted` on every protected route, except those marked `@AllowPendingCgu()`: `GET /api/auth/me`, `POST /api/auth/cgu/accept` and `POST /api/auth/logout`. Login still works, so the client can show the new terms (EPI-490).
+
+### Known limits
+
+- The token is sent in a header. A cookie for the web client (`HttpOnly`, `Secure`, `SameSite`) may come later with the front team.
+- `last_used_at`, `ip_address` and `user_agent` of `user_session` are not filled yet. They will be needed for a list of active sessions.
+- No route revokes all the sessions of an account yet (for a password change or a stolen device).
+- Expired and revoked rows are never deleted; a cleanup job will be needed.
 
 ## Rate limiting
 
@@ -164,6 +198,7 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 - Beyond the limit, the API answers 429 with a `Retry-After` header, in the usual error format. Access returns once the client's block has expired.
 - Every login, account recovery and registration route must carry `@AuthRateLimit()`, which applies the stricter `AUTH_RATE_LIMIT_MAX`. Nothing applies it automatically: such a route without the decorator only gets the general limit.
 - `GET /api/health` is excluded with `@SkipThrottle()`, because Docker health checks and deployments rely on it.
+- Login also counts failed attempts per account and client address: beyond `LOGIN_FAILURE_MAX` failures within `LOGIN_FAILURE_WINDOW_MINUTES` (5 per 15 minutes, NFR-SEC-003), that pair gets 429 with `Retry-After` until the window ends, even with the right password. A successful login clears the count. Unknown emails are counted too, so a 429 does not reveal which accounts exist. Students behind one address each have their own count.
 
 ### Client address
 
@@ -179,8 +214,8 @@ Clients are identified by IP address, so the API must know how many proxies stan
 
 ### Known limits
 
-- Registration carries the decorator; login and recovery routes do not exist yet and must carry it too.
-- The limit is per IP address. Users behind one address, such as a campus network, share it: more than `AUTH_RATE_LIMIT_MAX` students registering together from the school Wi-Fi would be blocked. An attacker with many addresses is not stopped either. Login will add a per-account limit (EPI-57); registration will need its own rule before an onboarding session on campus.
+- Registration and login carry the decorator; account recovery routes do not exist yet and must carry it too.
+- The address limit still applies to login and registration: more than `AUTH_RATE_LIMIT_MAX` (30) students logging in or registering within one minute from the school Wi-Fi would be blocked, whatever their own count. It is set high on purpose: guessing one account is already capped by the account limit, so the address limit only slows down trying many accounts from one address. Raise it if a larger group connects at once. An attacker with many addresses is not stopped by it.
 - Counters live in the memory of each API process: a restart resets them and several instances do not share them. Redis will be needed before running more than one instance.
 
 ## Testing approach

@@ -49,7 +49,22 @@ export class EnvironmentVariables {
   @Transform(toStrictInteger)
   @Min(1)
   @IsInt()
-  AUTH_RATE_LIMIT_MAX: number = 5;
+  // Per client address on credential routes. Sized for a campus where many
+  // students share one address: guessing one account is already capped by
+  // LOGIN_FAILURE_MAX, so this limit only slows down trying many accounts.
+  AUTH_RATE_LIMIT_MAX: number = 30;
+
+  // Failed logins allowed per account and client address within the window
+  // (NFR-SEC-003). Students behind one address each get their own count.
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  LOGIN_FAILURE_MAX: number = 5;
+
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  LOGIN_FAILURE_WINDOW_MINUTES: number = 15;
 
   // Number of reverse proxies in front of the API. At 0, X-Forwarded-For is
   // ignored, so a client cannot forge its address when no proxy is there.
@@ -57,6 +72,13 @@ export class EnvironmentVariables {
   @Min(0)
   @IsInt()
   TRUST_PROXY_HOPS: number = 0;
+
+  // How long a session stays valid after login. Sessions can also be revoked
+  // at any time (logout, password change).
+  @Transform(toStrictInteger)
+  @Min(1)
+  @IsInt()
+  SESSION_TTL_HOURS: number = 168;
 
   // Version of the terms of use (CGU) that new accounts accept. Raise it when
   // the terms change; the column user_cgu_acceptance.version holds 20 characters.
