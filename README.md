@@ -4,7 +4,7 @@ Monorepo du projet EpiVerse (T-ESP-800).
 
 ```
 apps/api/          API NestJS + Prisma            Eckson
-apps/app/          App Expo (mobile et web)       Philimon, Julien
+apps/app/front-end/         Front-end web Vite + React 18 + TypeScript
 docs/database/     schéma BDD et revues           Thomas, Lina, Belaid
 docs/ia/           KPI et données de l'IA         Thomas, Lina, Belaid
 data/fixtures/     données fictives (SQL + Mongo) Thomas, Lina, Belaid
@@ -28,3 +28,6 @@ Remplir les bases avec des données fictives : `python data/fixtures/generate.py
 - Jamais de push direct sur `main` ni `develop` : une branche, une pull request, CI verte, une relecture.
 - Branches `feature/<ticket>-<sujet>`, `fix/…`, `docs/…`.
 - Commits `type(scope): message`, ex. `feat(events): ajouter le filtre date`.
+
+Pour le front-end web : `cd apps/front-end`, `npm ci`, puis `npm run dev`.
+Voir [apps/front-end/README.md](apps/front-end/README.md) pour les commandes et le périmètre.
