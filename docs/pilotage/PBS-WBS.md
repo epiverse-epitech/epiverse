@@ -1,36 +1,37 @@
-# PBS et WBS — version opérationnelle courte
+# PBS / WBS — EpiVerse, version corrigée du 13/11/2026
 
-**PBS** = ce que l'on livre. **WBS** = le travail nécessaire. Les anciens DOC-005 et DOC-006 étaient des plans de départ, pas une preuve de code produit.
+**PBS :** les parties du produit à livrer. **WBS :** le travail concret à réaliser. Les issues historiques `[EXIGENCE]` spécifient la réception ; les nouvelles issues `[P0/P1][PÔLE]` chiffrent le travail.
 
-## PBS — éléments livrables
-| PBS | Produit / fonction | Niveau | Preuve requise |
+## PBS — livrables et niveau de preuve
+| PBS | Livrable | Exigences originales | Travaux principaux |
 |---|---|---|---|
-| PBS-01 | Application Expo web/mobile | P0 | Démarrage web+téléphone et CI |
-| PBS-02 | Comptes, sessions, profils | P0 | Tests auth et UI |
-| PBS-03 | Événements et inscriptions | P0 | Scénario complet |
-| PBS-04 | Campus 2.5D jouable (POC) | P0/P1 | Prototype reproductible + perf contextualisée |
-| PBS-05 | Sécurité, données, droits | P0 | Tests négatifs + revue |
-| PBS-06 | Qualité, métriques, accessibilité | P0 | CI, mesures et audit |
-| PBS-07 | Environnements, déploiement, dépôt Tech | P0 | Staging, lien commit académique |
-| PBS-08 | Design system et parcours Figma | P0 | Maquettes reliées aux écrans |
-| PBS-09 | Data/IA préparatoire | P1 | Contrats, jeux synthétiques, KPI |
-| PBS-10 | Extensions post-MVP (association, mentorat, etc.) | P2 / différé | Roadmap et décision |
+| 01 | Identité étudiante multi-campus, profils, projets, confidentialité | #47–#50, #94 | #115–#118, #155, #156 |
+| 02 | Événements et inscriptions | #55–#58 | #125–#127, #174, #175 |
+| 03 | Associations et vie de campus | #51–#54 | #157, #158 |
+| 04 | Ressources, recherche et filtrage | #59–#62, #69 | #159, #160, #176 |
+| 05 | Mentorat étudiants/alumni/professionnels | #63–#65 | #161, #162 |
+| 06 | Recrutement, offres, CV, candidatures, entretien | #66–#68 et exigences ajoutées | #163–#168 |
+| 07 | Campus 2.5D social et personnalisable | #79–#85 | #121–#124, #148–#153, #169–#173 |
+| 08 | Notifications, modération, administration | #70–#78 | #174, #175, #177, #178 |
+| 09 | Accessibilité, compatibilité, charge et performance | #82, #83, #92, #93, #95–#97, #100 | #133, #134, #146, #153, #179, #181 |
+| 10 | API, données, sécurité et exploitation | #94–#97 + contrôles historiques | #119, #131, #132, #135, #136, #141–#144, #182, #185 |
+| 11 | Suivi EPITECH, dépôt Tech, KPI, CRAv, SMART, reporting | Retour FU1 / BUILD | #103–#112, #137, #139, #140, #180, #184, #186 |
+| 12 | Data/IA préparatoire | #86–#91 (phase future) | #128–#130, #144 |
+| 13 | Extensions post-soutenance | #72, #101 et 36 modules | #145, #187 et décisions futures |
 
-## WBS — lots, responsables et exemples d'issues
-| WBS | Activité | Responsable | Tickets |
-|---|---|---|---|
-| WP1 | Infrastructure, tests automatiques, déploiement | Ousmane | [#103](https://github.com/epiverse-epitech/epiverse/issues/103), [#110](https://github.com/epiverse-epitech/epiverse/issues/110), [#119](https://github.com/epiverse-epitech/epiverse/issues/119), [#135](https://github.com/epiverse-epitech/epiverse/issues/135) |
-| WP2 | API, base, authentification, événements | Eckson / Belaid | [#115](https://github.com/epiverse-epitech/epiverse/issues/115), [#116](https://github.com/epiverse-epitech/epiverse/issues/116), [#117](https://github.com/epiverse-epitech/epiverse/issues/117), [#126](https://github.com/epiverse-epitech/epiverse/issues/126) |
-| WP3 | Frontend Expo web/mobile | Philimon / Lina | [#113](https://github.com/epiverse-epitech/epiverse/issues/113), [#118](https://github.com/epiverse-epitech/epiverse/issues/118), [#125](https://github.com/epiverse-epitech/epiverse/issues/125), [#127](https://github.com/epiverse-epitech/epiverse/issues/127) |
-| WP4 | UX/UI et accessibilité | Soumia | [#114](https://github.com/epiverse-epitech/epiverse/issues/114), [#133](https://github.com/epiverse-epitech/epiverse/issues/133), [#138](https://github.com/epiverse-epitech/epiverse/issues/138) |
-| WP5 | Data, modèles et analytics | Thomas (lead), Belaid, Lina | [#128](https://github.com/epiverse-epitech/epiverse/issues/128), [#129](https://github.com/epiverse-epitech/epiverse/issues/129), [#130](https://github.com/epiverse-epitech/epiverse/issues/130) |
-| WP6 | Campus virtuel 2.5D | Julien, Thomas en renfort | [#121](https://github.com/epiverse-epitech/epiverse/issues/121) à [#124](https://github.com/epiverse-epitech/epiverse/issues/124) |
-| WP7 | Sécurité, RGPD | Estelle + leads | [#131](https://github.com/epiverse-epitech/epiverse/issues/131), [#132](https://github.com/epiverse-epitech/epiverse/issues/132), [#141](https://github.com/epiverse-epitech/epiverse/issues/141) |
-| WP8 | Assurance qualité et validation | Estelle + leads | [#120](https://github.com/epiverse-epitech/epiverse/issues/120), [#134](https://github.com/epiverse-epitech/epiverse/issues/134), [#146](https://github.com/epiverse-epitech/epiverse/issues/146) |
-| WP9 | Pilotage, budget, preuves pédagogiques | Estelle | [#104](https://github.com/epiverse-epitech/epiverse/issues/104) à [#109](https://github.com/epiverse-epitech/epiverse/issues/109), [#137](https://github.com/epiverse-epitech/epiverse/issues/137) |
-| WP10 | Communication, préparation FU3 et soutenance | Estelle + Soumia | [#139](https://github.com/epiverse-epitech/epiverse/issues/139), [#140](https://github.com/epiverse-epitech/epiverse/issues/140) |
+## WBS — lots et responsabilités
+| Lot | Réalisateurs et renforts | Preuve attendue |
+|---|---|---|
+| Pilotage | **Estelle** | Issues estimées, risques, décisions, CRAv, KPI et preuves |
+| Backend / API | **Eckson** avec **Belaid** temporairement | PR, tests unitaires/E2E, rôles et droits |
+| Frontend | **Philimon** avec **Lina** temporairement | Parcours réels sur navigateur desktop/mobile |
+| Data/IA | **Thomas, lead** ; Belaid et Lina membres permanents | Contrats data, jeux synthétiques, qualité et évaluation |
+| Monde 2.5D | **Julien**, Thomas en renfort temporaire | POC intégré, multijoueur, avatar/maison, tests réseaux/médias |
+| UX/UI | **Soumia** (sans direction de projet) | Figma versionné, parcours et accessibilité |
+| DevOps | **Ousmane** | CI, images, staging, restauration et dépôt Tech |
+| Sécurité/validation | **Estelle** avec leads techniques | Tests négatifs, RGPD, sécurité du dépôt public et avis de revue |
 
-## Chemin critique
-`Design + contrat API → squelette Expo → auth intégrée → événements → tests E2E → staging → soutenance`.
+## Chaîne de dépendances
+Identité/roles + API + maquettes → frontend web/mobile → événements/ressources/mentorat/carrière → monde social et médias → staging → tests multi-utilisateurs → soutenance.
 
-Le campus POC se développe en parallèle ; son intégration ne doit pas bloquer les parcours classiques. Les renforts Data/IA retournent progressivement à leur pôle dès que les prérequis applicatifs sont prêts.
+Les travaux parallèles doivent respecter l'ordre des dépendances. **Une branche ou une PR ouverte ne vaut pas livraison.**
