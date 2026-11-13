@@ -22,3 +22,11 @@
 **Ne pas inventer d'erreur technique ou de ré-exécution.** Les écarts documentaires ci-dessus sont réels et les limites de validation restent visibles.
 
 Registre complet : [écarts pilotage](../docs/pilotage/ecarts.md).
+
+## Complément d'audit daté du 13/11/2026
+
+| ID | Prescrit | Réel / friction | Document corrigé, vrai commit | Résultat après action |
+|---|---|---|---|---|
+| DL-08 | Un seul suivi et une seule liste de tâches | La PR #195 introduisait 34 identifiants fictifs concurrents aux issues réelles | [Index unifié — 8004ca9](https://github.com/epiverse-epitech/epiverse/commit/8004ca9616de341c8aa048b8817cbe1e278ad5da) | **PR #195 fermée sans merge**. La #147 reste en revue |
+| DL-09 | Le milestone représente les suivis et les tâches réellement achevées | FU1 historique absent des milestones natifs ; 19 anciennes issues fermées étaient des **archives**, non des features validées | [Jalons — 1094fbf](https://github.com/epiverse-epitech/epiverse/commit/1094fbf4fc115eaadd4e499eb37a80140b977b14) | Faits corrigés en documentation ; création du milestone FU1 encore à faire |
+| DL-10 | Architecture front cohérente | La PR #194 propose Vite alors que l'issue #113 demande Expo/React Native Web | [CRAv FU2 — f3fff91](https://github.com/epiverse-epitech/epiverse/commit/f3fff91bf26125d8d723dce90d7af93ed517e539) | Divergence signalée ; aucun arbitrage technique ne peut être déduit du seul log |
