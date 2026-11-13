@@ -1,6 +1,6 @@
 # EpiVerse — remise pédagogique FU2 : index de contrôle vérifié
 
-**Snapshot : 13 novembre 2026 — T-ESP-800 / suivi S9.** Ce document est un index de remise, pas le procès-verbal de la séance FU2. Il distingue **preuve vérifiée**, **travail préparé**, **action ouverte** et **hypothèse**. Référentiel de code : `epiverse-epitech/epiverse`; branche de pilotage en [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) vers `develop`.
+**Snapshot : 13 novembre 2026 — T-ESP-800 / suivi S9.** Ce document est un index de remise, pas le procès-verbal de la séance FU2. Il distingue **preuve vérifiée**, **travail préparé**, **action ouverte** et **hypothèse**. Référentiel de code : `epiverse-epitech/epiverse`; dossier préparé dans [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) vers `develop` et publié séparément comme documentation sur `main`.
 
 ## 1. Les dix demandes du pédagogue — preuve et verdict
 
@@ -15,7 +15,7 @@
 | 7 | **Journal de décisions** daté, motifs et impacts | [Journal](decisions.md), [ADR](../adr/) | **Documenté** ; distinguer décisions de périmètre et éléments encore soumis à arbitrage |
 | 8 | **Code Review indépendante** | [PR #39](https://github.com/epiverse-epitech/epiverse/pull/39) : approbation par **bayeousmane1** le 05/11 ; [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147), issue [#110](https://github.com/epiverse-epitech/epiverse/issues/110) | **Exemple réel vérifié (#39)** ; #147 requiert sa propre revue, ne pas simuler une approbation |
 | 9 | **CI déclenchée à chaque PR** avec tests unitaires | [CI existante](https://github.com/epiverse-epitech/epiverse/blob/develop/.github/workflows/ci.yml), [run 05/11](https://github.com/epiverse-epitech/epiverse/actions/runs/42124966749), [run 06/11](https://github.com/epiverse-epitech/epiverse/actions/runs/42202615403), issue [#111](https://github.com/epiverse-epitech/epiverse/issues/111) | **Tests backend unitaires + E2E observés** ; frontend ignoré sur ces runs. Ne pas présenter la CI d'exemple du pack #195 comme preuve de l'app |
-| 10 | **Code poussé sur le dépôt Tech EPITECH** | [issue #103](https://github.com/epiverse-epitech/epiverse/issues/103), [miroir du 06/11](https://github.com/epiverse-epitech/epiverse/actions/runs/42202615383) | **NON PROUVÉ** : run miroir `skipped`; pas de lien au commit équivalent dans le dépôt scolaire. Deux suffixes de dépôt figurent dans l'historique (`…-2` et `…-15`) : retrouver **l'URL officielle** avant push, sans supposer lequel est correct |
+| 10 | **Code poussé sur le dépôt Tech EPITECH** | [issue #103](https://github.com/epiverse-epitech/epiverse/issues/103), [miroir du 06/11](https://github.com/epiverse-epitech/epiverse/actions/runs/42202615383) | **NON PROUVÉ** : run miroir `skipped`; pas de lien au commit équivalent dans le dépôt scolaire. L'identifiant officiel a été confirmé par la direction du projet : **`T-ESP-901-LYN-9-1-T-ESP-901-15`** ; la synchronisation est déléguée à un autre membre, preuve de push attendue |
 
 ## 2. Milestones GitHub : couverture réelle au snapshot
 
@@ -56,7 +56,7 @@ Les **15 PR fusionnées** constatées sur l'historique de code jusqu'au 05/11 so
 - Les heures « passées » calculées par rétroestimation IA ne sont **pas** du temps pointé. Ne jamais les présenter comme réalisées par les membres.
 - Les documents FU2 rédigés avant la séance ne sont pas une réunion tenue ; aucun participant ou avis pédagogique n'est inventé.
 - Une PR ouverte prouve un travail soumis à revue, pas un code validé. Une CI `success` peut masquer des jobs `skipped` ; inspecter les jobs pertinents.
-- [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) est le support canonique de la remise documentaire ; **le pack #195 est une reconstruction redondante non destinée à fusionner**.
+- [PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) est le support canonique de la remise documentaire ; **le pack #195 a été fermé sans fusion**.
 
 ## Complément explicite aux remarques du pédagogue (13/11)
 
