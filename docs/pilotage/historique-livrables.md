@@ -44,3 +44,9 @@ Au 13/11, ne sont **pas attestés comme livrés sur `develop`** : une applicatio
 Les **34 h rétrospectivement estimées** dans [le tableau des charges](reste-a-faire.md) sont une **hypothèse de temps pour certains livrables visibles**, et **non des temps enregistrés par leurs auteurs**. L'effort des PR déjà fusionnées n'est pas compté une seconde fois dans les 85 nouvelles tâches. Pour chaque nouvelle revue, les membres doivent confirmer les heures réellement travaillées et ré-estimer le reste.
 
 **Ne jamais présenter** une PR fusionnée comme preuve que l'ensemble de la fonctionnalité a été validé de bout en bout.
+
+## Mise à jour de contrôle du 13/11 — travaux postérieurs à l'inventaire de 30 PR
+
+Deux nouvelles PR s'ajoutent à l'inventaire initial des 30 : [#194 — frontend React/Vite](https://github.com/epiverse-epitech/epiverse/pull/194) et [#195 — pack FU1/FU2 redondant](https://github.com/epiverse-epitech/epiverse/pull/195). Leur création **n'augmente pas le nombre de PR fusionnées**, qui reste 15 au moment de cette note. La PR #147 demeure la livraison de référence pour le dossier pédagogique, en attente de revue.
+
+L'état natif des issues est explicité dans [le registre de remise FU2](REMISE-PEDAGOGUE-FU2.md) : 12 issues FU2 ouvertes et 19 doublons fermés, aucun ticket FU2 accepté comme Done.
