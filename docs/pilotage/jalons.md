@@ -1,33 +1,34 @@
-# Dates officielles et jalons de travail
+# Calendrier EpiVerse et jalons
 
-## Calendrier communiqué par EPITECH
-| Date | Événement | État |
+## Dates académiques communiquées
+| Date | Activité | État |
 |---|---|---|
-| 11/09/2026, 14 h–15 h | Kick-off ESP | Passé |
-| 09/10/2026, 14 h–16 h | FU1 — suivi pédagogique | Passé ; retour pédagogique documenté |
-| **13/11/2026, 14 h–16 h** | **FU2 — suivi pédagogique** | À présenter |
-| 27/11/2026, 09 h 30–12 h 30 | Séminaire T-LAW | Prévu |
-| **18/12/2026, 14 h–16 h** | **FU3 — suivi pédagogique** | Prévu |
-| **05/02/2027, 14 h–17 h** | **Soutenance ESP** | Prévue |
+| 11/09/2026 | Kick-off ESP | Passé |
+| 09/10/2026 | FU1 | Passé : remarques à corriger |
+| **13/11/2026, 14 h–16 h** | **FU2** | Revue à présenter, CRAv définitif après la séance |
+| **18/12/2026** | **FU3** | Prévu |
+| **05/02/2027, 14 h–17 h** | **Soutenance ESP** | Objectif de préproduction |
 
-## Jalons internes proposés (estimations de planification)
-| Période | Attendu | Preuve de fin |
+Les dates/interventions T-LAW devront rester conformes à la convocation officielle ; les anciennes notes ne concordent pas toutes sur cette partie.
+
+## Cibles internes à valider (non garanties)
+| Échéance | Résultat attendu | Critère objectif |
 |---|---|---|
-| FU2 — 13/11 | Retour FU1 traité, CRAv, SMART, risques, écarts, KPI et code/CI présentés | Dossier de preuves + issues de suivi |
-| 20/11 | Squelette Expo web/mobile + route API /health + navigation | PR revue, CI, démo |
-| 04/12 | Inscription, connexion, profil, données de base | Démo front/API + tests E2E |
-| 18/12 — FU3 | Premier parcours métier complet + campus 2.5D isolé testable | Démo reproductible et mesures de performance |
-| 15/01/2027 | MVP stabilisé, sécurité et accessibilité prioritaires | Scénarios E2E + analyse des défauts |
-| 29/01/2027 | Répétition soutenance, miroir EPITECH, documentation finale | Liste de preuves et répétition chronométrée |
-| 05/02/2027 | Soutenance | Application/démo de secours + dossier final |
+| 13/11 FU2 | Backlog réconcilié, CRAv FU1, KPI 2 mesures, risques, décisions, écarts, revue et CI | Liens GitHub consultables ; dépôt Tech à vérifier |
+| 27/11 | Premier parcours intégré et POC campus/média testables isolément | Installation à froid, API + frontend et démonstration |
+| 18/12 FU3 | 1re intégration des parcours de campus, mentorat/ressources et carrière ; monde social encore en validation | Scénarios E2E et risques requalifiés |
+| 08/01/2027 | Gel fonctionnel cible | Aucun P0 non maîtrisé sur les chemins de démonstration |
+| 22/01/2027 | Version candidate en préproduction | Déploiement, sécurité, permissions et tests critiques passés |
+| 29/01/2027 | Répétition et plan B | Démo réelle, vidéo secours, données fictives, lien dépôt Tech |
+| 05/02/2027 | Soutenance | Preuves versionnées et produit présenté |
 
-Les dates intermédiaires sont **des cibles** et non des résultats acquis. Le périmètre de la soutenance sera ajusté selon capacité et qualité. Les 36 modules de vision long terme ne deviennent pas 36 engagements de livraison.
+## Dépendances
+**Socle/auth/permissions → interface → parcours métier → présence campus/médias → staging → tests inter-utilisateurs → soutenance**.
 
-## Périmètre MVP prioritaire
-1. Une application Expo utilisable sur le web, avec fonctionnement mobile vérifié.
-2. Création de compte, connexion, session et profil de base.
-3. Une verticale métier complète : **événements** (créer, consulter, s'inscrire).
-4. Accès à un **campus 2.5D jouable** en POC, avec déplacement/avatar et sortie de secours accessible.
-5. Tests, CI, qualité, sécurité, mesures et preuve de démo.
+Le monde et les médias peuvent être prototypés en parallèle ; la sécurité et l'identité restent des dépendances bloquantes pour les vrais échanges.
 
-Associations, ressources, mentorat, notifications et IA de recommandation : étendre uniquement après un parcours vertical fonctionnel.
+## Pilotage de capacité
+- Le reste à faire est documenté dans [la consolidation](reste-a-faire.md) et dans les issues individuelles.
+- Une cible inscrite au calendrier n'est jamais considérée atteinte sans démonstration/test.
+- Les estimations restent provisoires tant que les membres n'ont pas communiqué leurs disponibilités et le temps déjà passé.
+- Si le jalon devient irréaliste, **réviser explicitement le périmètre avec le pédagogue**, pas modifier silencieusement le statut des tâches.
