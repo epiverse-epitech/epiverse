@@ -4,6 +4,7 @@ import { RateLimitModule } from './security/rate-limit.module';
 import { validateEnv } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PrismaModule } from './prisma/prisma.module';
     RateLimitModule,
     PrismaModule,
     HealthModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

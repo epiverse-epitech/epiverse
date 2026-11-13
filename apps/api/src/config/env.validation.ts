@@ -2,8 +2,11 @@ import { plainToInstance, Transform } from 'class-transformer';
 import {
   IsEnum,
   IsInt,
+  IsNotEmpty,
+  IsString,
   IsUrl,
   Max,
+  MaxLength,
   Min,
   validateSync,
   ValidationError,
@@ -54,6 +57,13 @@ export class EnvironmentVariables {
   @Min(0)
   @IsInt()
   TRUST_PROXY_HOPS: number = 0;
+
+  // Version of the terms of use (CGU) that new accounts accept. Raise it when
+  // the terms change; the column user_cgu_acceptance.version holds 20 characters.
+  @MaxLength(20)
+  @IsNotEmpty()
+  @IsString()
+  CGU_VERSION: string = '1.0';
 
   @IsUrl({
     protocols: ['postgresql', 'postgres'],
