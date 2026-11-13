@@ -134,6 +134,7 @@ export class PasswordResetService {
         "Si vous n'avez rien demandé, ignorez ce message : votre mot de passe ne change pas.",
       ].join('\n'),
     });
+    await this.tokens.cancelOthers(user.id, 'password_reset', token);
   }
 
   private async sendNotice(email: string): Promise<void> {

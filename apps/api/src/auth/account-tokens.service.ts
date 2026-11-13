@@ -9,29 +9,42 @@ import { generateSessionToken, hashSessionToken } from './session-token';
 export class AccountTokens {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Creates a token and cancels the previous ones of the same type, so that
-  // only the latest link sent to the user works.
+  // Creates a token. The previous ones still work until cancelOthers is
+  // called, once the new link has really been sent.
   async issue(
     userId: number,
     type: auth_token_type,
     ttlMs: number,
   ): Promise<string> {
     const token = generateSessionToken();
-    await this.prisma.$transaction([
-      this.prisma.auth_token.updateMany({
-        where: { user_id: userId, type, used_at: null },
-        data: { used_at: new Date() },
-      }),
-      this.prisma.auth_token.create({
-        data: {
-          user_id: userId,
-          type,
-          token_hash: hashSessionToken(token),
-          expires_at: new Date(Date.now() + ttlMs),
-        },
-      }),
-    ]);
+    await this.prisma.auth_token.create({
+      data: {
+        user_id: userId,
+        type,
+        token_hash: hashSessionToken(token),
+        expires_at: new Date(Date.now() + ttlMs),
+      },
+    });
     return token;
+  }
+
+  // Cancels every other unused token of this type, so that only the latest
+  // link sent works. Called after sending: if the email fails, the user keeps
+  // a link that works.
+  async cancelOthers(
+    userId: number,
+    type: auth_token_type,
+    keptToken: string,
+  ): Promise<void> {
+    await this.prisma.auth_token.updateMany({
+      where: {
+        user_id: userId,
+        type,
+        used_at: null,
+        token_hash: { not: hashSessionToken(keptToken) },
+      },
+      data: { used_at: new Date() },
+    });
   }
 
   // Marks the token as used and returns its account, or null when the token is

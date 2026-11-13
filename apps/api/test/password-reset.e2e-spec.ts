@@ -170,6 +170,17 @@ describe('Password reset (e2e)', () => {
       await reset(second).expect(204);
     });
 
+    it('keeps the previous link when the new email cannot be sent', async () => {
+      const first = await requestToken();
+      mailer.failing = true;
+
+      await forgot(EMAIL).expect(202);
+      await sleep(50);
+      mailer.failing = false;
+
+      await reset(first).expect(204);
+    });
+
     it('limits repeated requests the same way for known and unknown emails', async () => {
       const unknownEmail = `grace${TEST_DOMAIN}`;
       for (const email of [EMAIL, unknownEmail]) {

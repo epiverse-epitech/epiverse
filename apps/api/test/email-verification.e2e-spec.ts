@@ -214,6 +214,20 @@ describe('Email verification (e2e)', () => {
       await verify(second).expect(204);
     });
 
+    it('keeps the previous link when the new email cannot be sent', async () => {
+      const email = `ada${TEST_DOMAIN}`;
+      await register(email);
+      const first = tokenIn(await mailer.waitFor(email));
+      const session = await openSession(email);
+      mailer.failing = true;
+
+      await resend(session).expect(202);
+      await sleep(50);
+      mailer.failing = false;
+
+      await verify(first).expect(204);
+    });
+
     it('sends nothing when the address is already verified', async () => {
       const email = `ada${TEST_DOMAIN}`;
       await register(email);

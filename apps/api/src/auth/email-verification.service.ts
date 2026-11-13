@@ -106,5 +106,6 @@ export class EmailVerificationService {
         "Si vous n'avez pas créé de compte, ignorez ce message.",
       ].join('\n'),
     });
+    await this.tokens.cancelOthers(userId, 'email_verification', token);
   }
 }
