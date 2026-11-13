@@ -1,0 +1,5 @@
+id,constat,source,correction,issue_locale,commit_reel
+EC-01,Follow-ups absents des jalons proposés,DOC-010,Relier FU1/FU2 aux milestones du dépôt,EPI-032,À renseigner
+EC-02,Documents non reliés aux issues réelles,WBS dashboard,Mapper issues existantes et preuves,EPI-016,À renseigner
+EC-03,SMART FU1 originaux non fournis,PV FU1 attendu,Récupérer et qualifier les SMART réels,EPI-033,À renseigner
+EC-04,CI définie sans run prouvé dans les documents,DOC-013,Vérifier run GitHub Actions,EPI-018,À renseigner
