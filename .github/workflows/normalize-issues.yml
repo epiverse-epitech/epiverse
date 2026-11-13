@@ -1,13 +1,20 @@
-name: EpiVerse — Synchroniser le suivi de toutes les issues
+name: EpiVerse — Mettre à jour le suivi des issues
 
+# Lancement volontaire uniquement. Évite de réécrire les issues
+# de toute l'équipe à chaque commit documentaire.
 on:
-  push:
-    branches:
-      - docs/pilotage-fu2-reconstruction-2026-11-13
-    paths:
-      - 'scripts/normalize_issues.py'
-      - '.github/workflows/normalize-issues.yml'
   workflow_dispatch:
+    inputs:
+      issue_numbers:
+        description: 'Numéros séparés par des virgules (vide = toutes les issues)'
+        required: false
+        type: string
+        default: ''
+      dry_run:
+        description: 'Vérifier sans modifier les issues'
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -23,12 +30,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Syntaxe du script
+      - name: Vérifier la syntaxe
         run: python3 -m py_compile scripts/normalize_issues.py
-      - name: Normaliser les issues, jalons et champs permis
+      - name: Exécuter en mode vérification ou publication
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          DRY_RUN: 'false'
-          ISSUE_NUMBERS: '189,190,191'
+          DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+          ISSUE_NUMBERS: ${{ inputs.issue_numbers }}
         run: python3 scripts/normalize_issues.py
