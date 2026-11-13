@@ -18,6 +18,10 @@
 | Prouver le code | [PR](https://github.com/epiverse-epitech/epiverse/pulls) · [Actions](https://github.com/epiverse-epitech/epiverse/actions) · [Preuves](preuves.md) |
 | Où cliquer dans GitHub | [Guide des onglets](onglets-github.md) · [Mode d'emploi](mode-emploi.md) |
 
+## Historique et utilisation de GitHub
+- [**Historique des livraisons : 30 PR, ce qui a réellement été fait**](historique-livrables.md)
+- [**Champs natifs GitHub, Project, Priority et Relationships : état et mode d'emploi**](configuration-github.md)
+
 ## Produit, conception et qualité
 - [Périmètre préproduction 05/02/2027](produit-et-perimetre.md)
 - [Architecture réelle](architecture.md) · [54 exigences et tickets](exigences-MVP.md)
