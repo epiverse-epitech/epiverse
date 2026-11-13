@@ -86,8 +86,8 @@ def responsible(issue,kind,teamname):
     if kind=="archive":return "estellegiroud"
     fields=re.search(r"\*\*(?:Responsable|Réalisation|Pilotage)\s*:\*\*\s*(.{1,115})",body,re.I)
     phrase=fields.group(1).split("\n")[0].lower() if fields else ""
-    for name in names:
-        if re.search(r"\b"+re.escape(name)+r"\b",phrase):return OWNERS[name]
+    mentions=[(m.start(),OWNERS[name]) for name in names for m in re.finditer(r"\b"+re.escape(name)+r"\b",phrase)]
+    if mentions:return min(mentions,key=lambda x:x[0])[1]
     if kind=="exigence":
         m=re.search(r"\*\*Validation\s*:\*\*\s*(.{1,70})",body,re.I)
         if m and "estelle" in m.group(1).lower():return "estellegiroud"
