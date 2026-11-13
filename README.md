@@ -1,32 +1,32 @@
-# EpiVerse — campus social web, mobile et 2.5D
+# EpiVerse — réseau social étudiant et campus virtuel 2.5D
 
-**EpiVerse** est un projet de réseau social pour la vie étudiante. Il réunit profils, événements, entraide et ressources dans une même application, avec un **campus virtuel 2.5D** inspiré des usages sociaux d'Habbo et VRChat : avatar personnalisable, déplacements et rencontres. Le MVP privilégie des parcours simples et fiables ; les 36 modules envisagés constituent la vision à long terme, pas la livraison immédiate.
+**EpiVerse** est une plateforme sociale pour étudiants de plusieurs campus : profils, projets, événements, associations, ressources, mentorat et recrutement. Elle inclut un **monde virtuel isométrique 2.5D** inspiré des usages d'Habbo et VRChat, avec avatars, espaces personnalisables et échanges texte, audio/vidéo. Les mentors et recruteurs extérieurs ont des accès limités et vérifiés.
 
-## En un coup d'œil
+**Objectif académique : une préproduction démontrable et testée le 5 février 2027.** Ce n'est pas une version déjà terminée.
 
-| Sujet | Réponse |
+## Comprendre en 30 secondes
+
+| Question | Réponse |
 |---|---|
-| Public cible | Étudiants, associations et communauté campus |
-| Support visé | Web et mobile (Expo / React Native Web) |
-| Backend | NestJS, Prisma, PostgreSQL |
-| Données de soutien | Redis, MongoDB et données fictives |
-| Monde virtuel | POC Phaser en développement sur une branche séparée |
-| Dépôt officiel de travail | **GitHub** ; réunions et échanges sur **Teams** |
-| Pilotage et suivi pédagogique | [**Ouvrir le tableau de bord**](docs/pilotage/README.md) |
-| Travail en cours | [Issues](https://github.com/epiverse-epitech/epiverse/issues) · [Pull requests](https://github.com/epiverse-epitech/epiverse/pulls) · [Actions](https://github.com/epiverse-epitech/epiverse/actions) |
+| Pour qui ? | Étudiants, associations, anciens élèves, mentors et recruteurs autorisés |
+| Supports visés ? | Navigateurs desktop et mobile ; application Expo/React Native Web en cours |
+| Quatre parcours principaux | Profil/entraide ; événements/vie de campus ; ressources/mentorat ; recrutement |
+| Monde virtuel | Campus isométrique 2.5D social, maisons/avatars, salons et proximité |
+| Technique | API NestJS + Prisma/PostgreSQL, Redis, MongoDB ; Phaser pour le campus |
+| Situation réelle | Socle backend/CI intégré ; frontend Expo non intégré ; POC Phaser en branche |
+| Suivi opérationnel | [Guide GitHub](docs/pilotage/README.md) · [Issues](https://github.com/epiverse-epitech/epiverse/issues) · [PR](https://github.com/epiverse-epitech/epiverse/pulls) · [Actions](https://github.com/epiverse-epitech/epiverse/actions) |
 
-## Ce qui fonctionne et ce qui manque
+## Ce qui est fait, ce qui reste
 
-- **Intégré dans `develop`** : socle API NestJS/Prisma, configuration Docker, tests backend et CI GitHub Actions.
-- **À intégrer** : inscription en [PR #45](https://github.com/epiverse-epitech/epiverse/pull/45), autres développements backend restés sur branches.
-- **À réaliser** : application Expo web/mobile dans `apps/app/` (seul le README est intégré).
-- **Prototype séparé** : [campus 2.5D Phaser](https://github.com/epiverse-epitech/epiverse/tree/feature/EPI-459-avatar-poc/packages/campus) ; ce POC n'est pas encore un monde multijoueur livré.
+**Observé dans `develop` :** backend NestJS et Prisma, modèles/migrations, tests API, Docker et workflows CI. [Preuve d'exécution CI API](https://github.com/epiverse-epitech/epiverse/actions/runs/42202615403).
 
-Le futur parcours MVP : **ouvrir l'app → créer un compte → compléter son profil → consulter un événement → s'inscrire**. Le POC 2.5D doit permettre de se déplacer avec un avatar sur une carte, puis d'accéder aux fonctionnalités du campus.
+**En développement mais pas encore intégré :** inscription [PR #45](https://github.com/epiverse-epitech/epiverse/pull/45), autres branches backend, campus [POC avatar Phaser](https://github.com/epiverse-epitech/epiverse/tree/feature/EPI-459-avatar-poc/packages/campus). La présence de branches ne démontre ni une application complète ni le multijoueur.
 
-## Démarrer localement
+**À faire :** interface web/mobile connectée, parcours métier complets, gestion des droits, salons/communications, tests E2E, déploiement en préproduction et dépôt Tech EPITECH.
 
-**Pré-requis :** Docker / Docker Compose et Node.js 24.
+## Lancer la base de développement
+
+Prérequis : Docker/Compose et Node.js 24.
 
 ```bash
 git clone https://github.com/epiverse-epitech/epiverse.git
@@ -39,37 +39,22 @@ npm ci
 npm run start:dev
 ```
 
-La documentation d'infrastructure décrit les variables, les ports et l'exécution complète : [infra/README.md](infra/README.md).
+Guide détaillé : [infra/README.md](infra/README.md). Le répertoire `apps/app` n'a encore **pas de squelette Expo intégré**, donc ne pas annoncer un lancement web/mobile complet.
 
-**Important :** le frontend Expo n'est pas encore présent sur `develop` : ne pas prétendre que `npm run` dans `apps/app` lancera déjà un produit intégré.
+## Organisation
 
-## Équipe
+**Estelle** dirige le projet, suit la sécurité, la qualité et les validations. **Eckson** pilote le backend avec **Belaid** en renfort ; **Philimon** pilote le frontend avec **Lina** en renfort. **Thomas est Lead Data & IA** et renforce temporairement **Julien** sur le campus 2.5D. **Soumia** assure exclusivement UX/UI. **Ousmane** assure DevOps et participe aux code reviews. [Rôles détaillés](docs/pilotage/equipe.md).
 
-- **Estelle** — cheffe de projet, sécurité, validation et suivi.
-- **Eckson** — backend ; **Belaid** (Data/IA) en renfort temporaire.
-- **Philimon** — frontend ; **Lina** (Data/IA) en renfort temporaire.
-- **Thomas** — **Lead Data & IA**, renfort temporaire du campus 2.5D avec **Julien**.
-- **Soumia** — UX/UI design.
-- **Ousmane** — DevOps, CI/CD, participation aux revues de PR.
+## Où suivre le travail
 
-Répartition détaillée : [docs/pilotage/equipe.md](docs/pilotage/equipe.md).
+- **[Exigences](https://github.com/epiverse-epitech/epiverse/issues?q=is%3Aissue+is%3Aopen+label%3Atype%3Aexigence)** : références historiques rouvertes, réception, critères de test.
+- **[Tâches](https://github.com/epiverse-epitech/epiverse/issues?q=is%3Aissue+is%3Aopen+label%3Atype%3Atache)** : travaux concrets, responsable, estimation initiale, heures réelles et reste estimé.
+- **[Documents de pilotage](docs/pilotage/README.md)** : CRAv, SMART, risques, écarts, journal de décisions, KPI, PBS/WBS, jalons, preuves.
+- **[Revue de refonte #147](https://github.com/epiverse-epitech/epiverse/pull/147)** : les changements documentaires sont proposés sur branche séparée et nécessitent revue avant fusion.
 
-## Comment contribuer
+Le dépôt officiel de pilotage est GitHub ; Teams sert aux échanges et réunions. Jira est abandonné et Notion est obsolète. Règles de contribution : [CONTRIBUTING.md](CONTRIBUTING.md).
 
-1. Choisir une **issue** prête et affectée.
-2. Créer une branche `feature/numero-sujet` depuis `develop`.
-3. Écrire le code et les tests ; ouvrir une **PR** vers `develop`.
-4. Obtenir une revue indépendante et les résultats CI nécessaires.
-5. Ajouter à l'issue : lien PR, heures prévues, heures faites, reste à faire, risques et preuve.
-6. Terminer selon la [Definition of Done](docs/pilotage/DoD.md).
+## Dates
+FU1 : **09/10/2026** · FU2 : **13/11/2026** · FU3 : **18/12/2026** · Soutenance : **05/02/2027**.
 
-Consulter aussi [CONTRIBUTING.md](CONTRIBUTING.md) et [SECURITY.md](SECURITY.md).
-
-## Suivis EPITECH
-
-- **FU1 :** 09/10/2026 — [compte rendu reconstitué](docs/pilotage/FU1-2026-10-09.md)
-- **FU2 :** 13/11/2026 — [dossier de préparation](docs/pilotage/FU2-2026-11-13.md)
-- **FU3 :** 18/12/2026
-- **Soutenance :** 05/02/2027
-
-Les états et résultats déclarés sont distingués des objectifs prévus. Les preuves viennent de GitHub, des tests, des maquettes et des démonstrations vérifiées.
+**Règle :** une issue fermée ne prouve pas une fonctionnalité livrée ; seules les preuves de code, tests, revue, démo et validation le permettent.
