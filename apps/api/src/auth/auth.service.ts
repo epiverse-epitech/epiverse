@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma } from '../generated/prisma/client';
@@ -17,7 +19,9 @@ import { SessionDto } from './dto/session.dto';
 import { generateSessionToken, hashSessionToken } from './session-token';
 import { isOpenAccount } from './account-state';
 import { EmailVerificationService } from './email-verification.service';
+import { Mailer } from '../mail/mailer';
 import {
+  EMAIL_REQUEST_ATTEMPTS,
   LoginAttempts,
   loginAttemptKey,
   TooManyLoginFailuresException,
@@ -25,6 +29,8 @@ import {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   // Verified when the email is unknown, so that both failures take the same
   // time and the response time does not reveal which emails have an account.
   private readonly unknownUserHash: Promise<string>;
@@ -35,6 +41,9 @@ export class AuthService {
     private readonly config: ConfigService<EnvironmentVariables, true>,
     private readonly loginAttempts: LoginAttempts,
     private readonly emailVerification: EmailVerificationService,
+    private readonly mailer: Mailer,
+    @Inject(EMAIL_REQUEST_ATTEMPTS)
+    private readonly emailRequests: LoginAttempts,
   ) {
     this.unknownUserHash = passwords.hash('unknown-user-placeholder');
   }
@@ -110,12 +119,44 @@ export class AuthService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === 'P2002'
       ) {
+        this.noticeExistingAccount(dto.email).catch(() => {
+          this.logger.error('A registration notice could not be sent');
+        });
         throw new ConflictException(
           'An account already exists with this email',
         );
       }
       throw error;
     }
+  }
+
+  // Tells the owner of an address already in use that someone tried to
+  // register with it. The 409 already says the address is taken, so this
+  // reveals nothing more. Nothing chosen by that person goes into the text,
+  // and notices to one address are limited, so nobody can flood a mailbox.
+  private async noticeExistingAccount(email: string): Promise<void> {
+    if (this.emailRequests.start(`notice\n${email}`) > 0) {
+      return;
+    }
+    const owner = await this.prisma.users.findFirst({
+      where: { email, is_active: true, deleted_at: null },
+      select: { id: true },
+    });
+    if (!owner) {
+      return;
+    }
+    await this.mailer.send({
+      to: email,
+      subject: 'Un compte EpiVerse existe déjà avec cette adresse',
+      text: [
+        'Bonjour,',
+        '',
+        "Quelqu'un vient d'essayer de créer un compte EpiVerse avec votre adresse e-mail, qui en a déjà un.",
+        '',
+        "Si c'était vous, connectez-vous avec votre mot de passe, ou utilisez « Mot de passe oublié » sur la page de connexion.",
+        "Si ce n'était pas vous, vous pouvez ignorer ce message : votre compte n'a pas changé.",
+      ].join('\n'),
+    });
   }
 
   // clientIp is the address seen through the trusted proxies (TRUST_PROXY_HOPS).

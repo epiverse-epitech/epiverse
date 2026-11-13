@@ -159,14 +159,14 @@ Each business domain gets its own Nest module (`auth`, `users`, `events`, …), 
 |---|---|
 | 201 with `{ id, email, firstName, lastName }` | Account created. `id` is the public UUID, never the internal numeric id. |
 | 400 | Invalid or unknown field. No account is created. |
-| 409 `An account already exists with this email` | The email is taken, whatever its letter case. Nothing about the existing account is returned. |
+| 409 `An account already exists with this email` | The email is taken, whatever its letter case. Nothing about the existing account is returned. The owner of an open account gets a notice by email, without any link or text from the other person (at most `LOGIN_FAILURE_MAX` per `LOGIN_FAILURE_WINDOW_MINUTES` for one address). |
 | 429 | Too many attempts (`@AuthRateLimit()`). |
 
 - The unique index on `lower(email)` decides between duplicates, so two simultaneous requests cannot create two accounts.
 
 ### Known limits
 
-- The 409 tells whether an email is registered (account enumeration). Accepted for now and slowed down by the rate limit. Sending an email to the existing owner instead would remove it, once email delivery exists (EPI-53).
+- The 409 tells whether an email is registered (account enumeration). Accepted by the team: the DoD asks for generic answers only at login and password reset, and hiding it would also require a verified address to log in. Slowed down by the rate limit.
 - `GET /api/auth/cgu` returns `{ version }`, the current terms of use version (`CGU_VERSION`). When the terms change, the new text and the new `CGU_VERSION` are deployed together; existing accounts then accept the new version through `POST /api/auth/cgu/accept` (see Sessions).
 
 ## Sessions

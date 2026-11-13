@@ -5,6 +5,9 @@ import { App } from 'supertest/types';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { PasswordService } from '../src/security/password.service';
 import { createTestApp } from './support/create-test-app';
+import { FakeMailer } from './support/fake-mailer';
+import { Mailer } from '../src/mail/mailer';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 // Every account created here uses this domain, so cleanup never touches other data.
 const TEST_DOMAIN = '@register.e2e.test';
@@ -23,15 +26,21 @@ const validBody = {
 describe('Account registration (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
+  let mailer: FakeMailer;
 
   beforeAll(async () => {
     // High enough that the functional tests below never hit the limit.
-    app = await createTestApp(100);
+    // At most 3 notices per address here.
+    app = await createTestApp(100, { LOGIN_FAILURE_MAX: 3 });
     prisma = app.get(PrismaService);
+    mailer = app.get(Mailer) as FakeMailer;
     validBody.cguVersion = app.get(ConfigService).get<string>('CGU_VERSION')!;
   });
 
   afterEach(async () => {
+    // Leaves time for an email still on its way, so it cannot reach the next test.
+    await sleep(30);
+    mailer.sent.length = 0;
     await prisma.users.deleteMany({
       where: { email: { endsWith: TEST_DOMAIN, mode: 'insensitive' } },
     });
@@ -153,6 +162,50 @@ describe('Account registration (e2e)', () => {
       where: { email: validBody.email },
     });
     expect(account.first_name).toBe('Ada');
+  });
+
+  describe('notice to the owner of a used address', () => {
+    const noticesTo = (email: string) =>
+      mailer.sent.filter((m) => m.to === email && !m.text.includes('#token='));
+
+    it('tells the owner by email, without any link or text from the other person', async () => {
+      const email = `notice1${TEST_DOMAIN}`;
+      await register({ ...validBody, email }).expect(201);
+
+      await register({ ...validBody, email, firstName: 'Grace' }).expect(409);
+      await mailer.waitFor(email, 2);
+
+      const notices = noticesTo(email);
+      expect(notices).toHaveLength(1);
+      expect(notices[0].subject).toContain('compte');
+      expect(notices[0].text).not.toContain('Grace');
+    });
+
+    it('sends nothing to the address of a closed account', async () => {
+      const email = `notice2${TEST_DOMAIN}`;
+      await register({ ...validBody, email }).expect(201);
+      await prisma.users.updateMany({
+        where: { email },
+        data: { is_active: false },
+      });
+
+      await register({ ...validBody, email }).expect(409);
+      await sleep(50);
+
+      expect(noticesTo(email)).toHaveLength(0);
+    });
+
+    it('limits the notices sent to one address, and still answers 409', async () => {
+      const email = `notice3${TEST_DOMAIN}`;
+      await register({ ...validBody, email }).expect(201);
+
+      for (let i = 0; i < 5; i++) {
+        await register({ ...validBody, email }).expect(409);
+      }
+      await sleep(50);
+
+      expect(noticesTo(email)).toHaveLength(3);
+    });
   });
 
   describe('Account registration rate limit (e2e)', () => {
