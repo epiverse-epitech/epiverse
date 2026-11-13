@@ -47,19 +47,29 @@ def main():
     count={p:len(v) for p,v in existing.items()}
     todo=[(parent_of(x),x) for x in sorted(issues,key=lambda x:x["number"]) if parent_of(x) is not None]
     print("INITIAL",json.dumps({"issues":len(issues),"planned_links":len(todo),"current":count,"dry":DRY}),flush=True)
+    # Les issues déjà rattachées directement à #189 sont replacées dans les deux sous-groupes.
+    # On ne modifie pas les parents externes inconnus, ni les archives et futures correctes.
+    current={n:p for p,nums in existing.items() for n in nums}
     completed=0;errors=[]
     for parent,x in todo:
-        if x["number"] in existing[parent]:continue
+        old_parent=current.get(x["number"])
+        if old_parent==parent:continue
         if completed>=LIMIT:break
         if len(existing[parent])>=100:
             errors.append(f"#{parent}: 100 children limit");continue
+        replace=old_parent==189 and parent in (192,193)
+        if old_parent is not None and not replace:
+            errors.append(f"#{x['number']}: parent #{old_parent} préservé, attendu #{parent}");continue
         if DRY:
-            print("PLAN",parent,"<",x["number"]);completed+=1;continue
-        result=get("POST",f"/repos/{REPO}/issues/{parent}/sub_issues",{"sub_issue_id":x["id"]},allow_fail=True)
+            print("PLAN",parent,"<",x["number"],"replace",replace);completed+=1;continue
+        data={"sub_issue_id":x["id"]}
+        if replace:data["replace_parent"]=True
+        result=get("POST",f"/repos/{REPO}/issues/{parent}/sub_issues",data,allow_fail=True)
         if "error" in result:
             errors.append(f"#{x['number']} to #{parent}: {result['error']}")
         else:
-            existing[parent].add(x["number"]);completed+=1
+            if old_parent in existing:existing[old_parent].discard(x["number"])
+            existing[parent].add(x["number"]);current[x["number"]]=parent;completed+=1
         if completed%15==0:print("PROGRESS",completed,"linked",flush=True)
         time.sleep(.45)
     print("RESULT",json.dumps({"linked":completed,"errors":errors[:25],"counts":{p:len(v) for p,v in existing.items()}},ensure_ascii=False),flush=True)
