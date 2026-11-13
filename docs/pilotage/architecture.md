@@ -1,44 +1,47 @@
-# Architecture technique et état réel — 13/11/2026
+# Architecture technique — conception et code réellement présent
 
-## Architecture cible
+## Cible
 ```text
-Étudiant (web / iOS / Android)
-          |
-     Expo / React Native Web       (à développer dans apps/app)
-          |
-      API NestJS                   (socle présent dans develop)
-          |
-    Prisma / PostgreSQL            (schéma et migrations présents)
-       |           |
-     Redis      MongoDB            (cache / interactions / monde)
-          |
-   Services de déploiement Docker (scripts et CI présents)
-          |
-  Module campus Phaser 2.5D        (branche POC, non intégré)
+Navigateurs desktop / mobile
+        |
+Application Expo + React Native Web
+        |                         \
+API REST NestJS                   Campus 2.5D Phaser
+  |   |   \                         |
+  |   |    \------ API temps réel / sessions et salons
+  |   |
+Prisma/PostgreSQL                  WebRTC voix/vidéo + TURN
+Redis, MongoDB                     Permissions et modération
+        \___________________________/
+                   |
+         Docker / staging / CI GitHub
 ```
 
-## Distinction entre prévu et disponible
-| Composant | Constat GitHub | Prochaine action |
+## Réalité vérifiée dans le dépôt
+| Élément | État | Suite |
 |---|---|---|
-| API NestJS | Présente dans develop, `apps/api` | Finaliser auth et métier |
-| Prisma/PostgreSQL | Présent, migrations versionnées | Revoir droits et évolution schéma |
-| Redis/MongoDB | Docker + initialisation/fixtures | Confirmer conservation et rôles |
-| App Expo | `apps/app/README.md` seulement | Générer et tester web/mobile |
-| Campus Phaser | `feature/EPI-459-avatar-poc` | Tester, PR, intégrer au web |
-| CI GitHub | Lint, tests unitaires et E2E backend réussis | Activer tests frontend quand présent |
-| Staging | Configuration prévue | Prouver déploiement et accès |
-| Dépôt Tech | Miroir prévu, exécution ignorée observée | Vérifier URL et synchronisation |
+| NestJS, Prisma, migrations PostgreSQL | Socle intégré dans `develop` | Auth, métier, RBAC et contrats |
+| Redis/Mongo, données fictives | Initialisation et scripts présents | Droits, conservation, sauvegarde |
+| Expo web/mobile | `apps/app/README.md` seulement sur `develop` | Créer et tester application |
+| Campus Phaser | Branche `feature/EPI-459-avatar-poc` | Tester, PR et intégrer |
+| Salons temps réel / RTC | Pas démontrés comme livrés | #148, #169–#172 |
+| CI API | Tests unitaires, E2E, build réussis sur Actions | Étendre à app et intégration |
+| Staging | Configuration prévue, déploiement non prouvé | #119, #185 |
+| Dépôt Tech EPITECH | Workflow miroir présent mais observé skipped | #103 |
 
-## Contrats entre équipes
-- API : routes versionnées sous `/api`, validation des champs, réponses d'erreur stables et tests des permissions.
-- Front : utilise `EXPO_PUBLIC_API_URL`, gère loading, erreurs, connexion et sortie.
-- Data : propose l'instrumentation **avant** d'utiliser des données réelles ; événements versionnés, minimisation, consentement et suppression.
-- Campus : moteur isolé et montable dans l'application, fonctionne au tactile et dispose d'une alternative accessible.
-- Infra : secrets hors Git, environnements dev/staging séparés, sauvegardes testées.
+## Contrats et décisions
+- Première cible d'usage : **navigateur ordinateur et mobile**. Les stores natifs ne sont pas obligatoires.
+- API : réponses d'erreur stables et codes HTTP corrects, comptes/établissements/rôles et permissions testés.
+- Frontend : gestion des sessions, chargement, erreurs, accessibilité et compatibilité.
+- Monde : moteur Phaser découplé, présence avec plusieurs utilisateurs, chambres et salons, accès privés.
+- Médias : signalisation/connexion RTC, coût réseau, permissions caméra/micro, coupure et mécanisme de repli.
+- Data/IA : événements minimisés, durée, consentements, données synthétiques avant données réelles.
+- Infra : secrets jamais dans Git public, sauvegardes restaurées en test, branche et CI, staging isolé.
 
-## Choix explicitement reportés
-- Aucun multijoueur ni présence temps réel n'est réputé livré.
-- Aucune promesse de stockage illimité, crypto ou intégration XR Roblox.
-- Les montées en charge devront être prouvées par mesures, non estimées par intuition.
+## Capacité et sécurité
+**Objectif de test : 50 utilisateurs simultanés au total.** Mesurer latence API, FPS p5, bande passante RTC, coût, erreurs, mémoire et comportements en cas de perte réseau. Pas de promesse de tenue de charge sans campagne mesurée.
 
-Source de référence technique : [DOC-014 historique] et [infra/README](../../infra/README.md), **le code et les PR prévalent sur les plans anciens**.
+## Risques de choix
+WebRTC nécessite HTTPS et souvent TURN ; la vidéo de proximité multiplie les flux et les coûts. Le monde 2.5D doit garder une interface alternative pour les services essentiels. La mise en public du dépôt impose des contrôles actifs sur l'historique et les secrets.
+
+**Référence :** code sur `develop`, branches/PR, plan historique DOC-014 et compte rendu consolidé du 04/11/2026.
