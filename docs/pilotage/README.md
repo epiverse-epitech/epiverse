@@ -4,7 +4,7 @@
 
 ## Remise au pédagogue — point d’entrée unique
 
-**[Ouvrir la grille de contrôle des 10 exigences et les preuves FU2](REMISE-PEDAGOGUE-FU2.md)** : état réel des milestones, 12 issues FU2 encore ouvertes, 19 archives (non livrées), PR fusionnées, CRAv, KPI, SMART, écarts avec SHA, CI et dépôt Tech. Les documents de la **PR #147** restent en attente de revue et de fusion.
+**[Ouvrir la grille de contrôle des 10 exigences et les preuves FU2](REMISE-PEDAGOGUE-FU2.md)** : état réel des milestones, 12 issues FU2 encore ouvertes, 19 archives (non livrées), PR fusionnées, CRAv, KPI, SMART, écarts avec SHA, CI et dépôt Tech. Le dossier est préparé dans la **PR #147** pour `develop` ; une livraison documentaire séparée vers `main` permet sa consultation sans modifier le code.
 
 ## Accès en un clic
 
@@ -45,7 +45,7 @@
 4. **Un CRAv décrit uniquement une revue réellement tenue** : FU1 reconstitué de manière explicite ; FU2 finalisé après la réunion.
 
 ## Attention
-Ce référentiel est préparé dans [la PR #147](https://github.com/epiverse-epitech/epiverse/pull/147), **non fusionnée**. Les nouvelles issues sont visibles immédiatement, mais les documents ne seront sur `develop` qu'après revue et fusion.
+Ce référentiel a été préparé dans [la PR #147](https://github.com/epiverse-epitech/epiverse/pull/147) ; sa publication documentaire sur `main` est indépendante de sa future fusion dans `develop`. Les états des tickets restent ceux du snapshot du 13/11.
 
 ## Corrections pédagogiques du 13/11/2026
 
